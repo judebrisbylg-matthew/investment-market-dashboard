@@ -15,18 +15,29 @@
 5. 我的基金持仓跟踪：用真实持仓做复盘和动作判断。
 6. 每日财经新闻：跟踪全球高影响财经新闻，并辅助判断行情变量。
 
-## 线上地址
+## 访问方式
 
-GitHub Pages 地址：
+当前仓库已经按“私享”要求设置为 private。
+
+当前账号计划不支持 private 仓库直接启用 GitHub Pages，因此线上 Pages 地址会返回 404。
+
+原 GitHub Pages 地址保留为历史记录：
 
 ```text
 https://judebrisbylg-matthew.github.io/investment-market-dashboard/
 ```
 
-说明：
+当前推荐访问方式：
 
-- 仓库可设置为 private，用于保护源码和数据文件管理过程。
-- GitHub Pages 站点本身是否完全私密，取决于 GitHub 账号/组织的 Pages 权限和计划；如果需要“网页也只能自己访问”，后续要改成带访问控制的托管方案。
+1. 在 GitHub 登录自己的账号后查看私有仓库源码和数据。
+2. 本地打开 `index.html` 预览看板。
+3. 每天自动更新后，将最新 `data/market-data.json` 和页面文件推送到这个私有仓库做归档。
+
+如果后续仍需要“在线可点开”的私享看板，有三种选择：
+
+1. 升级 GitHub 计划，使 private repository 支持 Pages。
+2. 仓库保持 private，改用带登录保护的托管服务。
+3. 临时把仓库设为 public 并开启 Pages，但这不符合“私享”要求。
 
 ## 目录结构
 
@@ -153,10 +164,11 @@ git push origin main
 
 目标状态：
 
-- 仓库 visibility：private
+- 仓库 visibility：private，已按私享模式处理
 - 用途：个人私享看板源码和数据托管
 - 不开放 issue、wiki、discussion 作为协作入口
 - 不与其他 skill 仓库混放
+- 当前 GitHub 账号计划不支持 private 仓库开启 Pages，线上页面暂不可用
 
 ## 注意事项
 
