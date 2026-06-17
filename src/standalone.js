@@ -35,6 +35,22 @@ const signalClass = {
 let dashboardData;
 let activeIndustry = 0;
 
+const coreRiskOrder = [
+  '10年期美债收益率',
+  '国际油价（美元/桶）',
+  '美元指数',
+  '实际利率',
+  '信用利差',
+  'VIX',
+  'A股成交额',
+  '估值分位'
+];
+
+function getCoreRiskItems(items) {
+  const byName = new Map(items.map((item) => [item.name, item]));
+  return coreRiskOrder.map((name) => byName.get(name)).filter(Boolean);
+}
+
 function $(id) {
   return document.getElementById(id);
 }
@@ -76,7 +92,8 @@ function formatIndustryLabel(name, compact) {
 }
 
 function drawGauge(items) {
-  const score = Math.round(items.reduce((sum, item) => sum + item.score, 0) / items.length);
+  const coreItems = getCoreRiskItems(items);
+  const score = Math.round(coreItems.reduce((sum, item) => sum + item.score, 0) / coreItems.length);
   const { ctx, width, height } = setupCanvas('riskGauge');
   clear(ctx, width, height);
   const cx = width / 2;
@@ -104,8 +121,9 @@ function drawGauge(items) {
 function drawRadar(items) {
   const { ctx, width, height } = setupCanvas('riskRadar');
   clear(ctx, width, height);
-  const names = items.slice(0, 8).map((item) => item.name.replace('收益率', '').replace('成交额', '成交'));
-  const values = items.slice(0, 8).map((item) => item.score);
+  const coreItems = getCoreRiskItems(items);
+  const names = coreItems.map((item) => item.name.replace('10年期', '').replace('（美元/桶）', '').replace('成交额', '成交'));
+  const values = coreItems.map((item) => item.score);
   const cx = width / 2;
   const cy = height / 2;
   const radius = Math.min(width, height) * .32;
@@ -292,6 +310,7 @@ function renderHeader(data) {
 }
 
 function renderRiskMatrix(items) {
+  const coreItems = getCoreRiskItems(items);
   const shortNames = {
     '10年期美债收益率': '美债收益率',
     '国际油价（美元/桶）': '国际油价',
@@ -304,8 +323,8 @@ function renderRiskMatrix(items) {
     '港股成交额': '港股成交',
     '估值分位': '估值分位'
   };
-  $('riskSummary').textContent = `绿灯 ${items.filter((item) => item.signal.includes('绿')).length} / 黄灯 ${items.filter((item) => item.signal.includes('黄')).length}`;
-  $('riskMatrix').innerHTML = items.map((item) => `
+  $('riskSummary').textContent = `绿灯 ${coreItems.filter((item) => item.signal.includes('绿')).length} / 黄灯 ${coreItems.filter((item) => item.signal.includes('黄')).length}`;
+  $('riskMatrix').innerHTML = coreItems.map((item) => `
     <article class="risk-item">
       <header>
         <span title="${item.name}">${shortNames[item.name] || item.name}</span>

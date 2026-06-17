@@ -17,11 +17,9 @@
 
 ## 访问方式
 
-当前仓库已经按“私享”要求设置为 private。
+当前仓库为 public，用于保证 GitHub Pages 地址可以正常打开。
 
-当前账号计划不支持 private 仓库直接启用 GitHub Pages，因此线上 Pages 地址会返回 404。
-
-原 GitHub Pages 地址保留为历史记录：
+GitHub Pages 地址：
 
 ```text
 https://judebrisbylg-matthew.github.io/investment-market-dashboard/
@@ -29,15 +27,14 @@ https://judebrisbylg-matthew.github.io/investment-market-dashboard/
 
 当前推荐访问方式：
 
-1. 在 GitHub 登录自己的账号后查看私有仓库源码和数据。
+1. 直接打开 GitHub Pages 地址查看线上看板。
 2. 本地打开 `index.html` 预览看板。
-3. 每天自动更新后，将最新 `data/market-data.json` 和页面文件推送到这个私有仓库做归档。
+3. 每天自动更新后，将最新 `data/market-data.json` 和页面文件推送到这个仓库，使线上看板刷新。
 
-如果后续仍需要“在线可点开”的私享看板，有三种选择：
+说明：
 
-1. 升级 GitHub 计划，使 private repository 支持 Pages。
-2. 仓库保持 private，改用带登录保护的托管服务。
-3. 临时把仓库设为 public 并开启 Pages，但这不符合“私享”要求。
+- 当前 GitHub 账号计划不支持 private 仓库直接启用 GitHub Pages。
+- 如果未来要同时满足“仓库私有”和“网页可访问”，需要升级 GitHub Pages 权限，或改用带登录保护的托管方案。
 
 ## 目录结构
 
@@ -162,13 +159,13 @@ git push origin main
 
 ## 仓库权限
 
-目标状态：
+当前状态：
 
-- 仓库 visibility：private，已按私享模式处理
+- 仓库 visibility：public，用于保证 GitHub Pages 正常访问
 - 用途：个人私享看板源码和数据托管
 - 不开放 issue、wiki、discussion 作为协作入口
 - 不与其他 skill 仓库混放
-- 当前 GitHub 账号计划不支持 private 仓库开启 Pages，线上页面暂不可用
+- 如果后续改回 private，当前 GitHub Pages 地址会失效
 
 ## 注意事项
 
