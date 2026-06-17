@@ -1,3 +1,5 @@
+import './standalone.css';
+
 const signalClass = {
   '绿灯': 'ok',
   '正常绿灯': 'ok',
