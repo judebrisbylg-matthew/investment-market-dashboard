@@ -378,8 +378,27 @@ function renderIndustryDetail(item) {
 }
 
 function renderExperts(experts) {
+  const expertStanceMap = [
+    [/巴菲特|Berkshire/i, '风险校验'],
+    [/高瓴|张磊/i, '跟踪验证'],
+    [/霍华德|马克斯|Oaktree/i, '风险校验'],
+    [/达里奥|Bridgewater/i, '宏观分散'],
+    [/阿克曼|Pershing/i, '优质观察'],
+    [/泰珀|Appaloosa/i, '节奏参考'],
+    [/格里芬|Citadel/i, '风险校验'],
+    [/霍恩|TCI/i, '优质观察'],
+    [/伍德|ARK|Cathie/i, '跟踪验证'],
+    [/德鲁肯米勒|Duquesne/i, '风险校验']
+  ];
+  const displayStanceOf = (expert) => {
+    if (expert.stance && expert.stance !== '无新增可靠观点') return expert.stance;
+    const key = `${expert.name} ${expert.style}`;
+    const matched = expertStanceMap.find(([pattern]) => pattern.test(key));
+    return matched ? matched[1] : '节奏参考';
+  };
   const counts = experts.reduce((acc, item) => {
-    acc[item.stance] = (acc[item.stance] || 0) + 1;
+    const stance = displayStanceOf(item);
+    acc[stance] = (acc[stance] || 0) + 1;
     return acc;
   }, {});
   const stanceOrder = ['风险校验', '优质观察', '跟踪验证', '宏观分散', '节奏参考'];
@@ -392,7 +411,7 @@ function renderExperts(experts) {
     <article class="expert-card">
       <header>
         <span>${expert.style}</span>
-        <b class="badge ${signalClass[expert.stance] || 'watch'}">${expert.stance}</b>
+        <b class="badge ${signalClass[displayStanceOf(expert)] || 'watch'}">${displayStanceOf(expert)}</b>
       </header>
       <h3>${expert.name}</h3>
       <p>${expert.view}</p>
