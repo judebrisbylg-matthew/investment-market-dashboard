@@ -91,6 +91,19 @@ function formatIndustryLabel(name, compact) {
   return simplified.length > maxChars ? `${simplified.slice(0, maxChars)}…` : simplified;
 }
 
+function industryScore(item) {
+  return Math.round(item.prosperity * .45 + item.heat * .3 + (100 - item.risk) * .25);
+}
+
+function sortIndustriesByTierAndScore(items) {
+  const tierOrder = { '核心主线': 0, '候补轮动': 1 };
+  return [...items].sort((a, b) => {
+    const tierDiff = (tierOrder[a.tier] ?? 9) - (tierOrder[b.tier] ?? 9);
+    if (tierDiff !== 0) return tierDiff;
+    return industryScore(b) - industryScore(a);
+  });
+}
+
 function drawGauge(items) {
   const coreItems = getCoreRiskItems(items);
   const score = Math.round(coreItems.reduce((sum, item) => sum + item.score, 0) / coreItems.length);
@@ -180,19 +193,20 @@ function escapeHtml(value) {
 }
 
 function drawIndustryBars(items) {
+  const sortedItems = sortIndustriesByTierAndScore(items);
   const { ctx, width, height } = setupCanvas('industryBars');
   clear(ctx, width, height);
   const compact = isCompactCanvas(width);
   const pad = compact ? 24 : 34;
   const labelWidth = compact ? 74 : 132;
   const barX = 10 + labelWidth;
-  const rowH = (height - pad * 2) / items.length;
-  items.forEach((item, i) => {
+  const rowH = (height - pad * 2) / sortedItems.length;
+  sortedItems.forEach((item, i) => {
     const y = pad + i * rowH;
     const label = formatIndustryLabel(item.name, compact);
     drawText(ctx, label, 10, y + 14, { size: compact ? 10 : 11, color: '#cbd5e1' });
     const maxW = width - barX - 24;
-    const totalScore = Math.round(item.prosperity * .45 + item.heat * .3 + (100 - item.risk) * .25);
+    const totalScore = industryScore(item);
     ctx.fillStyle = 'rgba(148, 163, 184, .12)';
     ctx.fillRect(barX, y + 5, maxW, 12);
     const grad = ctx.createLinearGradient(barX, 0, barX + maxW, 0);
@@ -337,7 +351,8 @@ function renderRiskMatrix(items) {
 }
 
 function renderIndustryCards(items) {
-  $('industryGrid').innerHTML = items.map((item, index) => `
+  const sortedItems = sortIndustriesByTierAndScore(items);
+  $('industryGrid').innerHTML = sortedItems.map((item, index) => `
     <article class="industry-card ${item.tier === '核心主线' ? 'core-card' : 'candidate-card'} ${index === activeIndustry ? 'active' : ''}" data-index="${index}">
       <header>
         <span class="tier-pill ${item.tier === '核心主线' ? 'core' : 'candidate'}">${item.tier}</span>
@@ -355,8 +370,8 @@ function renderIndustryCards(items) {
   document.querySelectorAll('.industry-card').forEach((card) => {
     card.addEventListener('click', () => {
       activeIndustry = Number(card.dataset.index);
-      renderIndustryCards(items);
-      renderIndustryDetail(items[activeIndustry]);
+      renderIndustryCards(sortedItems);
+      renderIndustryDetail(sortedItems[activeIndustry]);
     });
   });
 }
@@ -480,8 +495,9 @@ function renderNews(news) {
 function renderAll() {
   renderHeader(dashboardData);
   renderRiskMatrix(dashboardData.riskDashboard);
-  renderIndustryCards(dashboardData.industryWatch);
-  renderIndustryDetail(dashboardData.industryWatch[activeIndustry]);
+  const sortedIndustries = sortIndustriesByTierAndScore(dashboardData.industryWatch);
+  renderIndustryCards(sortedIndustries);
+  renderIndustryDetail(sortedIndustries[activeIndustry]);
   renderExperts(dashboardData.expertViews);
   renderFunds(dashboardData.fundHoldings);
   renderNews(dashboardData.financeNews);
