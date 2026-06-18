@@ -265,11 +265,18 @@ function drawPie(id, data, colors) {
   });
 }
 
+function fundPerformanceValue(fund) {
+  return Number.isFinite(fund.day) ? fund.day : fund.week;
+}
+
+function sortFundsByPerformance(funds) {
+  return [...funds].sort((a, b) => fundPerformanceValue(b) - fundPerformanceValue(a));
+}
+
 function drawFundPerformance(funds) {
   const { ctx, width, height } = setupCanvas('fundPerformance');
   clear(ctx, width, height);
   const compact = isCompactCanvas(width);
-  const valueOf = (fund) => Number.isFinite(fund.day) ? fund.day : fund.week;
   const shortTheme = {
     'AI/互联网': 'AI互联',
     '先进制造': '先进制造',
@@ -284,10 +291,10 @@ function drawFundPerformance(funds) {
     'A股宽基': 'A股宽基',
     'AI/半导体': 'AI半导体'
   };
-  const sorted = [...funds].sort((a, b) => valueOf(b) - valueOf(a));
+  const sorted = sortFundsByPerformance(funds);
   const pad = compact ? 24 : 32;
   const zeroY = height / 2;
-  const max = Math.max(...sorted.map((fund) => Math.abs(valueOf(fund))), 1);
+  const max = Math.max(...sorted.map((fund) => Math.abs(fundPerformanceValue(fund))), 1);
   ctx.strokeStyle = '#263448';
   ctx.beginPath();
   ctx.moveTo(pad, zeroY);
@@ -295,7 +302,7 @@ function drawFundPerformance(funds) {
   ctx.stroke();
   const step = (width - pad * 2) / sorted.length;
   sorted.forEach((fund, i) => {
-    const day = valueOf(fund);
+    const day = fundPerformanceValue(fund);
     const x = pad + i * step + step * .22;
     const barW = step * .56;
     const h = Math.abs(day) / max * (height * .36);
@@ -437,21 +444,19 @@ function renderExperts(experts) {
 
 function renderFunds(funds) {
   const validFunds = funds.filter((fund) => Number.isFinite(fund.day) || Number.isFinite(fund.week));
+  const sortedFunds = sortFundsByPerformance(validFunds);
   const counts = validFunds.reduce((acc, fund) => {
     acc[fund.risk] = (acc[fund.risk] || 0) + 1;
     return acc;
   }, {});
-  const dayOf = (fund) => Number.isFinite(fund.day) ? fund.day : fund.week;
   const highRisk = validFunds.filter((fund) => fund.risk.includes('高')).length;
-  const avgDay = validFunds.reduce((sum, fund) => sum + dayOf(fund), 0) / Math.max(validFunds.length, 1);
+  const avgDay = validFunds.reduce((sum, fund) => sum + fundPerformanceValue(fund), 0) / Math.max(validFunds.length, 1);
   $('fundSummary').textContent = `${validFunds.length}只基金 | 高风险${highRisk}只 | 平均日涨跌 ${avgDay.toFixed(2)}%`;
   drawPie('fundRiskPie', Object.entries(counts).map(([name, value]) => ({ name, value })), ['#22c55e', '#facc15', '#fb923c', '#ef4444']);
-  drawFundPerformance(validFunds);
-  $('fundActions').innerHTML = validFunds
-    .slice()
-    .sort((a, b) => Math.abs(dayOf(b)) - Math.abs(dayOf(a)))
+  drawFundPerformance(sortedFunds);
+  $('fundActions').innerHTML = sortedFunds
     .map((fund) => {
-      const day = dayOf(fund);
+      const day = fundPerformanceValue(fund);
       return `
         <article class="fund-action">
           <header>
