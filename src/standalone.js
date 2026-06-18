@@ -507,7 +507,8 @@ function renderAll() {
 }
 
 async function boot() {
-  const response = await fetch('./data/market-data.json');
+  const response = await fetch(`./data/market-data.json?t=${Date.now()}`, { cache: 'no-store' });
+  if (!response.ok) throw new Error(`数据文件读取失败：${response.status}`);
   dashboardData = await response.json();
   renderAll();
 }
