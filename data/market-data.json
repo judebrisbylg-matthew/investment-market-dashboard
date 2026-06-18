@@ -488,7 +488,7 @@
       "action": "观察等待",
       "watch": "A股成交额、港股成交额、社零、地产销售、人民币、南向资金、高技术制造订单",
       "source": "国家统计局 / Reuters / WSJ Market Talk",
-      "confidence": "中高",
+      "confidence": "中",
       "included": "是：影响行业主线判断"
     },
     {
@@ -520,7 +520,7 @@
       "action": "暂不追高",
       "watch": "费半指数、英伟达/博通/Micron走势、云厂Capex、AI服务器订单、PCB和高速铜连接景气",
       "source": "CNBC / MarketWatch / Barron's",
-      "confidence": "中高",
+      "confidence": "中",
       "included": "是：影响行业主线判断"
     },
     {
@@ -552,7 +552,7 @@
       "action": "观察等待",
       "watch": "Brent是否站回80美元、EIA库存、霍尔木兹通航、中东谈判、通胀预期",
       "source": "AP / Guardian / EIA",
-      "confidence": "中高",
+      "confidence": "中",
       "included": "是：影响今日仓位/风险偏好"
     },
     {
@@ -565,7 +565,7 @@
       "impact": "中高",
       "horizon": "短期：1天-2周",
       "meaning": "有色仍是核心主线之一，但更适合边走边跟踪止盈条件，关键看美元和实际利率是否配合。",
-      "action": "止盈跟踪",
+      "action": "继续观察",
       "watch": "DXY、10Y TIPS、铜铝库存、黄金、油价、资源股成交额",
       "source": "LME / COMEX / WSJ Market Talk",
       "confidence": "中",
