@@ -572,7 +572,10 @@ canvas {
   }
 
   .industry-grid,
-  .expert-cards,
+  .expert-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .news-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -655,7 +658,10 @@ canvas {
   .topology,
   .workbench,
   .analysis-grid,
-  .funds-panel,
+  .funds-panel {
+    margin-top: 10px;
+  }
+
   .news-panel {
     margin-top: 10px;
   }
@@ -700,7 +706,10 @@ canvas {
 
   .risk-matrix,
   .industry-grid,
-  .expert-cards,
+  .expert-cards {
+    grid-template-columns: 1fr;
+  }
+
   .news-grid {
     grid-template-columns: 1fr;
   }
@@ -722,7 +731,10 @@ canvas {
   }
 
   .industry-card,
-  .expert-card,
+  .expert-card {
+    min-height: 0;
+  }
+
   .news-card {
     min-height: 0;
   }
