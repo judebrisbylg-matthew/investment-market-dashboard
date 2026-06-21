@@ -224,14 +224,15 @@ function drawIndustryBars(items) {
   });
 }
 
-function drawPie(id, data, colors) {
+function drawPie(id, data, colors, options = {}) {
   const { ctx, width, height } = setupCanvas(id);
   clear(ctx, width, height);
   const compact = isCompactCanvas(width);
   const total = data.reduce((sum, item) => sum + item.value, 0) || 1;
-  const cx = compact ? width / 2 : width * .34;
-  const cy = compact ? height * .38 : height / 2;
-  const radius = Math.min(width, height) * (compact ? .26 : .32);
+  const centered = options.centered === true;
+  const cx = compact || centered ? width / 2 : width * .34;
+  const cy = compact ? height * .34 : (centered ? height * .37 : height / 2);
+  const radius = Math.min(width, height) * (compact ? .25 : (centered ? .28 : .32));
   let start = -Math.PI / 2;
   data.forEach((item, i) => {
     const end = start + Math.PI * 2 * item.value / total;
@@ -257,8 +258,12 @@ function drawPie(id, data, colors) {
   });
   data.forEach((item, i) => {
     const pct = (item.value / total * 100).toFixed(0);
-    const y = compact ? height * .72 + i * 20 : 52 + i * 28;
-    const x = compact ? 18 : width * .66;
+    const legendRows = Math.ceil(data.length / (centered && !compact ? 2 : 1));
+    const legendTop = compact ? height * .68 : (centered ? height * .68 : 52);
+    const row = centered && !compact ? i % legendRows : i;
+    const col = centered && !compact ? Math.floor(i / legendRows) : 0;
+    const x = compact ? 18 : (centered ? width * (.22 + col * .34) : width * .66);
+    const y = legendTop + row * (compact ? 18 : 22);
     ctx.fillStyle = colors[i % colors.length];
     ctx.fillRect(x, y - 10, 10, 10);
     drawText(ctx, `${item.name} ${item.value} | ${pct}%`, x + 18, y, { size: compact ? 11 : 12, color: '#cbd5e1' });
@@ -400,35 +405,21 @@ function renderIndustryDetail(item) {
 }
 
 function renderExperts(experts) {
-  const expertStanceMap = [
-    [/巴菲特|Berkshire/i, '风险校验'],
-    [/高瓴|张磊/i, '跟踪验证'],
-    [/霍华德|马克斯|Oaktree/i, '风险校验'],
-    [/达里奥|Bridgewater/i, '宏观分散'],
-    [/阿克曼|Pershing/i, '优质观察'],
-    [/泰珀|Appaloosa/i, '节奏参考'],
-    [/格里芬|Citadel/i, '风险校验'],
-    [/霍恩|TCI/i, '优质观察'],
-    [/伍德|ARK|Cathie/i, '跟踪验证'],
-    [/德鲁肯米勒|Duquesne/i, '风险校验']
-  ];
   const displayStanceOf = (expert) => {
-    if (expert.stance && expert.stance !== '无新增可靠观点') return expert.stance;
-    const key = `${expert.name} ${expert.style}`;
-    const matched = expertStanceMap.find(([pattern]) => pattern.test(key));
-    return matched ? matched[1] : '节奏参考';
+    if (expert.stance) return expert.stance;
+    return '待核验';
   };
   const counts = experts.reduce((acc, item) => {
     const stance = displayStanceOf(item);
     acc[stance] = (acc[stance] || 0) + 1;
     return acc;
   }, {});
-  const stanceOrder = ['风险校验', '优质观察', '跟踪验证', '宏观分散', '节奏参考'];
-  const stanceColors = ['#ef4444', '#22c55e', '#facc15', '#38bdf8', '#fb923c'];
+  const stanceOrder = ['无新增可靠观点', '跟踪验证', '优质观察', '风险校验', '宏观分散', '节奏参考', '待核验'];
+  const stanceColors = ['#64748b', '#facc15', '#22c55e', '#ef4444', '#38bdf8', '#fb923c', '#a78bfa'];
   const stanceData = stanceOrder
     .filter((name) => counts[name])
     .map((name) => ({ name, value: counts[name] }));
-  drawPie('expertPie', stanceData, stanceColors);
+  drawPie('expertPie', stanceData, stanceColors, { centered: true });
   $('expertCards').innerHTML = experts.map((expert) => `
     <article class="expert-card">
       <header>
@@ -452,7 +443,7 @@ function renderFunds(funds) {
   const highRisk = validFunds.filter((fund) => fund.risk.includes('高')).length;
   const avgDay = validFunds.reduce((sum, fund) => sum + fundPerformanceValue(fund), 0) / Math.max(validFunds.length, 1);
   $('fundSummary').textContent = `${validFunds.length}只基金 | 高风险${highRisk}只 | 平均日涨跌 ${avgDay.toFixed(2)}%`;
-  drawPie('fundRiskPie', Object.entries(counts).map(([name, value]) => ({ name, value })), ['#22c55e', '#facc15', '#fb923c', '#ef4444']);
+  drawPie('fundRiskPie', Object.entries(counts).map(([name, value]) => ({ name, value })), ['#22c55e', '#facc15', '#fb923c', '#ef4444'], { centered: true });
   drawFundPerformance(sortedFunds);
   $('fundActions').innerHTML = sortedFunds
     .map((fund) => {

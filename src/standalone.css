@@ -214,6 +214,18 @@ canvas {
   background: rgba(15, 23, 42, .74);
 }
 
+.expert-summary-panel {
+  display: flex;
+  min-height: 286px;
+  flex-direction: column;
+}
+
+.expert-summary-panel canvas {
+  height: 250px;
+  margin: auto 0;
+  background: transparent;
+}
+
 #industryBars {
   height: 320px;
 }
