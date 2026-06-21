@@ -232,8 +232,8 @@ function drawPie(id, data, colors, options = {}) {
   const centered = options.centered === true;
   const stackedLegend = options.stackedLegend === true;
   const cx = compact || centered ? width / 2 : width * .34;
-  const cy = compact ? height * .32 : (stackedLegend ? height * .37 : (centered ? height * .37 : height / 2));
-  const radius = Math.min(width, height) * (compact ? .24 : (stackedLegend ? .23 : (centered ? .28 : .32)));
+  const cy = compact ? height * .29 : (stackedLegend ? height * .32 : (centered ? height * .37 : height / 2));
+  const radius = Math.min(width, height) * (compact ? .22 : (stackedLegend ? .22 : (centered ? .28 : .32)));
   let start = -Math.PI / 2;
   data.forEach((item, i) => {
     const end = start + Math.PI * 2 * item.value / total;
@@ -272,7 +272,7 @@ function drawPie(id, data, colors, options = {}) {
     : 0;
   legendItems.forEach((item, i) => {
     const legendRows = Math.ceil(legendItems.length / (centered && !compact && !stackedLegend ? 2 : 1));
-    const legendTop = compact ? height * .69 : (stackedLegend ? height * .72 : (centered ? height * .68 : 52));
+    const legendTop = compact ? height * .73 : (stackedLegend ? height * .76 : (centered ? height * .68 : 52));
     const row = centered && !compact && !stackedLegend ? i % legendRows : i;
     const col = centered && !compact && !stackedLegend ? Math.floor(i / legendRows) : 0;
     const x = compact
