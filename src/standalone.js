@@ -51,6 +51,28 @@ function getCoreRiskItems(items) {
   return coreRiskOrder.map((name) => byName.get(name)).filter(Boolean);
 }
 
+function clampScore(value) {
+  return Math.max(0, Math.min(100, Math.round(value)));
+}
+
+function dynamicRiskScore(item) {
+  let score = Number(item.score) || 0;
+  const text = `${item.value || ''} ${item.signal || ''}`;
+
+  if (item.signal?.includes('红')) score += 14;
+  else if (item.signal?.includes('黄') || item.signal?.includes('待核验')) score += 8;
+
+  if (text.includes('待核验')) score += 6;
+
+  if (item.name === '实际利率' && /2\.[2-9]/.test(text)) score = Math.max(score, 56);
+  if (item.name === '美元指数' && /(100|101|102)/.test(text)) score = Math.max(score, 48);
+  if (item.name === '10年期美债收益率' && /4\.[4-7]/.test(text)) score = Math.max(score, 43);
+  if (item.name === '估值分位' && /(偏贵|70|黄灯)/.test(text)) score = Math.max(score, 76);
+  if (item.name === 'A股成交额' && text.includes('待核验')) score = Math.max(score, 64);
+
+  return clampScore(score);
+}
+
 function $(id) {
   return document.getElementById(id);
 }
@@ -106,7 +128,7 @@ function sortIndustriesByTierAndScore(items) {
 
 function drawGauge(items) {
   const coreItems = getCoreRiskItems(items);
-  const score = Math.round(coreItems.reduce((sum, item) => sum + item.score, 0) / coreItems.length);
+  const score = Math.round(coreItems.reduce((sum, item) => sum + dynamicRiskScore(item), 0) / coreItems.length);
   const { ctx, width, height } = setupCanvas('riskGauge');
   clear(ctx, width, height);
   const cx = width / 2;
@@ -136,7 +158,7 @@ function drawRadar(items) {
   clear(ctx, width, height);
   const coreItems = getCoreRiskItems(items);
   const names = coreItems.map((item) => item.name.replace('10年期', '').replace('（美元/桶）', '').replace('成交额', '成交'));
-  const values = coreItems.map((item) => item.score);
+  const values = coreItems.map((item) => dynamicRiskScore(item));
   const cx = width / 2;
   const cy = height / 2;
   const radius = Math.min(width, height) * .32;
