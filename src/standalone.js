@@ -230,9 +230,10 @@ function drawPie(id, data, colors, options = {}) {
   const compact = isCompactCanvas(width);
   const total = data.reduce((sum, item) => sum + item.value, 0) || 1;
   const centered = options.centered === true;
+  const stackedLegend = options.stackedLegend === true;
   const cx = compact || centered ? width / 2 : width * .34;
-  const cy = compact ? height * .34 : (centered ? height * .37 : height / 2);
-  const radius = Math.min(width, height) * (compact ? .25 : (centered ? .28 : .32));
+  const cy = compact ? height * .32 : (stackedLegend ? height * .34 : (centered ? height * .37 : height / 2));
+  const radius = Math.min(width, height) * (compact ? .25 : (stackedLegend ? .25 : (centered ? .28 : .32)));
   let start = -Math.PI / 2;
   data.forEach((item, i) => {
     const end = start + Math.PI * 2 * item.value / total;
@@ -256,17 +257,31 @@ function drawPie(id, data, colors, options = {}) {
     }
     start = end;
   });
-  data.forEach((item, i) => {
+  const legendItems = data.map((item) => {
     const pct = (item.value / total * 100).toFixed(0);
-    const legendRows = Math.ceil(data.length / (centered && !compact ? 2 : 1));
-    const legendTop = compact ? height * .68 : (centered ? height * .68 : 52);
-    const row = centered && !compact ? i % legendRows : i;
-    const col = centered && !compact ? Math.floor(i / legendRows) : 0;
-    const x = compact ? 18 : (centered ? width * (.22 + col * .34) : width * .66);
+    return { ...item, label: `${item.name} ${item.value} | ${pct}%` };
+  });
+  const legendFontSize = compact ? 11 : 12;
+  const legendFontWeight = stackedLegend ? 700 : 500;
+  ctx.font = `${legendFontWeight} ${legendFontSize}px Inter, "PingFang SC", Arial, sans-serif`;
+  const legendWidth = stackedLegend
+    ? Math.min(
+        width - 28,
+        Math.max(...legendItems.map((item) => ctx.measureText(item.label).width)) + 30
+      )
+    : 0;
+  legendItems.forEach((item, i) => {
+    const legendRows = Math.ceil(legendItems.length / (centered && !compact && !stackedLegend ? 2 : 1));
+    const legendTop = compact ? height * .66 : (stackedLegend ? height * .68 : (centered ? height * .68 : 52));
+    const row = centered && !compact && !stackedLegend ? i % legendRows : i;
+    const col = centered && !compact && !stackedLegend ? Math.floor(i / legendRows) : 0;
+    const x = compact
+      ? Math.max(18, (width - legendWidth) / 2)
+      : (stackedLegend ? (width - legendWidth) / 2 : (centered ? width * (.22 + col * .34) : width * .66));
     const y = legendTop + row * (compact ? 18 : 22);
     ctx.fillStyle = colors[i % colors.length];
     ctx.fillRect(x, y - 10, 10, 10);
-    drawText(ctx, `${item.name} ${item.value} | ${pct}%`, x + 18, y, { size: compact ? 11 : 12, color: '#cbd5e1' });
+    drawText(ctx, item.label, x + 18, y, { size: legendFontSize, color: '#cbd5e1', weight: legendFontWeight });
   });
 }
 
@@ -419,7 +434,7 @@ function renderExperts(experts) {
   const stanceData = stanceOrder
     .filter((name) => counts[name])
     .map((name) => ({ name, value: counts[name] }));
-  drawPie('expertPie', stanceData, stanceColors, { centered: true });
+  drawPie('expertPie', stanceData, stanceColors, { centered: true, stackedLegend: true });
   $('expertCards').innerHTML = experts.map((expert) => `
     <article class="expert-card">
       <header>
@@ -443,7 +458,7 @@ function renderFunds(funds) {
   const highRisk = validFunds.filter((fund) => fund.risk.includes('高')).length;
   const avgDay = validFunds.reduce((sum, fund) => sum + fundPerformanceValue(fund), 0) / Math.max(validFunds.length, 1);
   $('fundSummary').textContent = `${validFunds.length}只基金 | 高风险${highRisk}只 | 平均日涨跌 ${avgDay.toFixed(2)}%`;
-  drawPie('fundRiskPie', Object.entries(counts).map(([name, value]) => ({ name, value })), ['#22c55e', '#facc15', '#fb923c', '#ef4444'], { centered: true });
+  drawPie('fundRiskPie', Object.entries(counts).map(([name, value]) => ({ name, value })), ['#22c55e', '#facc15', '#fb923c', '#ef4444'], { centered: true, stackedLegend: true });
   drawFundPerformance(sortedFunds);
   $('fundActions').innerHTML = sortedFunds
     .map((fund) => {
