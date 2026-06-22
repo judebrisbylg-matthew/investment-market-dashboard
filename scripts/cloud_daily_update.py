@@ -350,7 +350,7 @@ class NotionClient:
 
     def property_value(self, prop: dict[str, Any], value: Any) -> dict[str, Any] | None:
         prop_type = prop.get("type")
-        if value is None:
+        if value is None or str(value).strip() == "":
             value = "待核验"
         text = str(value)
         if prop_type == "title":
@@ -461,6 +461,66 @@ def notion_config(require: bool) -> NotionConfig | None:
     return NotionConfig(**keys)
 
 
+def safe_text(*values: Any, default: str = "待核验") -> str:
+    for value in values:
+        if value is None:
+            continue
+        text = str(value).strip()
+        if text:
+            return text
+    return default
+
+
+def industry_month_judgement(item: dict[str, Any]) -> str:
+    name = safe_text(item.get("name"), "该赛道")
+    operation = safe_text(item.get("operation"), "待核验")
+    signal = safe_text(item.get("nextSignal"), "成交额、政策、订单、价格和业绩")
+    if operation == "建议加仓":
+        return f"{name}未来1月偏进攻；若{signal}继续验证，可分批加仓，失败则降回观察。"
+    if operation == "继续观察":
+        return f"{name}未来1月维持观察；重点看{signal}是否连续兑现，不因单日波动追高。"
+    if operation == "止盈跟踪":
+        return f"{name}未来1月偏强但需止盈跟踪；若价格或成交转弱，优先锁定利润。"
+    if operation == "暂不追高":
+        return f"{name}未来1月主线仍在，但拥挤度偏高；等待回调、财报或订单验证后再判断。"
+    if operation == "暂不加仓":
+        return f"{name}未来1月先不加仓；等待风险释放和基本面信号修复。"
+    if operation == "减仓回避":
+        return f"{name}未来1月以防守为主；除非风险显著下降，否则回避或降低权重。"
+    return f"{name}未来1月待核验；重点跟踪{signal}。"
+
+
+def expert_market(assets: str) -> str:
+    if any(key in assets for key in ["中国", "A股", "港股", "互联网平台", "创新药"]):
+        return "中国资产/港股/A股"
+    if any(key in assets for key in ["黄金", "全球", "非美元", "债务"]):
+        return "全球宏观/商品/债券"
+    if any(key in assets for key in ["Apple", "Microsoft", "Tesla", "Alphabet", "Amazon", "美股"]):
+        return "美股/全球科技"
+    return "全球市场"
+
+
+def fund_valuation_constraint(theme: str, nav_date: date) -> str:
+    return (
+        f"{theme}需结合对应指数PE/PB、市净率分位、成交额和净值趋势复核；"
+        f"净值日期 {nav_date.isoformat()}，若数据源延迟则按最新真实净值日期判断。"
+    )
+
+
+def fund_forward_view(theme: str, decision: str, item: dict[str, Any], horizon: str) -> str:
+    day = item.get("day", "待核验")
+    week = item.get("week", "待核验")
+    if decision in {"建议加仓", "继续观察"}:
+        bias = "偏修复，但需要成交额和净值趋势继续验证"
+    elif decision in {"观察等待", "暂不加仓"}:
+        bias = "先观察，不把短线波动直接当成趋势反转"
+    elif decision == "止盈跟踪":
+        bias = "偏强但需跟踪回撤和止盈窗口"
+    else:
+        bias = "待核验"
+    return f"{theme}{horizon}判断：{bias}；日涨跌 {day}%，近1周 {week}%，动作={decision}。"
+
+
 def sync_notion(data: dict[str, Any], config: NotionConfig) -> dict[str, int]:
     client = NotionClient(config.token)
     as_of = today_hkt()
@@ -476,18 +536,35 @@ def sync_notion(data: dict[str, Any], config: NotionConfig) -> dict[str, int]:
             stats["skipped"] += 1
 
     daily = data.get("daily", {})
+    core_industries = [
+        item.get("name", "待核验")
+        for item in data.get("industryWatch", [])
+        if item.get("tier") == "核心主线"
+    ][:5]
+    fund_actions = [
+        f"{item.get('code', '待核验')} {item.get('decision', '待核验')}"
+        for item in data.get("fundHoldings", [])
+    ][:5]
+    risk_signal = daily.get("signal", "待核验")
     count(
         client.upsert(
             config.db_daily,
             {
                 "日期": as_of,
                 "一句话日报": daily.get("marketJudgement"),
+                "市场总判断": daily.get("marketJudgement"),
                 "今日灯号": daily.get("signal"),
+                "进攻/防守/等待": daily.get("action"),
                 "今日需要动作": daily.get("needAction"),
                 "仓位建议": daily.get("positionAdvice"),
                 "不动作理由": daily.get("actionReason"),
                 "主要风险点": daily.get("riskPoint"),
                 "专家观点校验": "详见 4.全球投资专家观点追踪",
+                "风控仪表盘结论": f"当前风控灯号为{risk_signal}；详见 2.风控仪表盘。",
+                "行业观察池结论": "核心主线：" + "、".join(core_industries) if core_industries else "核心主线待核验。",
+                "基金持仓动作": "；".join(fund_actions) if fund_actions else "基金持仓动作待核验。",
+                "值得关注资产/行业": daily.get("nextReview"),
+                "明日/下次复盘重点": daily.get("nextReview"),
             },
             {"日期": as_of},
         )
@@ -522,6 +599,8 @@ def sync_notion(data: dict[str, Any], config: NotionConfig) -> dict[str, int]:
         count(client.upsert(config.db_risk, row, {"监控更新日期": as_of, "监控指标": item.get("name")}))
 
     for item in data.get("industryWatch", []):
+        operation = str(item.get("operation", "待核验"))
+        month_judgement = industry_month_judgement(item)
         row = {
             "更新日期": as_of,
             "层级": item.get("tier"),
@@ -539,42 +618,68 @@ def sync_notion(data: dict[str, Any], config: NotionConfig) -> dict[str, int]:
             "风险等级": label_score(item.get("risk")),
             "新闻日期/来源": f"{cn_date} / 云端自动复核",
             "最新行业新闻/催化剂": item.get("news"),
+            "未来1月判断": month_judgement,
             "未来1季判断": item.get("reason"),
+            "重点跟踪信号": item.get("nextSignal"),
         }
         count(client.upsert(config.db_industry, row, {"更新日期": as_of, "行业/赛道": item.get("name")}))
 
     for item in data.get("expertViews", []):
         expert_name = item.get("name", "待核验")
+        assets = safe_text(item.get("assets"), "待核验")
+        style = safe_text(item.get("style"), "待核验")
+        view = safe_text(item.get("view"), "无新增可靠公开观点，保留原框架待核验。")
         row = {
             "更新日期": as_of,
             "专家/机构": expert_name,
-            "观点日期": as_of,
+            "观点日期": fmt_slash(as_of),
             "观点来源": "公开资料云端复核",
-            "核心判断": item.get("view"),
-            "对应资产": item.get("assets"),
+            "核心判断": view,
+            "对应资产": assets,
             "证据强度": item.get("strength"),
             "操作语言": item.get("stance"),
             "与市场是否一致": item.get("stance"),
             "人物类型": item.get("style"),
+            "身份/风格": style,
+            "重仓领域/资产": assets,
+            "代表股票/ETF": assets,
+            "估值约束": "不直接按观点买入；需结合相关资产估值、盈利兑现、现金流和拥挤度复核。",
+            "可验证信号": "公开信/访谈原文、13F或持仓披露、相关资产成交额、业绩与估值变化。",
+            "后续验证结果": "待后续复盘；若无新增可靠公开观点，保留原框架并标注复核日期。",
+            "对应市场": expert_market(assets),
+            "操作原因": view,
+            "看多方向": assets,
+            "看空/回避方向": "高估值但业绩未兑现、现金流不足或交易过度拥挤的资产。",
+            "观点周期": "中期复核；若出现公开信、13F或重大访谈则提前更新。",
         }
         count(client.upsert(config.db_experts, row, {"更新日期": as_of, "专家/机构": expert_name}))
 
     for item in data.get("fundHoldings", []):
         nav_date = extract_nav_date(str(item.get("reason", ""))) or as_of
+        theme = safe_text(item.get("theme"), "待核验")
+        reason = safe_text(item.get("reason"), "操作原因待核验。")
+        decision = safe_text(item.get("decision"), "待核验")
         row = {
             "报表更新日期": as_of,
             "基金名称": item.get("name"),
             "基金代码": item.get("code"),
-            "关联主线": item.get("theme"),
+            "关联主线": theme,
             "夏普比率": item.get("sharp", "待核验"),
-            "操作原因": item.get("reason"),
-            "操作语言": item.get("decision"),
+            "操作原因": reason,
+            "操作语言": decision,
             "日涨跌": item.get("day"),
             "最大回撤": item.get("maxDrawdown", "待核验"),
             "最新净值": item.get("latestNav", "待核验"),
             "净值日期": nav_date,
             "类型": item.get("type", "待核验"),
             "风险等级": item.get("risk"),
+            "风险": item.get("risk"),
+            "近1周": item.get("week"),
+            "股指约束（PE-市净率）": fund_valuation_constraint(theme, nav_date),
+            "预测未来1月": fund_forward_view(theme, decision, item, "1月"),
+            "预测未来1季": fund_forward_view(theme, decision, item, "1季"),
+            "预测未来半年": fund_forward_view(theme, decision, item, "半年"),
+            "预测未来1年": fund_forward_view(theme, decision, item, "1年"),
         }
         count(client.upsert(config.db_funds, row, {"报表更新日期": as_of, "基金代码": item.get("code")}))
 
