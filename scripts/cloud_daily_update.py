@@ -494,15 +494,29 @@ def sync_notion(data: dict[str, Any], config: NotionConfig) -> dict[str, int]:
     )
 
     for item in data.get("riskDashboard", []):
+        normal_value = item.get("normal", "待核验")
+        warning_value = item.get("warning", "待核验")
+        danger_value = item.get("danger", "待核验")
         row = {
             "监控更新日期": as_of,
             "更新日期": as_of,
             "监控指标": item.get("name"),
             "今日数值": item.get("value"),
             "今日灯号": item.get("signal"),
-            "正常✅绿灯（持有）": item.get("normal"),
-            "预警⚠️ 黄灯（减仓）": item.get("warning"),
-            "危险🚨红灯（轻仓）": item.get("danger"),
+            # Keep multiple aliases because Notion headers have changed between
+            # emoji styles. build_props only writes names that exist in schema.
+            "正常✅绿灯（持有）": normal_value,
+            "✅正常绿灯（持有）": normal_value,
+            "🟢正常绿灯（持有）": normal_value,
+            "正常绿灯（持有）": normal_value,
+            "预警⚠️ 黄灯（减仓）": warning_value,
+            "⚠️预警黄灯（减仓）": warning_value,
+            "🟡预警黄灯（减仓）": warning_value,
+            "预警黄灯（减仓）": warning_value,
+            "危险🚨红灯（轻仓）": danger_value,
+            "🚨危险红灯（轻仓）": danger_value,
+            "🔴危险红灯（轻仓）": danger_value,
+            "危险红灯（轻仓）": danger_value,
             "说明": "GitHub Actions 云端自动复核；若交易数据滞后，沿用最新可得来源日期。",
         }
         count(client.upsert(config.db_risk, row, {"监控更新日期": as_of, "监控指标": item.get("name")}))
