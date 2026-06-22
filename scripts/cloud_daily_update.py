@@ -507,9 +507,24 @@ def fund_valuation_constraint(theme: str, nav_date: date) -> str:
     )
 
 
+def display_percent(value: Any) -> str:
+    try:
+        return f"{float(value):.2f}"
+    except (TypeError, ValueError):
+        return "待核验"
+
+
+def notion_percent(value: Any) -> float | str:
+    """Notion percent-formatted number fields expect 0.0415 to display 4.15%."""
+    try:
+        return round(float(value) / 100, 6)
+    except (TypeError, ValueError):
+        return "待核验"
+
+
 def fund_forward_view(theme: str, decision: str, item: dict[str, Any], horizon: str) -> str:
-    day = item.get("day", "待核验")
-    week = item.get("week", "待核验")
+    day = display_percent(item.get("day"))
+    week = display_percent(item.get("week"))
     if decision in {"建议加仓", "继续观察"}:
         bias = "偏修复，但需要成交额和净值趋势继续验证"
     elif decision in {"观察等待", "暂不加仓"}:
@@ -667,14 +682,14 @@ def sync_notion(data: dict[str, Any], config: NotionConfig) -> dict[str, int]:
             "夏普比率": item.get("sharp", "待核验"),
             "操作原因": reason,
             "操作语言": decision,
-            "日涨跌": item.get("day"),
+            "日涨跌": notion_percent(item.get("day")),
             "最大回撤": item.get("maxDrawdown", "待核验"),
             "最新净值": item.get("latestNav", "待核验"),
             "净值日期": nav_date,
             "类型": item.get("type", "待核验"),
             "风险等级": item.get("risk"),
             "风险": item.get("risk"),
-            "近1周": item.get("week"),
+            "近1周": notion_percent(item.get("week")),
             "股指约束（PE-市净率）": fund_valuation_constraint(theme, nav_date),
             "预测未来1月": fund_forward_view(theme, decision, item, "1月"),
             "预测未来1季": fund_forward_view(theme, decision, item, "1季"),
