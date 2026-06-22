@@ -1,0 +1,52 @@
+name: Daily Investment Center Update
+
+on:
+  schedule:
+    # 05:00 Asia/Hong_Kong = 21:00 UTC on the previous calendar day.
+    - cron: "0 21 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: investment-center-daily-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout dashboard repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Update market data and Notion
+        env:
+          REQUIRE_NOTION: "true"
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_DB_DAILY: ${{ secrets.NOTION_DB_DAILY }}
+          NOTION_DB_RISK: ${{ secrets.NOTION_DB_RISK }}
+          NOTION_DB_INDUSTRY: ${{ secrets.NOTION_DB_INDUSTRY }}
+          NOTION_DB_EXPERTS: ${{ secrets.NOTION_DB_EXPERTS }}
+          NOTION_DB_FUNDS: ${{ secrets.NOTION_DB_FUNDS }}
+          NOTION_DB_NEWS: ${{ secrets.NOTION_DB_NEWS }}
+        run: python scripts/cloud_daily_update.py
+
+      - name: Commit and push if data changed
+        run: |
+          if git diff --quiet -- data/market-data.json; then
+            echo "No dashboard data changes to commit."
+            exit 0
+          fi
+          git config user.name "investment-center-bot"
+          git config user.email "actions@github.com"
+          git add data/market-data.json
+          git commit -m "Update daily investment center data"
+          git push

@@ -40,15 +40,70 @@ https://judebrisbylg-matthew.github.io/investment-market-dashboard/
 
 ```text
 .
+├── .github/
+│   └── workflows/
+│       └── daily-update.yml     # GitHub Actions 每天 05:00 HKT 自动更新
 ├── index.html                  # 数字看板主页面
 ├── src/
 │   ├── standalone.css          # 页面样式，包含 PC/手机响应式布局
 │   └── standalone.js           # 看板渲染逻辑
 ├── data/
 │   └── market-data.json        # 每天自动生成的最新看板数据
+├── scripts/
+│   └── cloud_daily_update.py   # 云端更新 JSON、基金数据和 Notion 的脚本
+├── docs/
+│   └── GITHUB_ACTIONS_DEPLOYMENT.md
 ├── .nojekyll                   # 避免 GitHub Pages 按 Jekyll 处理静态资源
 └── README.md                   # 当前说明文档
 ```
+
+## GitHub Actions 云端自动更新
+
+现在推荐使用 GitHub Actions 作为正式的每日更新入口，而不是依赖本机 Codex 一直在线。
+
+自动更新规则：
+
+```text
+每天 05:00 HKT 自动执行
+```
+
+对应工作流：
+
+```text
+.github/workflows/daily-update.yml
+```
+
+对应脚本：
+
+```text
+scripts/cloud_daily_update.py
+```
+
+详细部署说明：
+
+```text
+docs/GITHUB_ACTIONS_DEPLOYMENT.md
+```
+
+云端任务会做 3 件事：
+
+1. 更新 `data/market-data.json`，让 GitHub Pages 数字看板刷新。
+2. 抓取基金最新净值、净值日期、日涨跌和近一周表现。
+3. 使用 Notion API 按唯一键 upsert 6 个既有数据库，不新建重复子页面。
+
+必须配置 GitHub Secrets：
+
+```text
+NOTION_TOKEN
+NOTION_DB_DAILY
+NOTION_DB_RISK
+NOTION_DB_INDUSTRY
+NOTION_DB_EXPERTS
+NOTION_DB_FUNDS
+NOTION_DB_NEWS
+```
+
+如果 Secret 没配齐，工作流会失败，不会假装更新成功。
 
 ## 数据来源
 
@@ -77,7 +132,7 @@ https://judebrisbylg-matthew.github.io/investment-market-dashboard/
 1. 拉取/整理当天最新财经新闻。
 2. 更新 6 个 Excel 表格里的当天数据。
 3. 同步更新 Notion 里的 6 个子页面。
-4. 从 Excel 重新生成 `data/market-data.json`。
+4. 从 Excel 或云端数据源重新生成 `data/market-data.json`。
 5. 检查数字看板核心字段是否真实更新：
    - 日期
    - 今日灯号
@@ -87,6 +142,8 @@ https://judebrisbylg-matthew.github.io/investment-market-dashboard/
    - 基金日涨跌、最新净值、最大回撤
    - 财经新闻排序、影响方向、影响级别、时间维度
 6. 提交并推送本仓库，使 GitHub Pages 自动刷新。
+
+本机 Codex 仍可用于手动复核和临时修正；正式定时任务以后以 GitHub Actions 为准。
 
 ## 推荐命令
 

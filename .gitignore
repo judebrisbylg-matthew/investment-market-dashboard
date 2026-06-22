@@ -1,0 +1,18 @@
+.vercel/
+.netlify/
+dist/
+public/
+node_modules/
+__pycache__/
+*.pyc
+.env
+.env.*
+
+# Legacy local build files from the earlier Netlify/Vite prototype.
+netlify.toml
+vercel.json
+package.json
+pnpm-lock.yaml
+pnpm-workspace.yaml
+src/main.jsx
+src/styles.css
