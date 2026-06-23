@@ -116,6 +116,48 @@ h1 {
   margin: 14px 0;
 }
 
+.source-status {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin: 12px 0 14px;
+}
+
+.source-chip {
+  min-height: 82px;
+  padding: 12px;
+  border: 1px solid rgba(148, 163, 184, .18);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, .72);
+}
+
+.source-chip b,
+.source-chip span,
+.source-chip small {
+  display: block;
+}
+
+.source-chip b {
+  color: #e2e8f0;
+  font-size: 13px;
+}
+
+.source-chip span {
+  margin-top: 6px;
+  font-weight: 800;
+}
+
+.source-chip small {
+  margin-top: 6px;
+  color: #94a3b8;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.source-chip.ok span { color: #86efac; }
+.source-chip.warn span { color: #fde68a; }
+.source-chip.danger span { color: #fca5a5; }
+
 .decision-card {
   min-height: 128px;
   padding: 16px;
@@ -305,6 +347,10 @@ canvas {
   color: #94a3b8;
   font-size: 11px;
   line-height: 1.3;
+}
+
+.risk-item .source-note {
+  color: #64748b;
 }
 
 .industry-grid {
@@ -575,7 +621,8 @@ canvas {
   .workbench,
   .analysis-grid,
   .fund-layout,
-  .decision-grid {
+  .decision-grid,
+  .source-status {
     grid-template-columns: 1fr;
   }
 
@@ -646,6 +693,16 @@ canvas {
   .decision-grid {
     gap: 10px;
     margin: 10px 0;
+  }
+
+  .source-status {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin: 10px 0;
+  }
+
+  .source-chip {
+    min-height: 0;
   }
 
   .decision-card,

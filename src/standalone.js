@@ -370,6 +370,37 @@ function renderHeader(data) {
   $('actionReason').textContent = daily.actionReason;
   $('riskPoint').textContent = daily.riskPoint;
   $('nextReview').textContent = daily.nextReview;
+  renderSourceStatus(data.sourceStatus);
+}
+
+function renderSourceStatus(status) {
+  const target = $('sourceStatus');
+  if (!target) return;
+  if (!status) {
+    target.innerHTML = '<article class="source-chip warn"><b>数据状态</b><span>待核验</span></article>';
+    return;
+  }
+  const modules = [
+    ['风控', status.risk],
+    ['行业', status.industry],
+    ['专家', status.experts],
+    ['基金', status.funds],
+    ['新闻', status.news],
+  ];
+  target.innerHTML = modules.map(([name, item]) => {
+    const moduleStatus = item?.status || '待核验';
+    const tone = moduleStatus.includes('真实') || moduleStatus.includes('刷新') || moduleStatus.includes('复核') ? 'ok'
+      : moduleStatus.includes('沿用') || moduleStatus.includes('部分') ? 'warn'
+      : 'danger';
+    const note = item?.note || item?.count || '状态待核验';
+    return `
+      <article class="source-chip ${tone}">
+        <b>${name}</b>
+        <span>${escapeHtml(moduleStatus)}</span>
+        <small>${escapeHtml(String(note))}</small>
+      </article>
+    `;
+  }).join('');
 }
 
 function renderRiskMatrix(items) {
@@ -395,6 +426,7 @@ function renderRiskMatrix(items) {
       </header>
       <strong>${item.value}</strong>
       <small>正常：${item.normal}</small>
+      <small class="source-note">${item.refreshStatus || item.sourceDate || '来源待核验'}</small>
     </article>
   `).join('');
 }
@@ -520,6 +552,7 @@ function renderNews(news) {
         <span>${escapeHtml(item.horizon)}</span>
         <span>${escapeHtml(item.action)}</span>
         <span>${escapeHtml(item.source)}</span>
+        <span>${escapeHtml(item.refreshStatus || '刷新状态待核验')}</span>
       </footer>
     </article>
   `).join('');

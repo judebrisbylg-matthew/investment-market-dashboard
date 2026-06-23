@@ -3,9 +3,9 @@
     "asOf": "2026/6/23 05:00 HKT",
     "signal": "黄灯",
     "action": "等待",
-    "marketJudgement": "2026年6月23日更新：系统按最新可得交易日和新闻资料复盘；若部分市场休市，交易数据沿用最近可得日期并保留滞后说明。当前风险灯号为黄灯，操作维持等待。",
+    "marketJudgement": "2026年6月23日更新：部分模块需核验；需核验模块：risk。当前风险灯号为黄灯，操作维持等待。",
     "positionAdvice": "权益仓位维持中性偏谨慎；优先观察核心主线的业绩兑现和成交确认，不因单日波动追高。",
-    "needAction": "今日先完成数据核验：基金净值、风险指标、行业主线排序、专家观点和财经新闻是否有新增可靠信号。",
+    "needAction": "今日先完成数据核验：基金净值、风险指标、行业主线排序、专家观点和财经新闻是否有新增可靠信号；不能只看日期。",
     "actionReason": "不盲动原因：自动化更新只负责同步最新可得资料，交易动作仍需结合估值、拥挤度、成交额和宏观风险确认。",
     "riskPoint": "主要风险：美债实际利率、美元指数、油价、AI拥挤交易、A股/港股成交不足和新闻事件反复。",
     "nextReview": "复盘重点：基金净值日期、AI/PCB订单、铜铝金价格、数据中心电力需求、央行发言和高影响财经新闻。"
@@ -18,7 +18,9 @@
       "signal": "正常绿灯",
       "normal": "4.3% ~ 4.7%",
       "warning": "突破4.8%，连续3日",
-      "danger": "突破5.0%"
+      "danger": "突破5.0%",
+      "sourceDate": "2026-06-17",
+      "refreshStatus": "指标日期 2026-06-17，沿用最近可得数据（滞后6天）"
     },
     {
       "name": "国际油价（美元/桶）",
@@ -27,7 +29,9 @@
       "signal": "正常绿灯",
       "normal": "80 ~ 95",
       "warning": "站稳100，持续1周",
-      "danger": "突破120"
+      "danger": "突破120",
+      "sourceDate": "待核验",
+      "refreshStatus": "指标日期待核验"
     },
     {
       "name": "北向资金（月度）",
@@ -36,7 +40,9 @@
       "signal": "预警黄灯",
       "normal": "净流入/月流出＜200亿",
       "warning": "月流出300亿~500亿",
-      "danger": "连续2个月流出＞500亿"
+      "danger": "连续2个月流出＞500亿",
+      "sourceDate": "待核验",
+      "refreshStatus": "指标日期待核验"
     },
     {
       "name": "美联储动向",
@@ -45,7 +51,9 @@
       "signal": "正常绿灯",
       "normal": "维持利率不变，释放降息预期",
       "warning": "官员吹风可能9月可能加息",
-      "danger": "正式加息25个基点"
+      "danger": "正式加息25个基点",
+      "sourceDate": "待核验",
+      "refreshStatus": "指标日期待核验"
     },
     {
       "name": "AI巨头营收增速",
@@ -54,7 +62,9 @@
       "signal": "正常绿灯",
       "normal": "≥25%",
       "warning": "15% ~ 20%",
-      "danger": "＜10%/财报爆雷"
+      "danger": "＜10%/财报爆雷",
+      "sourceDate": "2026-05-28",
+      "refreshStatus": "指标日期 2026-05-28，沿用最近可得数据（滞后26天）"
     },
     {
       "name": "美元指数",
@@ -63,7 +73,9 @@
       "signal": "正常绿灯",
       "normal": "DXY < 103",
       "warning": "103 ~ 106，连续上行",
-      "danger": "突破106"
+      "danger": "突破106",
+      "sourceDate": "待核验",
+      "refreshStatus": "指标日期待核验"
     },
     {
       "name": "实际利率",
@@ -72,7 +84,9 @@
       "signal": "预警黄灯",
       "normal": "10Y TIPS < 2.2%",
       "warning": "2.2% ~ 2.5%",
-      "danger": "突破2.5%"
+      "danger": "突破2.5%",
+      "sourceDate": "2026-06-17",
+      "refreshStatus": "指标日期 2026-06-17，沿用最近可得数据（滞后6天）"
     },
     {
       "name": "信用利差",
@@ -81,7 +95,9 @@
       "signal": "正常绿灯",
       "normal": "高收益OAS < 3.5%",
       "warning": "3.5% ~ 5.0%",
-      "danger": "突破5.0%"
+      "danger": "突破5.0%",
+      "sourceDate": "待核验",
+      "refreshStatus": "指标日期待核验"
     },
     {
       "name": "VIX",
@@ -90,7 +106,9 @@
       "signal": "正常绿灯",
       "normal": "< 18",
       "warning": "18 ~ 25",
-      "danger": "突破25"
+      "danger": "突破25",
+      "sourceDate": "待核验",
+      "refreshStatus": "指标日期待核验"
     },
     {
       "name": "全球流动性",
@@ -99,7 +117,9 @@
       "signal": "正常绿灯",
       "normal": "主要央行流动性企稳/扩张",
       "warning": "边际收缩但可控",
-      "danger": "快速缩表/流动性冲击"
+      "danger": "快速缩表/流动性冲击",
+      "sourceDate": "待核验",
+      "refreshStatus": "指标日期待核验"
     },
     {
       "name": "A股成交额",
@@ -108,7 +128,9 @@
       "signal": "预警黄灯",
       "normal": ">1.0万亿",
       "warning": "0.7 ~ 1.0万亿",
-      "danger": "<0.7万亿"
+      "danger": "<0.7万亿",
+      "sourceDate": "2026-06-18",
+      "refreshStatus": "指标日期 2026-06-18，沿用最近可得数据（滞后5天）"
     },
     {
       "name": "港股成交额",
@@ -117,7 +139,9 @@
       "signal": "预警黄灯",
       "normal": ">1500亿港元",
       "warning": "1000 ~ 1500亿港元",
-      "danger": "<1000亿港元"
+      "danger": "<1000亿港元",
+      "sourceDate": "2026-06-18",
+      "refreshStatus": "指标日期 2026-06-18，沿用最近可得数据（滞后5天）"
     },
     {
       "name": "行业轮动强弱",
@@ -126,7 +150,9 @@
       "signal": "正常绿灯",
       "normal": "主线清晰且扩散",
       "warning": "少数题材抱团",
-      "danger": "主线熄火/普跌"
+      "danger": "主线熄火/普跌",
+      "sourceDate": "待核验",
+      "refreshStatus": "指标日期待核验"
     },
     {
       "name": "估值分位",
@@ -135,7 +161,9 @@
       "signal": "预警黄灯",
       "normal": "核心指数估值<70%分位",
       "warning": "70% ~ 85%分位",
-      "danger": ">85%分位"
+      "danger": ">85%分位",
+      "sourceDate": "待核验",
+      "refreshStatus": "指标日期待核验"
     }
   ],
   "industryWatch": [
@@ -150,7 +178,8 @@
       "operation": "暂不追高",
       "reason": "景气和资金热度都在，但拥挤度也最高，最优动作仍是等回调或财报验证。",
       "nextSignal": "云厂Capex、英伟达链条订单、HBM/先进封装、10Y TIPS、成交额",
-      "reviewDate": "2026年6月24日"
+      "reviewDate": "2026年6月24日",
+      "refreshStatus": "云端复核排序；新闻/估值若无新增可靠源，则沿用最近可得判断"
     },
     {
       "tier": "核心主线",
@@ -163,7 +192,8 @@
       "operation": "暂不追高",
       "reason": "主线没坏，但追涨的风险回报比偏差。",
       "nextSignal": "交换机/铜连接订单、PCB产能利用率、龙头毛利率、Capex指引",
-      "reviewDate": "2026年6月24日"
+      "reviewDate": "2026年6月24日",
+      "refreshStatus": "云端复核排序；新闻/估值若无新增可靠源，则沿用最近可得判断"
     },
     {
       "tier": "核心主线",
@@ -176,7 +206,8 @@
       "operation": "止盈跟踪",
       "reason": "强，但不是无脑追；更适合边走边看美元、油价和实际利率的配合。",
       "nextSignal": "美元指数、10Y TIPS、铜铝金价格、库存、矿端扰动",
-      "reviewDate": "2026年6月24日"
+      "reviewDate": "2026年6月24日",
+      "refreshStatus": "云端复核排序；新闻/估值若无新增可靠源，则沿用最近可得判断"
     },
     {
       "tier": "核心主线",
@@ -189,7 +220,8 @@
       "operation": "继续观察",
       "reason": "保留在核心观察位，但还不到全面加仓的时候。",
       "nextSignal": "机器人订单、量产进度、制造业PMI、设备更新政策、毛利率",
-      "reviewDate": "2026年6月24日"
+      "reviewDate": "2026年6月24日",
+      "refreshStatus": "云端复核排序；新闻/估值若无新增可靠源，则沿用最近可得判断"
     },
     {
       "tier": "核心主线",
@@ -202,7 +234,8 @@
       "operation": "继续观察",
       "reason": "升级为核心观察位，但因弹性有限，仍以继续观察为主，不追高。",
       "nextSignal": "数据中心用电需求、电价政策、煤价、电网投资、长端利率",
-      "reviewDate": "2026年6月24日"
+      "reviewDate": "2026年6月24日",
+      "refreshStatus": "云端复核排序；新闻/估值若无新增可靠源，则沿用最近可得判断"
     },
     {
       "tier": "候补轮动",
@@ -215,7 +248,8 @@
       "operation": "观察等待",
       "reason": "只能列入候补，等待连续政策和订单验证再升级。",
       "nextSignal": "低空政策、适航审批、军工订单、商业航天发射、成交额",
-      "reviewDate": "2026年6月24日"
+      "reviewDate": "2026年6月24日",
+      "refreshStatus": "云端复核排序；新闻/估值若无新增可靠源，则沿用最近可得判断"
     },
     {
       "tier": "候补轮动",
@@ -228,7 +262,8 @@
       "operation": "继续观察",
       "reason": "不是当前最强线，继续放在候补轮动，等销量、锂价和毛利率共振。",
       "nextSignal": "月度销量、锂价、电池毛利率、储能订单、海外需求",
-      "reviewDate": "2026年6月24日"
+      "reviewDate": "2026年6月24日",
+      "refreshStatus": "云端复核排序；新闻/估值若无新增可靠源，则沿用最近可得判断"
     },
     {
       "tier": "候补轮动",
@@ -241,7 +276,8 @@
       "operation": "观察等待",
       "reason": "作为AI分支继续看，但不是最优先配置方向。",
       "nextSignal": "苹果新品销量、AI手机渗透率、供应链订单、库存、毛利率",
-      "reviewDate": "2026年6月24日"
+      "reviewDate": "2026年6月24日",
+      "refreshStatus": "云端复核排序；新闻/估值若无新增可靠源，则沿用最近可得判断"
     },
     {
       "tier": "候补轮动",
@@ -254,7 +290,8 @@
       "operation": "观察等待",
       "reason": "可以跟踪，但暂时仍归类在候补轮动，而非核心配置。",
       "nextSignal": "版号/新品流水、AI应用付费率、广告恢复、用户留存、推理成本",
-      "reviewDate": "2026年6月24日"
+      "reviewDate": "2026年6月24日",
+      "refreshStatus": "云端复核排序；新闻/估值若无新增可靠源，则沿用最近可得判断"
     },
     {
       "tier": "候补轮动",
@@ -267,7 +304,8 @@
       "operation": "观察等待",
       "reason": "赔率有吸引力，但趋势确认不足；先作为候补轮动，不放在核心前三。",
       "nextSignal": "创新药指数放量、BD授权金额、临床数据、FDA/国内审批、港股医药成交额",
-      "reviewDate": "2026年6月24日"
+      "reviewDate": "2026年6月24日",
+      "refreshStatus": "云端复核排序；新闻/估值若无新增可靠源，则沿用最近可得判断"
     }
   ],
   "expertViews": [
@@ -277,7 +315,8 @@
       "stance": "无新增可靠观点",
       "strength": "高",
       "assets": "现金和短债、Apple、American Express、Bank of America、Coca-Cola、Chevron、Alphabet、Delta",
-      "view": "复核至2026/6/23：未发现巴菲特发布改变框架的新公开观点；继续把高现金、少数确定性资产和安全边际作为估值纪律校验，不把它当作短线交易信号。"
+      "view": "复核至2026/6/23：未发现巴菲特发布改变框架的新公开观点；继续把高现金、少数确定性资产和安全边际作为估值纪律校验，不把它当作短线交易信号。",
+      "refreshStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
     },
     {
       "name": "高瓴 / 张磊",
@@ -285,7 +324,8 @@
       "stance": "无新增可靠观点",
       "strength": "中",
       "assets": "中国资产、创新药、消费、互联网平台、先进制造",
-      "view": "复核至2026/6/23：未发现张磊或高瓴新增可验证公开框架；继续作为中国成长价值和产业研究坐标，重点看创新药、先进制造和互联网平台盈利兑现。"
+      "view": "复核至2026/6/23：未发现张磊或高瓴新增可验证公开框架；继续作为中国成长价值和产业研究坐标，重点看创新药、先进制造和互联网平台盈利兑现。",
+      "refreshStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
     },
     {
       "name": "霍华德·马克斯 / Oaktree",
@@ -293,7 +333,8 @@
       "stance": "无新增可靠观点",
       "strength": "高",
       "assets": "Oaktree 信用资产、困境/高收益债",
-      "view": "复核至2026/6/23：Oaktree官网近期有内容更新迹象，但未确认出现改变投资框架的新Marks观点；继续用风险补偿、信用周期和过热资产纪律校验AI与成长交易。"
+      "view": "复核至2026/6/23：Oaktree官网近期有内容更新迹象，但未确认出现改变投资框架的新Marks观点；继续用风险补偿、信用周期和过热资产纪律校验AI与成长交易。",
+      "refreshStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
     },
     {
       "name": "雷·达里奥 / Bridgewater",
@@ -301,7 +342,8 @@
       "stance": "无新增可靠观点",
       "strength": "中高",
       "assets": "黄金、全球分散配置、部分中国资产",
-      "view": "复核至2026/6/23：未发现Dalio新增高可信公开观点改变配置框架；继续用债务周期、黄金、非美元资产和分散化原则校验宏观风险。"
+      "view": "复核至2026/6/23：未发现Dalio新增高可信公开观点改变配置框架；继续用债务周期、黄金、非美元资产和分散化原则校验宏观风险。",
+      "refreshStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
     },
     {
       "name": "比尔·阿克曼 / Pershing Square",
@@ -309,7 +351,8 @@
       "stance": "无新增可靠观点",
       "strength": "高",
       "assets": "Microsoft、平台科技、消费服务龙头",
-      "view": "复核至2026/6/23：未确认Ackman新增改变框架的公开观点；继续偏向少数高质量现金流龙头和可解释的资本配置，回避无法由现金流支撑的高估资产。"
+      "view": "复核至2026/6/23：未确认Ackman新增改变框架的公开观点；继续偏向少数高质量现金流龙头和可解释的资本配置，回避无法由现金流支撑的高估资产。",
+      "refreshStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
     },
     {
       "name": "大卫·泰珀 / Appaloosa",
@@ -317,7 +360,8 @@
       "stance": "无新增可靠观点",
       "strength": "中高",
       "assets": "Amazon、Uber、Micron、TSMC、Sandisk",
-      "view": "复核至2026/6/23：未发现Tepper新增可靠公开观点；继续把他作为高弹性风险资产节奏参考，重点看AI硬件、平台消费和宏观风险偏好。"
+      "view": "复核至2026/6/23：未发现Tepper新增可靠公开观点；继续把他作为高弹性风险资产节奏参考，重点看AI硬件、平台消费和宏观风险偏好。",
+      "refreshStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
     },
     {
       "name": "肯·格里芬 / Citadel",
@@ -325,7 +369,8 @@
       "stance": "无新增可靠观点",
       "strength": "中",
       "assets": "多策略、股票/信用/利率/商品/量化交易",
-      "view": "复核至2026/6/23：未发现Griffin新增高确信公开观点改变框架；继续把Citadel作为流动性、波动率和市场结构观察样本。"
+      "view": "复核至2026/6/23：未发现Griffin新增高确信公开观点改变框架；继续把Citadel作为流动性、波动率和市场结构观察样本。",
+      "refreshStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
     },
     {
       "name": "克里斯·霍恩 / TCI",
@@ -333,7 +378,8 @@
       "stance": "无新增可靠观点",
       "strength": "高",
       "assets": "Alphabet、Visa、S&P Global、Moody's、GE Aerospace、Airbus、Safran",
-      "view": "复核至2026/6/23：未发现Hohn新增公开框架变化；继续沿用高壁垒平台、支付网络、评级和航空航天资产也必须服从估值纪律的结论。"
+      "view": "复核至2026/6/23：未发现Hohn新增公开框架变化；继续沿用高壁垒平台、支付网络、评级和航空航天资产也必须服从估值纪律的结论。",
+      "refreshStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
     },
     {
       "name": "凯瑟琳·伍德 / ARK",
@@ -341,7 +387,8 @@
       "stance": "跟踪验证",
       "strength": "中",
       "assets": "SpaceX、Tesla、ARKK/ARKQ/ARKX、私募创新敞口",
-      "view": "复核至2026/6/23：ARK属于高频交易动作源，6/16之后仍需持续跟踪其每日交易披露；当前不能写成“无更新”，应把ARK作为高波动成长和创新资产情绪指标，而不是组合模板。"
+      "view": "复核至2026/6/23：ARK属于高频交易动作源，6/16之后仍需持续跟踪其每日交易披露；当前不能写成“无更新”，应把ARK作为高波动成长和创新资产情绪指标，而不是组合模板。",
+      "refreshStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
     },
     {
       "name": "斯坦利·德鲁肯米勒 / Duquesne",
@@ -349,7 +396,8 @@
       "stance": "无新增可靠观点",
       "strength": "中高",
       "assets": "Nuvation Bio、Caris Life Sciences、Olema Pharmaceuticals 等",
-      "view": "复核至2026/6/23：未发现Druckenmiller新增高可信公开观点；继续沿用承认AI长期逻辑但不在短线拥挤时硬追、重视非共识机会和风险控制的框架。"
+      "view": "复核至2026/6/23：未发现Druckenmiller新增高可信公开观点；继续沿用承认AI长期逻辑但不在短线拥挤时硬追、重视非共识机会和风险控制的框架。",
+      "refreshStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
     }
   ],
   "fundHoldings": [
@@ -361,9 +409,11 @@
       "week": 18.79,
       "risk": "中高",
       "decision": "观察等待",
-      "reason": "消费电子短线涨幅较快，先看持续性和回撤，不追高。 净值日期：2026-06-22，数据源：天天基金/东方财富。",
+      "reason": "消费电子短线涨幅较快，先看持续性和回撤，不追高。 净值日期 2026-06-22，沿用最近可得数据（滞后1天）；数据源：天天基金/东方财富。",
       "type": "指数/ETF联接",
-      "latestNav": 2.933
+      "latestNav": 2.933,
+      "navDate": "2026-06-22",
+      "refreshStatus": "净值日期 2026-06-22，沿用最近可得数据（滞后1天）"
     },
     {
       "name": "富国互联科技股票A",
@@ -373,9 +423,11 @@
       "week": 17.31,
       "risk": "中高",
       "decision": "观察等待",
-      "reason": "AI/互联网短线涨幅较快，先看持续性和回撤，不追高。 净值日期：2026-06-22，数据源：天天基金/东方财富。",
+      "reason": "AI/互联网短线涨幅较快，先看持续性和回撤，不追高。 净值日期 2026-06-22，沿用最近可得数据（滞后1天）；数据源：天天基金/东方财富。",
       "type": "主动权益",
-      "latestNav": 7.7519
+      "latestNav": 7.7519,
+      "navDate": "2026-06-22",
+      "refreshStatus": "净值日期 2026-06-22，沿用最近可得数据（滞后1天）"
     },
     {
       "name": "国泰中证全指通信设备ETF联接C",
@@ -385,9 +437,11 @@
       "week": 16.11,
       "risk": "高",
       "decision": "观察等待",
-      "reason": "通信/设备短线涨幅较快，先看持续性和回撤，不追高。 净值日期：2026-06-22，数据源：天天基金/东方财富。",
+      "reason": "通信/设备短线涨幅较快，先看持续性和回撤，不追高。 净值日期 2026-06-22，沿用最近可得数据（滞后1天）；数据源：天天基金/东方财富。",
       "type": "指数/ETF联接",
-      "latestNav": 5.0042
+      "latestNav": 5.0042,
+      "navDate": "2026-06-22",
+      "refreshStatus": "净值日期 2026-06-22，沿用最近可得数据（滞后1天）"
     },
     {
       "name": "易方达中证人工智能主题ETF联接A",
@@ -397,9 +451,11 @@
       "week": 14.25,
       "risk": "高",
       "decision": "观察等待",
-      "reason": "AI/半导体短线涨幅较快，先看持续性和回撤，不追高。 净值日期：2026-06-22，数据源：天天基金/东方财富。",
+      "reason": "AI/半导体短线涨幅较快，先看持续性和回撤，不追高。 净值日期 2026-06-22，沿用最近可得数据（滞后1天）；数据源：天天基金/东方财富。",
       "type": "指数/ETF联接",
-      "latestNav": 2.4223
+      "latestNav": 2.4223,
+      "navDate": "2026-06-22",
+      "refreshStatus": "净值日期 2026-06-22，沿用最近可得数据（滞后1天）"
     },
     {
       "name": "南方有色金属ETF联接A",
@@ -409,9 +465,11 @@
       "week": 9.07,
       "risk": "中高",
       "decision": "观察等待",
-      "reason": "有色金属短线涨幅较快，先看持续性和回撤，不追高。 净值日期：2026-06-22，数据源：天天基金/东方财富。",
+      "reason": "有色金属短线涨幅较快，先看持续性和回撤，不追高。 净值日期 2026-06-22，沿用最近可得数据（滞后1天）；数据源：天天基金/东方财富。",
       "type": "指数/ETF联接",
-      "latestNav": 2.116
+      "latestNav": 2.116,
+      "navDate": "2026-06-22",
+      "refreshStatus": "净值日期 2026-06-22，沿用最近可得数据（滞后1天）"
     },
     {
       "name": "永赢先进制造智选混合发起C",
@@ -421,9 +479,11 @@
       "week": 1.17,
       "risk": "高",
       "decision": "暂不加仓",
-      "reason": "先进制造短线承压明显，等待企稳和成交确认。 净值日期：2026-06-22，数据源：天天基金/东方财富。",
+      "reason": "先进制造短线承压明显，等待企稳和成交确认。 净值日期 2026-06-22，沿用最近可得数据（滞后1天）；数据源：天天基金/东方财富。",
       "type": "主动权益",
-      "latestNav": 2.2698
+      "latestNav": 2.2698,
+      "navDate": "2026-06-22",
+      "refreshStatus": "净值日期 2026-06-22，沿用最近可得数据（滞后1天）"
     },
     {
       "name": "摩根新兴动力混合A",
@@ -433,9 +493,11 @@
       "week": 10.37,
       "risk": "中",
       "decision": "观察等待",
-      "reason": "成长/动力短线涨幅较快，先看持续性和回撤，不追高。 净值日期：2026-06-22，数据源：天天基金/东方财富。",
+      "reason": "成长/动力短线涨幅较快，先看持续性和回撤，不追高。 净值日期 2026-06-22，沿用最近可得数据（滞后1天）；数据源：天天基金/东方财富。",
       "type": "主动权益",
-      "latestNav": 13.9838
+      "latestNav": 13.9838,
+      "navDate": "2026-06-22",
+      "refreshStatus": "净值日期 2026-06-22，沿用最近可得数据（滞后1天）"
     },
     {
       "name": "交银先进制造混合A",
@@ -445,9 +507,11 @@
       "week": 8.85,
       "risk": "中",
       "decision": "继续观察",
-      "reason": "先进制造短线修复，但仍需要验证趋势延续。 净值日期：2026-06-22，数据源：天天基金/东方财富。",
+      "reason": "先进制造短线修复，但仍需要验证趋势延续。 净值日期 2026-06-22，沿用最近可得数据（滞后1天）；数据源：天天基金/东方财富。",
       "type": "主动权益",
-      "latestNav": 7.1148
+      "latestNav": 7.1148,
+      "navDate": "2026-06-22",
+      "refreshStatus": "净值日期 2026-06-22，沿用最近可得数据（滞后1天）"
     },
     {
       "name": "鹏华中证500指数增强A",
@@ -457,9 +521,11 @@
       "week": 7.87,
       "risk": "中",
       "decision": "继续观察",
-      "reason": "A股宽基短线修复，但仍需要验证趋势延续。 净值日期：2026-06-22，数据源：天天基金/东方财富。",
+      "reason": "A股宽基短线修复，但仍需要验证趋势延续。 净值日期 2026-06-22，沿用最近可得数据（滞后1天）；数据源：天天基金/东方财富。",
       "type": "指数增强",
-      "latestNav": 1.7126
+      "latestNav": 1.7126,
+      "navDate": "2026-06-22",
+      "refreshStatus": "净值日期 2026-06-22，沿用最近可得数据（滞后1天）"
     },
     {
       "name": "广发国证新能源车电池ETF联接C",
@@ -469,9 +535,11 @@
       "week": 8.33,
       "risk": "中",
       "decision": "继续观察",
-      "reason": "新能源车/电池短线修复，但仍需要验证趋势延续。 净值日期：2026-06-22，数据源：天天基金/东方财富。",
+      "reason": "新能源车/电池短线修复，但仍需要验证趋势延续。 净值日期 2026-06-22，沿用最近可得数据（滞后1天）；数据源：天天基金/东方财富。",
       "type": "指数/ETF联接",
-      "latestNav": 0.9243
+      "latestNav": 0.9243,
+      "navDate": "2026-06-22",
+      "refreshStatus": "净值日期 2026-06-22，沿用最近可得数据（滞后1天）"
     },
     {
       "name": "富国全球科技互联网股票(QDII)A",
@@ -481,9 +549,11 @@
       "week": 13.58,
       "risk": "中高",
       "decision": "观察等待",
-      "reason": "全球科技互联网短线涨幅较快，先看持续性和回撤，不追高。 净值日期：2026-06-18，数据源：天天基金/东方财富。",
+      "reason": "全球科技互联网短线涨幅较快，先看持续性和回撤，不追高。 净值日期 2026-06-18，沿用最近可得数据（滞后5天）；数据源：天天基金/东方财富。",
       "type": "QDII",
-      "latestNav": 6.5166
+      "latestNav": 6.5166,
+      "navDate": "2026-06-18",
+      "refreshStatus": "净值日期 2026-06-18，沿用最近可得数据（滞后5天）"
     },
     {
       "name": "永赢国证通用航空产业ETF发起联接C",
@@ -493,9 +563,11 @@
       "week": 0.14,
       "risk": "中",
       "decision": "观察等待",
-      "reason": "航空航天信号不够强，维持观察。 净值日期：2026-06-22，数据源：天天基金/东方财富。",
+      "reason": "航空航天信号不够强，维持观察。 净值日期 2026-06-22，沿用最近可得数据（滞后1天）；数据源：天天基金/东方财富。",
       "type": "指数/ETF联接",
-      "latestNav": 0.9969
+      "latestNav": 0.9969,
+      "navDate": "2026-06-22",
+      "refreshStatus": "净值日期 2026-06-22，沿用最近可得数据（滞后1天）"
     },
     {
       "name": "华夏中证绿色电力ETF发起式联接A",
@@ -505,178 +577,252 @@
       "week": -4.07,
       "risk": "中",
       "decision": "观察等待",
-      "reason": "绿色电力信号不够强，维持观察。 净值日期：2026-06-22，数据源：天天基金/东方财富。",
+      "reason": "绿色电力信号不够强，维持观察。 净值日期 2026-06-22，沿用最近可得数据（滞后1天）；数据源：天天基金/东方财富。",
       "type": "指数/ETF联接",
-      "latestNav": 1.1406
+      "latestNav": 1.1406,
+      "navDate": "2026-06-22",
+      "refreshStatus": "净值日期 2026-06-22，沿用最近可得数据（滞后1天）"
     }
   ],
   "financeNews": [
     {
       "date": "2026/6/23",
-      "category": "中国资产",
-      "title": "中国高技术制造与内需修复分化，A股主线仍偏向科技制造和政策支持方向",
-      "content": "中国资产的核心矛盾仍是高技术制造、出口链和政策支持方向相对更强，而消费和地产修复仍需要更多数据确认。市场会继续在科技制造和内需资产之间做结构切换。",
-      "assets": "A股、港股、人民币、先进制造、消费、地产、港股互联网",
-      "direction": "待观察",
-      "impact": "高",
-      "horizon": "中期：2周-3个月",
-      "meaning": "A股和港股不宜只看指数，重点看成交额是否放大、科技制造是否延续、消费和地产是否出现真实改善。",
-      "action": "观察等待",
-      "watch": "A股成交额、港股成交额、社零、地产销售、人民币、南向资金、高技术制造订单",
-      "source": "国家统计局 / Reuters / WSJ Market Talk",
-      "confidence": "中",
-      "included": "是：影响行业主线判断"
-    },
-    {
-      "date": "2026/6/23",
-      "category": "央行",
-      "title": "美联储6月议息会议成为全球市场核心变量，利率路径和点阵图主导风险偏好",
-      "content": "美联储6月会议结果、声明措辞和主席记者会是今天最重要的宏观变量。市场关注是否维持利率不变、点阵图是否上修利率路径，以及对通胀和就业的判断是否偏鹰。",
-      "assets": "美股、美元、美债、黄金、AI/半导体、A股成长、港股科技",
-      "direction": "待观察",
+      "category": "能源",
+      "title": "Brent Crude Trades Around $78 After Iran Gets Oil Sales Waiver As Peace Talks Advance",
+      "content": "Brent Crude Trades Around $78 After Iran Gets Oil Sales Waiver As Peace Talks Advance NDTV Profit",
+      "assets": "原油、通胀交易、航空、化工、有色金属、全球股市",
+      "direction": "利多",
       "impact": "高",
       "horizon": "短期：1天-2周",
-      "meaning": "若点阵图或记者会偏鹰，实际利率和美元可能反弹，压制高估值成长；若表态温和，AI、科技和港股风险偏好有望继续修复。",
-      "action": "等待",
-      "watch": "FOMC声明、点阵图、主席记者会、10年期美债、TIPS实际利率、美元指数",
-      "source": "Federal Reserve / CNBC / AP",
-      "confidence": "高",
-      "included": "是：影响今日仓位/风险偏好"
+      "meaning": "能源新闻需观察是否改变利率、估值、商品价格或风险偏好；若市场确认，相关资产波动可能放大。",
+      "action": "观察等待",
+      "watch": "官方公告、收益率/美元/油价、相关指数成交额和行业龙头表现",
+      "source": "Google News Markets / NDTV Profit",
+      "confidence": "中高",
+      "included": "是",
+      "score": 8,
+      "refreshStatus": "RSS刷新：Google News Markets / NDTV Profit，发布时间 2026-06-23T08:58+08:00"
     },
     {
       "date": "2026/6/23",
       "category": "科技",
-      "title": "AI和半导体仍是全球主线，但高拥挤交易需要财报和订单继续验证",
-      "content": "AI硬件、半导体和算力链仍是全球资金关注核心，但连续上涨后估值和拥挤度抬升。市场会继续验证云厂Capex、芯片订单、存储价格和毛利率。",
-      "assets": "纳指、费半、英伟达、博通、存储芯片、A股AI/半导体、PCB",
-      "direction": "待观察",
+      "title": "Chip Stocks Defy US Market Pullback｜Daily News Digest｜2026-06-23｜web only",
+      "content": "Chip Stocks Defy US Market Pullback｜Daily News Digest｜2026-06-23｜web only 天下雜誌",
+      "assets": "美股科技、AI算力、半导体、消费电子、A股AI链",
+      "direction": "利多",
       "impact": "高",
-      "horizon": "短期：1天-2周",
-      "meaning": "AI主线没有结束，但当前位置更适合等回调或业绩验证；不能只因新闻热度继续追高。",
-      "action": "暂不追高",
-      "watch": "费半指数、英伟达/博通/Micron走势、云厂Capex、AI服务器订单、PCB和高速铜连接景气",
-      "source": "CNBC / MarketWatch / Barron's",
-      "confidence": "中",
-      "included": "是：影响行业主线判断"
-    },
-    {
-      "date": "2026/6/23",
-      "category": "美股",
-      "title": "美债收益率和美元指数围绕美联储会议波动，成长资产估值敏感度上升",
-      "content": "美联储会议后，市场重新定价降息或加息概率，10年期美债、实际利率和美元指数成为判断成长股估值压力的关键。短线资金会优先观察利率是否上行。",
-      "assets": "美债、美元、纳指、黄金、A股成长、港股互联网",
-      "direction": "待观察",
-      "impact": "高",
-      "horizon": "短期：1天-2周",
-      "meaning": "利率上行会压制AI和科技估值，利率回落则有利于风险资产修复；今天不宜脱离美债和美元单独判断股票强弱。",
-      "action": "等待",
-      "watch": "10年期美债收益率、10Y TIPS、DXY、纳指、费半、黄金",
-      "source": "Federal Reserve / WSJ Market Talk / CNBC",
-      "confidence": "高",
-      "included": "是：影响今日仓位/风险偏好"
-    },
-    {
-      "date": "2026/6/23",
-      "category": "能源",
-      "title": "油价受中东局势、库存和供给预期影响，通胀交易仍需重点跟踪",
-      "content": "原油价格继续受中东局势、霍尔木兹通航风险、库存数据和产油国供给预期影响。油价若重新上行，会直接影响通胀预期和美联储政策空间。",
-      "assets": "原油、黄金、美元、航空、化工、有色金属、全球股市",
-      "direction": "待观察",
-      "impact": "高",
-      "horizon": "短期：1天-2周",
-      "meaning": "油价回落有利于风险资产和通胀降温，油价反弹则可能重新推高通胀和利率压力；这是今天风控的重要变量。",
+      "horizon": "中期：2周-3个月",
+      "meaning": "科技新闻需观察是否改变利率、估值、商品价格或风险偏好；若市场确认，相关资产波动可能放大。",
       "action": "观察等待",
-      "watch": "Brent是否站回80美元、EIA库存、霍尔木兹通航、中东谈判、通胀预期",
-      "source": "AP / Guardian / EIA",
-      "confidence": "中",
-      "included": "是：影响今日仓位/风险偏好"
-    },
-    {
-      "date": "2026/6/23",
-      "category": "商品",
-      "title": "有色金属继续受美元、实际利率和全球制造周期共同定价",
-      "content": "铜、铝、黄金等商品仍受美元、实际利率、库存和制造周期影响。有色资源品具备交易价值，但短线已经有较高波动，不能脱离宏观变量追涨。",
-      "assets": "铜、铝、黄金、有色金属、资源股、商品基金",
-      "direction": "待观察",
-      "impact": "中高",
-      "horizon": "短期：1天-2周",
-      "meaning": "有色仍是核心主线之一，但更适合边走边跟踪止盈条件，关键看美元和实际利率是否配合。",
-      "action": "继续观察",
-      "watch": "DXY、10Y TIPS、铜铝库存、黄金、油价、资源股成交额",
-      "source": "LME / COMEX / WSJ Market Talk",
-      "confidence": "中",
-      "included": "是：影响行业主线判断"
+      "watch": "官方公告、收益率/美元/油价、相关指数成交额和行业龙头表现",
+      "source": "Google News Macro / 天下雜誌",
+      "confidence": "中高",
+      "included": "是",
+      "score": 7,
+      "refreshStatus": "RSS刷新：Google News Macro / 天下雜誌，发布时间 2026-06-23T08:12+08:00"
     },
     {
       "date": "2026/6/23",
       "category": "地缘",
-      "title": "中东与G7相关地缘变量仍影响油价、黄金和全球风险偏好",
-      "content": "中东局势、G7协调和能源运输安全仍是市场关注点。若局势缓和，油价和避险资产可能降温；若冲突升级，黄金、原油和军工链会重新升温。",
-      "assets": "原油、黄金、美元、军工、航运、全球股市",
+      "title": "Treasury Department authorizes Iranian oil sales through August",
+      "content": "Iranian supertankers have switched on their transponders, after going dark during the war, as they depart the Persian Gulf loaded with oil.",
+      "assets": "原油、黄金、美元、军工、全球风险资产",
       "direction": "待观察",
-      "impact": "中高",
+      "impact": "高",
       "horizon": "短期：1天-2周",
-      "meaning": "地缘变量会通过油价和避险情绪影响市场，不能只看股票本身，需要同步看黄金和原油。",
+      "meaning": "地缘新闻需观察是否改变利率、估值、商品价格或风险偏好；若市场确认，相关资产波动可能放大。",
       "action": "等待",
-      "watch": "G7声明、中东谈判、原油价格、黄金价格、航运风险、军工板块成交",
-      "source": "AP / Guardian / Reuters",
-      "confidence": "中",
-      "included": "是：影响今日仓位/风险偏好"
+      "watch": "官方公告、收益率/美元/油价、相关指数成交额和行业龙头表现",
+      "source": "CNBC Markets",
+      "confidence": "中高",
+      "included": "是",
+      "score": 7,
+      "refreshStatus": "RSS刷新：CNBC Markets，发布时间 2026-06-23T01:56+08:00"
     },
     {
       "date": "2026/6/23",
-      "category": "港股",
-      "title": "港股科技和中国科技资产继续受美元利率、南向资金和盈利修复共同影响",
-      "content": "港股互联网和中国科技资产短线弹性取决于美元利率、南向资金、平台公司盈利修复和AI应用落地。若美元和美债回落，港股科技风险偏好更容易修复。",
-      "assets": "恒生科技、港股互联网、腾讯、阿里、美团、快手、中概股",
+      "category": "科技",
+      "title": "Alphabet has its worst day in over a year on AI concerns after high-profile exits",
+      "content": "Google parent Alphabet has seen consecutive high-profile artificial intelligence researchers leave.",
+      "assets": "美股科技、AI算力、半导体、消费电子、A股AI链",
       "direction": "利多",
-      "impact": "中高",
-      "horizon": "短期：1天-2周",
-      "meaning": "港股科技可以继续观察，但要以成交额和南向资金确认，而不是只看单日反弹。",
-      "action": "继续观察",
-      "watch": "恒生科技成交额、南向资金、美元指数、美债收益率、平台公司回购和盈利",
-      "source": "HKEX / CNBC / WSJ Market Talk",
-      "confidence": "中",
-      "included": "是：影响行业主线判断"
-    },
-    {
-      "date": "2026/6/23",
-      "category": "风险事件",
-      "title": "AI数据中心资本开支进入信用和现金流验证阶段",
-      "content": "AI数据中心和算力建设仍是长期主线，但投资规模扩大后，市场会逐步从讲增长转向验证融资成本、利用率、电力供应和现金回报。",
-      "assets": "AI算力、数据中心、电力、信用债、银行、科技股",
-      "direction": "待观察",
-      "impact": "中高",
-      "horizon": "长期：3个月以上",
-      "meaning": "AI基础设施不是单纯成长故事，也会逐渐变成信用周期和现金流问题；要同时看需求、融资成本和资产回报率。",
-      "action": "继续观察",
-      "watch": "信用利差、数据中心利用率、电力成本、云厂资本开支、自由现金流",
-      "source": "WSJ Market Talk / JPMorgan commentary",
-      "confidence": "中",
-      "included": "是：影响行业主线判断"
-    },
-    {
-      "date": "2026/6/23",
-      "category": "央行",
-      "title": "全球央行仍处在抗通胀与稳增长之间，流动性难以快速全面转松",
-      "content": "除美联储外，日本、欧洲、澳洲等央行仍在通胀、汇率和增长之间平衡。全球流动性尚未进入单边宽松阶段，风险资产仍需要边走边验证。",
-      "assets": "日元、欧元、澳元、全球债券、资源股、亚洲股市",
-      "direction": "待观察",
-      "impact": "中",
+      "impact": "高",
       "horizon": "中期：2周-3个月",
-      "meaning": "不能因为单一央行暂停加息就假设全球流动性全面转松；美元、美债和日元仍会影响亚洲资产。",
+      "meaning": "科技新闻需观察是否改变利率、估值、商品价格或风险偏好；若市场确认，相关资产波动可能放大。",
       "action": "观察等待",
-      "watch": "日本央行、欧洲央行、澳洲央行表态、日元、全球债券收益率、资金流向",
-      "source": "BOJ / ECB / AP / Guardian",
-      "confidence": "中",
-      "included": "否：背景跟踪"
+      "watch": "官方公告、收益率/美元/油价、相关指数成交额和行业龙头表现",
+      "source": "CNBC Markets",
+      "confidence": "中高",
+      "included": "是",
+      "score": 6,
+      "refreshStatus": "RSS刷新：CNBC Markets，发布时间 2026-06-23T05:04+08:00"
+    },
+    {
+      "date": "2026/6/23",
+      "category": "能源",
+      "title": "Asian Stocks Set for Gains as Oil Holds Losses: Markets Wrap",
+      "content": "Asian Stocks Set for Gains as Oil Holds Losses: Markets Wrap Bloomberg.com",
+      "assets": "原油、通胀交易、航空、化工、有色金属、全球股市",
+      "direction": "利多",
+      "impact": "高",
+      "horizon": "短期：1天-2周",
+      "meaning": "能源新闻需观察是否改变利率、估值、商品价格或风险偏好；若市场确认，相关资产波动可能放大。",
+      "action": "观察等待",
+      "watch": "官方公告、收益率/美元/油价、相关指数成交额和行业龙头表现",
+      "source": "Google News Markets / Bloomberg.com",
+      "confidence": "中高",
+      "included": "是",
+      "score": 6,
+      "refreshStatus": "RSS刷新：Google News Markets / Bloomberg.com，发布时间 2026-06-23T06:09+08:00"
+    },
+    {
+      "date": "2026/6/23",
+      "category": "科技",
+      "title": "Beijing is summoning executives again, but here's why that's causing less worry than in 2021",
+      "content": "Beijing is summoning tech executives for meetings as it did in 2021, but now it has less room to wield a heavy hand due to deflation and rivalry with the U.S.",
+      "assets": "美股科技、AI算力、半导体、消费电子、A股AI链",
+      "direction": "利多",
+      "impact": "高",
+      "horizon": "中期：2周-3个月",
+      "meaning": "科技新闻需观察是否改变利率、估值、商品价格或风险偏好；若市场确认，相关资产波动可能放大。",
+      "action": "观察等待",
+      "watch": "官方公告、收益率/美元/油价、相关指数成交额和行业龙头表现",
+      "source": "CNBC Markets",
+      "confidence": "中高",
+      "included": "是",
+      "score": 6,
+      "refreshStatus": "RSS刷新：CNBC Markets，发布时间 2026-06-23T07:28+08:00"
+    },
+    {
+      "date": "2026/6/23",
+      "category": "中国资产",
+      "title": "CNBC's The China Connection newsletter: Tackling EV trucks after success with cars",
+      "content": "Beijing's latest push into electric trucks has echoes of measures announced more than a decade ago to develop new energy passenger cars.",
+      "assets": "A股、港股、人民币、中国消费、先进制造",
+      "direction": "待观察",
+      "impact": "高",
+      "horizon": "中期：2周-3个月",
+      "meaning": "中国资产新闻需观察是否改变利率、估值、商品价格或风险偏好；若市场确认，相关资产波动可能放大。",
+      "action": "观察等待",
+      "watch": "官方公告、收益率/美元/油价、相关指数成交额和行业龙头表现",
+      "source": "CNBC Markets",
+      "confidence": "中高",
+      "included": "是",
+      "score": 6,
+      "refreshStatus": "RSS刷新：CNBC Markets，发布时间 2026-06-23T07:00+08:00"
+    },
+    {
+      "date": "2026/6/23",
+      "category": "科技",
+      "title": "Companies are demanding states cut red tape. Data center-wary voters may think differently",
+      "content": "Pennsylvania Gov. Josh Shapiro touted a $20 billion economic development deal last June, the state's largest ever. It's caused Shapiro no shortage of grief.",
+      "assets": "美股科技、AI算力、半导体、消费电子、A股AI链",
+      "direction": "利多",
+      "impact": "高",
+      "horizon": "中期：2周-3个月",
+      "meaning": "科技新闻需观察是否改变利率、估值、商品价格或风险偏好；若市场确认，相关资产波动可能放大。",
+      "action": "观察等待",
+      "watch": "官方公告、收益率/美元/油价、相关指数成交额和行业龙头表现",
+      "source": "CNBC Markets",
+      "confidence": "中高",
+      "included": "是",
+      "score": 6,
+      "refreshStatus": "RSS刷新：CNBC Markets，发布时间 2026-06-23T02:16+08:00"
+    },
+    {
+      "date": "2026/6/23",
+      "category": "能源",
+      "title": "Imperial Oil Ltd. stock rises Monday, outperforms market",
+      "content": "Imperial Oil Ltd. stock rises Monday, outperforms market MarketWatch",
+      "assets": "原油、通胀交易、航空、化工、有色金属、全球股市",
+      "direction": "利多",
+      "impact": "高",
+      "horizon": "短期：1天-2周",
+      "meaning": "能源新闻需观察是否改变利率、估值、商品价格或风险偏好；若市场确认，相关资产波动可能放大。",
+      "action": "观察等待",
+      "watch": "官方公告、收益率/美元/油价、相关指数成交额和行业龙头表现",
+      "source": "Google News Markets / MarketWatch",
+      "confidence": "中高",
+      "included": "是",
+      "score": 6,
+      "refreshStatus": "RSS刷新：Google News Markets / MarketWatch，发布时间 2026-06-23T04:32+08:00"
+    },
+    {
+      "date": "2026/6/22",
+      "category": "科技",
+      "title": "Lucid to lay off roughly 18% of U.S. workforce, COO Marc Winterhoff leaves",
+      "content": "Lucid Group is cutting its U.S. workforce by 18% as part of a cost-savings plan. It also said COO Marc Winterhoff is departing effective immediately.",
+      "assets": "美股科技、AI算力、半导体、消费电子、A股AI链",
+      "direction": "利多",
+      "impact": "高",
+      "horizon": "中期：2周-3个月",
+      "meaning": "科技新闻需观察是否改变利率、估值、商品价格或风险偏好；若市场确认，相关资产波动可能放大。",
+      "action": "观察等待",
+      "watch": "官方公告、收益率/美元/油价、相关指数成交额和行业龙头表现",
+      "source": "CNBC Markets",
+      "confidence": "中高",
+      "included": "是",
+      "score": 6,
+      "refreshStatus": "RSS刷新：CNBC Markets，发布时间 2026-06-22T23:37+08:00"
     }
   ],
-  "generatedAt": "2026-06-23T06:44:08+08:00",
+  "generatedAt": "2026-06-23T10:47:31+08:00",
   "automation": {
     "source": "GitHub Actions",
     "timezone": "Asia/Hong_Kong",
     "rule": "daily 05:00 HKT",
     "notionUpsert": "enabled when NOTION_* secrets exist"
+  },
+  "financeNewsStatus": {
+    "status": "RSS刷新",
+    "count": 10,
+    "note": "已从公开RSS源筛选高影响新闻；仍需人工复核标题重要性。",
+    "errors": []
+  },
+  "sourceStatus": {
+    "daily": {
+      "status": "汇总生成",
+      "note": "基于6个模块最新可得资料生成，不直接构成交易建议。"
+    },
+    "risk": {
+      "status": "部分沿用/待核验",
+      "fresh": 0,
+      "stale": 5,
+      "unknown": 9,
+      "note": "0项接近当日，5项沿用最近可得数据，9项来源日期待核验。"
+    },
+    "industry": {
+      "status": "云端复核排序",
+      "count": 10,
+      "note": "行业主线每日重新排序；若无新增可靠新闻/估值源，保留最近判断并标注复核。"
+    },
+    "experts": {
+      "status": "公开资料复核",
+      "count": 10,
+      "note": "未发现可靠新增观点时，明确写无新增可靠观点，不编造新动向。"
+    },
+    "funds": {
+      "status": "真实抓取",
+      "count": 13,
+      "fresh": 13,
+      "note": "13/13只基金从天天基金/东方财富返回净值；QDII按真实滞后日期展示。",
+      "sample": [
+        "018896: nav=2.933, day=1.15%, navDate=2026-06-22",
+        "006751: nav=7.7519, day=1.75%, navDate=2026-06-22",
+        "007818: nav=5.0042, day=1.68%, navDate=2026-06-22",
+        "012733: nav=2.4223, day=1.0%, navDate=2026-06-22"
+      ]
+    },
+    "news": {
+      "status": "RSS刷新",
+      "count": 10,
+      "note": "已从公开RSS源筛选高影响新闻；仍需人工复核标题重要性。",
+      "errors": []
+    },
+    "asOf": "2026/6/23 05:00 HKT",
+    "overall": "部分模块需核验",
+    "blockingModules": [
+      "risk"
+    ]
   }
 }

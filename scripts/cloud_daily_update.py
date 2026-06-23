@@ -10,6 +10,7 @@ database rows when Notion secrets are configured.
 from __future__ import annotations
 
 import argparse
+import html
 import json
 import os
 import re
@@ -17,8 +18,10 @@ import sys
 import time
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 from typing import Any
+import xml.etree.ElementTree as ET
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
@@ -62,6 +65,75 @@ FUND_ORDER = [
     "018734",
 ]
 
+NEWS_FEEDS = [
+    ("Google News Macro", "https://news.google.com/rss/search?q=Federal%20Reserve%20OR%20inflation%20OR%20Treasury%20yields%20OR%20oil%20OR%20China%20economy%20OR%20AI%20chips%20when%3A1d&hl=en-US&gl=US&ceid=US:en"),
+    ("Google News Markets", "https://news.google.com/rss/search?q=stock%20market%20OR%20dollar%20OR%20bond%20market%20OR%20Brent%20oil%20OR%20semiconductor%20when%3A1d&hl=en-US&gl=US&ceid=US:en"),
+    ("CNBC Markets", "https://www.cnbc.com/id/100003114/device/rss/rss.html"),
+    ("CNBC Economy", "https://www.cnbc.com/id/20910258/device/rss/rss.html"),
+    ("Federal Reserve", "https://www.federalreserve.gov/feeds/press_all.xml"),
+]
+
+NEWS_KEYWORDS = {
+    "央行": ["fed", "federal reserve", "rate", "powell", "inflation", "central bank", "ecb", "boj", "yield"],
+    "能源": ["oil", "brent", "wti", "opec", "energy", "gas"],
+    "科技": ["ai", "chip", "semiconductor", "nvidia", "micron", "tesla", "apple", "microsoft", "data center"],
+    "中国资产": ["china", "hong kong", "yuan", "renminbi", "beijing", "tariff"],
+    "地缘": ["iran", "israel", "war", "g7", "geopolitical", "shipping"],
+    "贸易": ["trade", "tariff", "export", "import", "deal"],
+    "风险事件": ["credit", "debt", "default", "liquidity", "bank", "selloff", "recession"],
+}
+
+NEWS_IMPACT_WORDS = [
+    "fed",
+    "federal reserve",
+    "rate",
+    "inflation",
+    "oil",
+    "brent",
+    "war",
+    "china",
+    "tariff",
+    "ai",
+    "chip",
+    "semiconductor",
+    "yield",
+    "dollar",
+    "credit",
+]
+
+EXCLUDE_NEWS_TERMS = [
+    "dies at age",
+    "passing of",
+    "trillionaire club",
+    "reward for failure",
+    "sports",
+    "celebrity",
+    "streaming guide",
+    "slams into",
+    "killing",
+    "killed",
+]
+
+TRUSTED_NEWS_TERMS = [
+    "Reuters",
+    "Bloomberg",
+    "CNBC",
+    "Associated Press",
+    "Wall Street Journal",
+    "WSJ",
+    "Barron's",
+    "MarketWatch",
+    "Financial Times",
+    "Investing.com",
+    "Yahoo Finance",
+    "Federal Reserve",
+    "NDTV Profit",
+    "Nikkei",
+    "South China Morning Post",
+    "The Guardian",
+    "天下",
+]
+
 
 def log(message: str) -> None:
     print(f"[investment-center] {message}", flush=True)
@@ -79,6 +151,50 @@ def fmt_slash(d: date) -> str:
     return f"{d.year}/{d.month}/{d.day}"
 
 
+def status_date_text(source_date: date | None, as_of: date, *, prefix: str = "来源") -> str:
+    if source_date is None:
+        return f"{prefix}日期待核验"
+    lag = (as_of - source_date).days
+    if lag <= 0:
+        return f"{prefix}日期 {source_date.isoformat()}，今日可用"
+    return f"{prefix}日期 {source_date.isoformat()}，沿用最近可得数据（滞后{lag}天）"
+
+
+def extract_source_date(text: str, as_of: date) -> date | None:
+    if not text:
+        return None
+    patterns = [
+        r"(\d{4})[-/](\d{1,2})[-/](\d{1,2})",
+        r"(\d{4})年(\d{1,2})月(\d{1,2})日",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, text)
+        if match:
+            try:
+                return date(int(match.group(1)), int(match.group(2)), int(match.group(3)))
+            except ValueError:
+                return None
+    cn = re.search(r"(\d{1,2})月(\d{1,2})日", text)
+    if cn:
+        try:
+            return date(as_of.year, int(cn.group(1)), int(cn.group(2)))
+        except ValueError:
+            return None
+    slash = re.search(r"\((\d{1,2})/(\d{1,2})", text)
+    if slash:
+        try:
+            return date(as_of.year, int(slash.group(1)), int(slash.group(2)))
+        except ValueError:
+            return None
+    loose_slash = re.search(r"(?<!\d)(\d{1,2})/(\d{1,2})(?!\d)", text)
+    if loose_slash:
+        try:
+            return date(as_of.year, int(loose_slash.group(1)), int(loose_slash.group(2)))
+        except ValueError:
+            return None
+    return None
+
+
 def request_json(url: str, *, timeout: int = 15, headers: dict[str, str] | None = None) -> Any:
     req = Request(url, headers=headers or {"User-Agent": "investment-center-bot/1.0"})
     with urlopen(req, timeout=timeout) as response:
@@ -86,7 +202,13 @@ def request_json(url: str, *, timeout: int = 15, headers: dict[str, str] | None 
 
 
 def request_text(url: str, *, timeout: int = 15) -> str:
-    req = Request(url, headers={"User-Agent": "investment-center-bot/1.0"})
+    req = Request(
+        url,
+        headers={
+            "User-Agent": "Mozilla/5.0 investment-center-bot/1.0",
+            "Accept": "application/rss+xml, application/xml, text/xml, text/html;q=0.8",
+        },
+    )
     with urlopen(req, timeout=timeout) as response:
         return response.read().decode("utf-8", errors="ignore")
 
@@ -156,6 +278,151 @@ def classify_fund(theme: str, day: float | None, week: float | None) -> tuple[st
     return "观察等待", f"{theme}信号不够强，维持观察。"
 
 
+def annotate_risk_status(data: dict[str, Any], as_of: date) -> dict[str, Any]:
+    items = data.get("riskDashboard", [])
+    fresh = 0
+    stale = 0
+    unknown = 0
+    for item in items:
+        text = " ".join(str(item.get(key, "")) for key in ("value", "normal", "warning", "danger", "description"))
+        source_date = extract_source_date(text, as_of)
+        item["sourceDate"] = source_date.isoformat() if source_date else "待核验"
+        item["refreshStatus"] = status_date_text(source_date, as_of, prefix="指标")
+        if source_date is None:
+            unknown += 1
+        elif (as_of - source_date).days <= 1:
+            fresh += 1
+        else:
+            stale += 1
+    status = "真实刷新" if stale == 0 and unknown == 0 else "部分沿用/待核验"
+    return {
+        "status": status,
+        "fresh": fresh,
+        "stale": stale,
+        "unknown": unknown,
+        "note": f"{fresh}项接近当日，{stale}项沿用最近可得数据，{unknown}项来源日期待核验。",
+    }
+
+
+def parse_rss_date(value: str) -> datetime | None:
+    if not value:
+        return None
+    try:
+        parsed = parsedate_to_datetime(value)
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=HKT)
+        return parsed.astimezone(HKT)
+    except (TypeError, ValueError, IndexError, OverflowError):
+        return None
+
+
+def clean_html_text(value: str) -> str:
+    value = re.sub(r"<.*?>", " ", value or "")
+    value = html.unescape(value)
+    return re.sub(r"\s+", " ", value).strip()
+
+
+def classify_news(title: str, content: str) -> tuple[str, str, str, int]:
+    text = f"{title} {content}".lower()
+    category = "全球市场"
+    score = 0
+    for candidate, words in NEWS_KEYWORDS.items():
+        hits = sum(1 for word in words if word in text)
+        if hits and hits + 1 > score:
+            category = candidate
+            score = hits + 1
+    score += sum(1 for word in NEWS_IMPACT_WORDS if word in text)
+    if category in {"央行", "能源", "地缘", "科技", "中国资产"}:
+        score += 2
+    if any(word in text for word in ["rise", "fall", "surge", "slump", "record", "cut", "hike", "warning"]):
+        score += 1
+    if category == "央行":
+        assets = "美股、美元、美债、黄金、AI/半导体、A股宽基"
+        direction = "待观察"
+    elif category == "能源":
+        assets = "原油、通胀交易、航空、化工、有色金属、全球股市"
+        direction = "利多"
+    elif category == "科技":
+        assets = "美股科技、AI算力、半导体、消费电子、A股AI链"
+        direction = "利多"
+    elif category == "中国资产":
+        assets = "A股、港股、人民币、中国消费、先进制造"
+        direction = "待观察"
+    elif category == "地缘":
+        assets = "原油、黄金、美元、军工、全球风险资产"
+        direction = "待观察"
+    elif category == "贸易":
+        assets = "全球贸易链、汽车、工业品、美元、欧股"
+        direction = "待观察"
+    elif category == "风险事件":
+        assets = "信用债、银行、科技股、美元、全球股市"
+        direction = "待观察"
+    else:
+        assets = "全球股市、美元、美债、商品"
+        direction = "待观察"
+    return category, assets, direction, score
+
+
+def fetch_rss_news(as_of: date) -> tuple[list[dict[str, Any]], list[str]]:
+    rows: list[dict[str, Any]] = []
+    errors: list[str] = []
+    min_date = as_of - timedelta(days=1)
+    seen: set[str] = set()
+    for source, url in NEWS_FEEDS:
+        try:
+            xml_text = request_text(url, timeout=20)
+            root = ET.fromstring(xml_text)
+        except (HTTPError, URLError, TimeoutError, ET.ParseError, ValueError) as exc:
+            errors.append(f"{source}: {exc}")
+            continue
+        for item in root.findall(".//item")[:30]:
+            title = clean_html_text(item.findtext("title", ""))
+            if not title or title in seen:
+                continue
+            item_source = source
+            if source.startswith("Google News") and " - " in title:
+                title_body, source_tail = title.rsplit(" - ", 1)
+                if not any(term.lower() in source_tail.lower() for term in TRUSTED_NEWS_TERMS):
+                    continue
+                title = title_body.strip()
+                item_source = f"{source} / {source_tail.strip()}"
+            joined_text = f"{title} {clean_html_text(item.findtext('description', ''))}".lower()
+            if any(term in joined_text for term in EXCLUDE_NEWS_TERMS):
+                continue
+            pub_dt = parse_rss_date(item.findtext("pubDate", ""))
+            if pub_dt and pub_dt.date() < min_date:
+                continue
+            content = clean_html_text(item.findtext("description", ""))
+            category, assets, direction, score = classify_news(title, content)
+            if score < 4:
+                continue
+            seen.add(title)
+            impact = "高" if score >= 6 else ("中高" if score >= 4 else "中")
+            horizon = "短期：1天-2周" if category in {"央行", "能源", "地缘", "风险事件"} else "中期：2周-3个月"
+            rows.append(
+                {
+                    "date": fmt_slash(pub_dt.date() if pub_dt else as_of),
+                    "category": category,
+                    "title": title[:120],
+                    "content": content[:220] or title,
+                    "assets": assets,
+                    "direction": direction,
+                    "impact": impact,
+                    "horizon": horizon,
+                    "meaning": f"{category}新闻需观察是否改变利率、估值、商品价格或风险偏好；若市场确认，相关资产波动可能放大。",
+                    "action": "等待" if category in {"央行", "地缘", "风险事件"} else "观察等待",
+                    "watch": "官方公告、收益率/美元/油价、相关指数成交额和行业龙头表现",
+                    "source": item_source,
+                    "confidence": "高" if item_source == "Federal Reserve" else "中高",
+                    "included": "是" if impact in {"高", "中高"} else "否",
+                    "score": score,
+                    "refreshStatus": f"RSS刷新：{item_source}，发布时间 {pub_dt.isoformat(timespec='minutes') if pub_dt else '待核验'}",
+                }
+            )
+    rows.sort(key=lambda row: (-int(row.get("score", 0)), row.get("title", "")))
+    return rows[:10], errors
+
+
 def update_funds(data: dict[str, Any], as_of: date) -> tuple[list[dict[str, Any]], list[str]]:
     old_by_code = {str(item.get("code")): item for item in data.get("fundHoldings", [])}
     updated: list[dict[str, Any]] = []
@@ -166,13 +433,16 @@ def update_funds(data: dict[str, Any], as_of: date) -> tuple[list[dict[str, Any]
         fetched = fetch_fund(code)
         time.sleep(0.15)
         if fetched:
+            nav_date = datetime.strptime(fetched["navDate"], "%Y-%m-%d").date()
+            refresh_status = status_date_text(nav_date, as_of, prefix="净值")
             decision, reason = classify_fund(theme, fetched.get("day"), fetched.get("week"))
             day_value = round(float(fetched["day"]), 2) if fetched.get("day") is not None else old.get("day", 0)
             week_value = round(float(fetched["week"]), 2) if fetched.get("week") is not None else old.get("week", 0)
             nav_value = fetched.get("nav")
-            reason = f"{reason} 净值日期：{fetched['navDate']}，数据源：天天基金/东方财富。"
+            reason = f"{reason} {refresh_status}；数据源：天天基金/东方财富。"
             check_lines.append(f"{code}: nav={nav_value}, day={day_value}%, navDate={fetched['navDate']}")
         else:
+            refresh_status = "抓取失败，沿用上一版并待核验"
             decision = old.get("decision", "待核验")
             reason = old.get("reason", "数据源抓取失败，沿用上一版并待核验。")
             day_value = old.get("day", 0)
@@ -192,6 +462,8 @@ def update_funds(data: dict[str, Any], as_of: date) -> tuple[list[dict[str, Any]
                 "reason": reason,
                 "type": fund_type,
                 "latestNav": nav_value if nav_value is not None else old.get("latestNav", ""),
+                "navDate": fetched["navDate"] if fetched else old.get("navDate", "待核验"),
+                "refreshStatus": refresh_status,
             }
         )
     data["fundHoldings"] = updated
@@ -218,6 +490,7 @@ def update_industry(data: dict[str, Any], as_of: date) -> None:
         return
     for item in items:
         item["reviewDate"] = fmt_cn(as_of + timedelta(days=1))
+        item["refreshStatus"] = "云端复核排序；新闻/估值若无新增可靠源，则沿用最近可得判断"
         item.setdefault("news", "当日新闻/催化待核验。")
         item.setdefault("valuation", "估值待核验。")
         item.setdefault("reason", "操作原因待核验。")
@@ -241,21 +514,32 @@ def update_experts(data: dict[str, Any], as_of: date) -> None:
         else:
             view = f"复核至{fmt_slash(as_of)}：{view or '无新增可靠公开观点，保留原框架待核验。'}"
         item["view"] = view
+        item["refreshStatus"] = "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
         item.setdefault("stance", "无新增可靠观点")
         item.setdefault("strength", "中")
         item.setdefault("assets", "待核验")
 
 
 def update_finance_news(data: dict[str, Any], as_of: date) -> None:
-    """Roll the finance news date forward conservatively.
+    """Refresh high-impact finance news from available public RSS feeds.
 
-    A production-grade news feed can be added later through a licensed news API.
-    Until then, the script never fabricates unknown facts: existing curated rows
-    are carried forward with today's review date and source/watch fields intact.
+    If public feeds are insufficient, the script keeps the previous curated
+    rows but marks them as carried forward. It must never silently relabel stale
+    news as today's new news.
     """
+    fetched, errors = fetch_rss_news(as_of)
+    if len(fetched) >= 5:
+        data["financeNews"] = fetched[:10]
+        data["financeNewsStatus"] = {
+            "status": "RSS刷新",
+            "count": len(fetched[:10]),
+            "note": "已从公开RSS源筛选高影响新闻；仍需人工复核标题重要性。",
+            "errors": errors[:3],
+        }
+        return
     existing = list(data.get("financeNews", []))[:10]
     for item in existing:
-        item["date"] = fmt_slash(as_of)
+        item["date"] = safe_text(item.get("date"), fmt_slash(as_of))
         item.setdefault("category", "财经")
         item.setdefault("title", "待核验财经新闻")
         item.setdefault("content", "今日新闻源待核验。")
@@ -269,7 +553,59 @@ def update_finance_news(data: dict[str, Any], as_of: date) -> None:
         item.setdefault("source", "待核验")
         item.setdefault("confidence", "中")
         item.setdefault("included", "否：待核验")
+        item["refreshStatus"] = f"今日RSS有效新闻不足（{len(fetched)}条），沿用最近可靠新闻；需人工补充。"
     data["financeNews"] = existing
+    data["financeNewsStatus"] = {
+        "status": "沿用最近可靠新闻",
+        "count": len(existing),
+        "note": f"公开RSS有效新闻不足，仅抓到{len(fetched)}条；未将旧新闻伪装成当天新新闻。",
+        "errors": errors[:3],
+    }
+
+
+def build_source_status(
+    data: dict[str, Any],
+    as_of: date,
+    risk_status: dict[str, Any],
+    fund_checks: list[str],
+) -> dict[str, Any]:
+    funds = data.get("fundHoldings", [])
+    real_fund_rows = sum(1 for item in funds if "数据源：天天基金/东方财富" in str(item.get("reason", "")))
+    news_status = data.get("financeNewsStatus", {"status": "待核验", "note": "新闻刷新状态待核验。"})
+    experts = data.get("expertViews", [])
+    industries = data.get("industryWatch", [])
+    status = {
+        "daily": {"status": "汇总生成", "note": "基于6个模块最新可得资料生成，不直接构成交易建议。"},
+        "risk": risk_status,
+        "industry": {
+            "status": "云端复核排序",
+            "count": len(industries),
+            "note": "行业主线每日重新排序；若无新增可靠新闻/估值源，保留最近判断并标注复核。",
+        },
+        "experts": {
+            "status": "公开资料复核",
+            "count": len(experts),
+            "note": "未发现可靠新增观点时，明确写无新增可靠观点，不编造新动向。",
+        },
+        "funds": {
+            "status": "真实抓取" if real_fund_rows else "待核验",
+            "count": len(funds),
+            "fresh": real_fund_rows,
+            "note": f"{real_fund_rows}/{len(funds)}只基金从天天基金/东方财富返回净值；QDII按真实滞后日期展示。",
+            "sample": fund_checks[:4],
+        },
+        "news": news_status,
+        "asOf": f"{fmt_slash(as_of)} 05:00 HKT",
+    }
+    blocking = [
+        name
+        for name, item in status.items()
+        if isinstance(item, dict) and item.get("status") in {"待核验", "部分沿用/待核验", "沿用最近可靠新闻"}
+    ]
+    status["overall"] = "部分模块需核验" if blocking else "全部模块已刷新"
+    status["blockingModules"] = blocking
+    data["sourceStatus"] = status
+    return status
 
 
 def update_daily(data: dict[str, Any], as_of: date) -> None:
@@ -278,13 +614,16 @@ def update_daily(data: dict[str, Any], as_of: date) -> None:
     red = sum(1 for item in risk_items if "红" in str(item.get("signal", "")))
     signal = "红灯" if red else ("黄灯" if yellow else "绿灯")
     action = "防守" if red else ("等待" if yellow else "进攻")
+    source_status = data.get("sourceStatus", {})
+    quality = source_status.get("overall", "数据状态待核验")
+    stale_modules = "、".join(source_status.get("blockingModules", [])) or "无"
     data["daily"] = {
         "asOf": f"{fmt_slash(as_of)} 05:00 HKT",
         "signal": signal,
         "action": action,
-        "marketJudgement": f"{fmt_cn(as_of)}更新：系统按最新可得交易日和新闻资料复盘；若部分市场休市，交易数据沿用最近可得日期并保留滞后说明。当前风险灯号为{signal}，操作维持{action}。",
+        "marketJudgement": f"{fmt_cn(as_of)}更新：{quality}；需核验模块：{stale_modules}。当前风险灯号为{signal}，操作维持{action}。",
         "positionAdvice": "权益仓位维持中性偏谨慎；优先观察核心主线的业绩兑现和成交确认，不因单日波动追高。",
-        "needAction": "今日先完成数据核验：基金净值、风险指标、行业主线排序、专家观点和财经新闻是否有新增可靠信号。",
+        "needAction": "今日先完成数据核验：基金净值、风险指标、行业主线排序、专家观点和财经新闻是否有新增可靠信号；不能只看日期。",
         "actionReason": "不盲动原因：自动化更新只负责同步最新可得资料，交易动作仍需结合估值、拥挤度、成交额和宏观风险确认。",
         "riskPoint": "主要风险：美债实际利率、美元指数、油价、AI拥挤交易、A股/港股成交不足和新闻事件反复。",
         "nextReview": "复盘重点：基金净值日期、AI/PCB订单、铜铝金价格、数据中心电力需求、央行发言和高影响财经新闻。",
@@ -296,11 +635,13 @@ def build_dashboard() -> tuple[dict[str, Any], list[str]]:
         raise FileNotFoundError(f"missing dashboard data: {DATA_PATH}")
     data = json.loads(DATA_PATH.read_text(encoding="utf-8"))
     as_of = today_hkt()
-    update_daily(data, as_of)
+    risk_status = annotate_risk_status(data, as_of)
     update_industry(data, as_of)
     update_experts(data, as_of)
     update_finance_news(data, as_of)
     _, checks = update_funds(data, as_of)
+    build_source_status(data, as_of, risk_status, checks)
+    update_daily(data, as_of)
     data["generatedAt"] = datetime.now(HKT).isoformat(timespec="seconds")
     data["automation"] = {
         "source": "GitHub Actions",
@@ -609,7 +950,7 @@ def sync_notion(data: dict[str, Any], config: NotionConfig) -> dict[str, int]:
             "🚨危险红灯（轻仓）": danger_value,
             "🔴危险红灯（轻仓）": danger_value,
             "危险红灯（轻仓）": danger_value,
-            "说明": "GitHub Actions 云端自动复核；若交易数据滞后，沿用最新可得来源日期。",
+            "说明": f"GitHub Actions 云端自动复核；{item.get('refreshStatus', '来源日期待核验')}。",
         }
         count(client.upsert(config.db_risk, row, {"监控更新日期": as_of, "监控指标": item.get("name")}))
 
@@ -631,7 +972,7 @@ def sync_notion(data: dict[str, Any], config: NotionConfig) -> dict[str, int]:
             "行业景气度": label_score(item.get("prosperity")),
             "资金热度": label_score(item.get("heat")),
             "风险等级": label_score(item.get("risk")),
-            "新闻日期/来源": f"{cn_date} / 云端自动复核",
+            "新闻日期/来源": f"{cn_date} / {item.get('refreshStatus', '云端自动复核')}",
             "最新行业新闻/催化剂": item.get("news"),
             "未来1月判断": month_judgement,
             "未来1季判断": item.get("reason"),
@@ -648,7 +989,7 @@ def sync_notion(data: dict[str, Any], config: NotionConfig) -> dict[str, int]:
             "更新日期": as_of,
             "专家/机构": expert_name,
             "观点日期": fmt_slash(as_of),
-            "观点来源": "公开资料云端复核",
+            "观点来源": item.get("refreshStatus", "公开资料云端复核"),
             "核心判断": view,
             "对应资产": assets,
             "证据强度": item.get("strength"),
@@ -673,6 +1014,7 @@ def sync_notion(data: dict[str, Any], config: NotionConfig) -> dict[str, int]:
         nav_date = extract_nav_date(str(item.get("reason", ""))) or as_of
         theme = safe_text(item.get("theme"), "待核验")
         reason = safe_text(item.get("reason"), "操作原因待核验。")
+        refresh_status = safe_text(item.get("refreshStatus"), "刷新状态待核验")
         decision = safe_text(item.get("decision"), "待核验")
         row = {
             "报表更新日期": as_of,
@@ -680,7 +1022,7 @@ def sync_notion(data: dict[str, Any], config: NotionConfig) -> dict[str, int]:
             "基金代码": item.get("code"),
             "关联主线": theme,
             "夏普比率": item.get("sharp", "待核验"),
-            "操作原因": reason,
+            "操作原因": f"{reason}；{refresh_status}",
             "操作语言": decision,
             "日涨跌": notion_percent(item.get("day")),
             "最大回撤": item.get("maxDrawdown", "待核验"),
@@ -711,7 +1053,7 @@ def sync_notion(data: dict[str, Any], config: NotionConfig) -> dict[str, int]:
             "对行情的含义": item.get("meaning"),
             "对应投资抓手": item.get("action"),
             "需重点跟踪": item.get("watch"),
-            "新闻来源": item.get("source"),
+            "新闻来源": f"{item.get('source', '待核验')}；{item.get('refreshStatus', '刷新状态待核验')}",
             "可信度": item.get("confidence"),
             "是否纳入每日简报": item.get("included"),
         }
