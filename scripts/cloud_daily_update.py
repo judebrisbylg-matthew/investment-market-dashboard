@@ -608,6 +608,66 @@ def build_source_status(
     return status
 
 
+def to_number(value: Any, default: float = 0.0) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def short_text(value: Any, limit: int) -> str:
+    text = re.sub(r"\s+", "", str(value or ""))
+    return text if len(text) <= limit else text[:limit] + "..."
+
+
+def industry_score(item: dict[str, Any]) -> float:
+    prosperity = to_number(item.get("prosperity"))
+    heat = to_number(item.get("heat"))
+    risk = to_number(item.get("risk"))
+    return prosperity * 0.45 + heat * 0.35 + (100 - risk) * 0.20
+
+
+def format_focus_names(items: list[dict[str, Any]], limit: int = 3) -> str:
+    names = [str(item.get("name") or "").strip() for item in items if item.get("name")]
+    return "、".join(names[:limit]) or "无明确主线"
+
+
+def important_risk_items(risk_items: list[dict[str, Any]], limit: int = 4) -> list[dict[str, Any]]:
+    def risk_weight(item: dict[str, Any]) -> tuple[int, float]:
+        signal = str(item.get("signal", ""))
+        status = str(item.get("refreshStatus", ""))
+        level = 3 if "红" in signal else 2 if "黄" in signal else 1 if "待核验" in status else 0
+        return level, to_number(item.get("score"))
+
+    selected = [
+        item
+        for item in risk_items
+        if "红" in str(item.get("signal", ""))
+        or "黄" in str(item.get("signal", ""))
+        or "待核验" in str(item.get("refreshStatus", ""))
+    ]
+    return sorted(selected, key=risk_weight, reverse=True)[:limit]
+
+
+def format_risk_focus(items: list[dict[str, Any]], limit: int = 3) -> str:
+    parts = []
+    for item in items[:limit]:
+        name = short_text(item.get("name"), 10)
+        value = short_text(item.get("value"), 24)
+        signal = str(item.get("signal") or "待核验").replace("正常", "").replace("预警", "")
+        parts.append(f"{name}={value}({signal})")
+    return "；".join(parts) or "风险指标待核验"
+
+
+def top_fund_moves(funds: list[dict[str, Any]]) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
+    if not funds:
+        return None, None
+    sortable = [item for item in funds if isinstance(item.get("day"), (int, float))]
+    if not sortable:
+        return None, None
+    return max(sortable, key=lambda item: to_number(item.get("day"))), min(sortable, key=lambda item: to_number(item.get("day")))
+
+
 def update_daily(data: dict[str, Any], as_of: date) -> None:
     risk_items = data.get("riskDashboard", [])
     yellow = sum(1 for item in risk_items if "黄" in str(item.get("signal", "")))
@@ -617,16 +677,36 @@ def update_daily(data: dict[str, Any], as_of: date) -> None:
     source_status = data.get("sourceStatus", {})
     quality = source_status.get("overall", "数据状态待核验")
     stale_modules = "、".join(source_status.get("blockingModules", [])) or "无"
+    risks = important_risk_items(risk_items)
+    risk_focus = format_risk_focus(risks)
+    industries = sorted(data.get("industryWatch", []), key=industry_score, reverse=True)
+    core = [item for item in industries if str(item.get("tier")) == "核心主线"][:3]
+    reserve = [item for item in industries if str(item.get("tier")) == "候补轮动"][:2]
+    core_names = format_focus_names(core, 3)
+    reserve_names = format_focus_names(reserve, 2)
+    top_fund, weak_fund = top_fund_moves(data.get("fundHoldings", []))
+    fund_focus = "基金净值待核验"
+    if top_fund and weak_fund:
+        fund_focus = (
+            f"强项{top_fund.get('code')}({top_fund.get('theme')})日涨{to_number(top_fund.get('day')):.2f}%，"
+            f"弱项{weak_fund.get('code')}({weak_fund.get('theme')})日涨{to_number(weak_fund.get('day')):.2f}%，"
+            f"净值日{top_fund.get('navDate') or weak_fund.get('navDate') or '待核验'}"
+        )
+    news = data.get("financeNews", [])[:3]
+    news_focus = "；".join(
+        f"{item.get('category')}:{short_text(item.get('title'), 18)}" for item in news if item.get("title")
+    ) or "新闻待核验"
+    risk_names = "、".join(short_text(item.get("name"), 8) for item in risks[:3]) or "风险指标"
     data["daily"] = {
         "asOf": f"{fmt_slash(as_of)} 05:00 HKT",
         "signal": signal,
         "action": action,
-        "marketJudgement": f"{fmt_cn(as_of)}更新：{quality}；需核验模块：{stale_modules}。当前风险灯号为{signal}，操作维持{action}。",
-        "positionAdvice": "权益仓位维持中性偏谨慎；优先观察核心主线的业绩兑现和成交确认，不因单日波动追高。",
-        "needAction": "今日先完成数据核验：基金净值、风险指标、行业主线排序、专家观点和财经新闻是否有新增可靠信号；不能只看日期。",
-        "actionReason": "不盲动原因：自动化更新只负责同步最新可得资料，交易动作仍需结合估值、拥挤度、成交额和宏观风险确认。",
-        "riskPoint": "主要风险：美债实际利率、美元指数、油价、AI拥挤交易、A股/港股成交不足和新闻事件反复。",
-        "nextReview": "复盘重点：基金净值日期、AI/PCB订单、铜铝金价格、数据中心电力需求、央行发言和高影响财经新闻。",
+        "marketJudgement": f"{fmt_cn(as_of)}：{signal}={action}。核心只看{core_names}；候补看{reserve_names}。{quality}，需核验：{stale_modules}。",
+        "positionAdvice": f"不主动追高；若{risk_names}未转绿，权益维持中性偏谨慎。只有核心主线放量、订单/业绩兑现且估值不过热，才考虑小幅提高仓位。",
+        "needAction": f"今天先核验三件事：1）{risk_focus}；2）{core_names}是否有成交放大或订单催化；3）{fund_focus}。",
+        "actionReason": f"当前不是看日期做决定，而是看触发条件：风险灯={signal}、主线拥挤度、基金净值日和新闻冲击。新闻重点：{news_focus}。",
+        "riskPoint": f"硬风险清单：{risk_focus}。若实际利率/美元继续上行、A股港股成交不足或AI链回落，继续等待，不加仓。",
+        "nextReview": f"下一次复盘看：{core_names}的订单/成交额；{reserve_names}是否升温；基金净值是否跟上盘中涨跌；新闻是否出现央行/油价/地缘新增冲击。",
     }
 
 
