@@ -582,6 +582,20 @@
       "latestNav": 1.1406,
       "navDate": "2026-06-22",
       "refreshStatus": "净值日期 2026-06-22，沿用最近可得数据（滞后1天）"
+    },
+    {
+      "name": "华夏中证电网设备主题ETF发起式联接A",
+      "code": "025856",
+      "theme": "电网设备",
+      "day": 4.59,
+      "week": 12.49,
+      "risk": "中高",
+      "decision": "观察等待",
+      "reason": "电网设备短线涨幅较快，先看持续性和回撤，不追高。 净值日期 2026-06-22，沿用最近可得数据（滞后1天）；数据源：天天基金/东方财富。",
+      "type": "指数/ETF联接",
+      "latestNav": 1.5421,
+      "navDate": "2026-06-22",
+      "refreshStatus": "净值日期 2026-06-22，沿用最近可得数据（滞后1天）"
     }
   ],
   "financeNews": [
@@ -677,24 +691,6 @@
     },
     {
       "date": "2026/6/23",
-      "category": "能源",
-      "title": "Asian Stocks Set for Gains as Oil Holds Losses: Markets Wrap",
-      "content": "Asian Stocks Set for Gains as Oil Holds Losses: Markets Wrap Bloomberg.com",
-      "assets": "原油、通胀交易、航空、化工、有色金属、全球股市",
-      "direction": "利多",
-      "impact": "高",
-      "horizon": "短期：1天-2周",
-      "meaning": "能源新闻需观察是否改变利率、估值、商品价格或风险偏好；若市场确认，相关资产波动可能放大。",
-      "action": "观察等待",
-      "watch": "官方公告、收益率/美元/油价、相关指数成交额和行业龙头表现",
-      "source": "Google News Markets / Bloomberg.com",
-      "confidence": "中高",
-      "included": "是",
-      "score": 6,
-      "refreshStatus": "RSS刷新：Google News Markets / Bloomberg.com，发布时间 2026-06-23T06:09+08:00"
-    },
-    {
-      "date": "2026/6/23",
       "category": "科技",
       "title": "Beijing is summoning executives again, but here's why that's causing less worry than in 2021",
       "content": "Beijing is summoning tech executives for meetings as it did in 2021, but now it has less room to wield a heavy hand due to deflation and rivalry with the U.S.",
@@ -764,9 +760,27 @@
       "included": "是",
       "score": 6,
       "refreshStatus": "RSS刷新：CNBC Markets，发布时间 2026-06-23T02:16+08:00"
+    },
+    {
+      "date": "2026/6/23",
+      "category": "能源",
+      "title": "Imperial Oil Ltd. stock rises Monday, outperforms market",
+      "content": "Imperial Oil Ltd. stock rises Monday, outperforms market MarketWatch",
+      "assets": "原油、通胀交易、航空、化工、有色金属、全球股市",
+      "direction": "利多",
+      "impact": "高",
+      "horizon": "短期：1天-2周",
+      "meaning": "能源新闻需观察是否改变利率、估值、商品价格或风险偏好；若市场确认，相关资产波动可能放大。",
+      "action": "观察等待",
+      "watch": "官方公告、收益率/美元/油价、相关指数成交额和行业龙头表现",
+      "source": "Google News Markets / MarketWatch",
+      "confidence": "中高",
+      "included": "是",
+      "score": 6,
+      "refreshStatus": "RSS刷新：Google News Markets / MarketWatch，发布时间 2026-06-23T04:32+08:00"
     }
   ],
-  "generatedAt": "2026-06-23T11:28:30+08:00",
+  "generatedAt": "2026-06-23T12:24:24+08:00",
   "automation": {
     "source": "GitHub Actions",
     "timezone": "Asia/Hong_Kong",
@@ -803,9 +817,9 @@
     },
     "funds": {
       "status": "真实抓取",
-      "count": 13,
-      "fresh": 13,
-      "note": "13/13只基金从天天基金/东方财富返回净值；QDII按真实滞后日期展示。",
+      "count": 14,
+      "fresh": 14,
+      "note": "14/14只基金从天天基金/东方财富返回净值；QDII按真实滞后日期展示。",
       "sample": [
         "018896: nav=2.933, day=1.15%, navDate=2026-06-22",
         "006751: nav=7.7519, day=1.75%, navDate=2026-06-22",
