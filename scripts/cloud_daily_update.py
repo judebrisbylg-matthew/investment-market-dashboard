@@ -341,6 +341,83 @@ def clean_html_text(value: str) -> str:
     return re.sub(r"\s+", " ", value).strip()
 
 
+def mostly_english_text(value: str) -> bool:
+    text = value or ""
+    latin = len(re.findall(r"[A-Za-z]", text))
+    cjk = len(re.findall(r"[\u4e00-\u9fff]", text))
+    return latin >= 18 and latin > cjk * 2
+
+
+def chinese_source_label(source: str) -> str:
+    source = source or ""
+    if "Federal Reserve" in source:
+        return "美联储官网"
+    if "CNBC" in source:
+        return "美国财经电视台"
+    if "Google News" in source:
+        return "公开新闻聚合源"
+    return "公开财经新闻源"
+
+
+def chinese_news_summary(title: str, content: str, category: str) -> dict[str, str]:
+    text = f"{title} {content}".lower()
+    if any(word in text for word in ["warsh", "fed", "federal reserve", "rate", "powell", "central bank", "yield"]):
+        return {
+            "title": "美联储政策与利率预期再受关注，市场等待官员表态和收益率确认",
+            "content": "最新央行相关消息显示，利率路径、官员表态和美债收益率仍是影响全球风险偏好的核心变量。",
+            "meaning": "若降息预期降温或实际利率上行，成长股和高估值资产会承压；若收益率回落，风险资产可能修复。",
+            "watch": "美联储官员讲话、10年期美债收益率、实际利率、美元指数、黄金和纳指表现",
+        }
+    if any(word in text for word in ["iran", "israel", "war", "sanction", "g7", "shipping"]):
+        return {
+            "title": "中东与地缘风险仍在扰动市场，原油、黄金和风险偏好需要重点跟踪",
+            "content": "地缘局势相关消息显示，停火、制裁、能源运输和政策表态仍可能影响原油供应预期与避险交易。",
+            "meaning": "地缘风险若反复，油价和黄金波动会放大，并可能压制全球权益市场风险偏好。",
+            "watch": "中东局势、原油运输、布伦特油价、黄金价格、美元指数和军工板块表现",
+        }
+    if any(word in text for word in ["oil", "brent", "wti", "opec", "energy", "gas"]):
+        return {
+            "title": "油价与能源供给变量继续影响通胀预期，资源品和风险偏好需同步观察",
+            "content": "能源市场消息显示，原油价格、供给扰动和库存变化仍会影响通胀交易、资源品以及全球股市情绪。",
+            "meaning": "油价快速上行会推升通胀压力并压制风险偏好；油价回落则有利于缓和成本压力。",
+            "watch": "布伦特油价、美国原油库存、产油国政策、通胀预期、航空和化工板块",
+        }
+    if any(word in text for word in ["chip", "semiconductor", "nvidia", "micron", "cerebras", "ai", "data center"]):
+        return {
+            "title": "人工智能和半导体仍是市场主线，但高估值与拥挤交易需要财报验证",
+            "content": "科技链条消息显示，人工智能硬件、芯片、数据中心和算力需求仍受关注，但市场开始更重视订单、毛利率和现金流。",
+            "meaning": "主线仍在，但不适合只看概念追高；需要用财报、订单和成交额验证趋势强度。",
+            "watch": "费半指数、英伟达链条、云厂资本开支、芯片订单、毛利率和成交额",
+        }
+    if any(word in text for word in ["smart glasses", "wearable", "meta", "apple", "consumer electronics"]):
+        return {
+            "title": "人工智能终端和消费电子催化升温，真实销量和供应链订单是关键",
+            "content": "消费电子和可穿戴设备消息显示，科技公司继续争夺人工智能终端入口，相关供应链关注度上升。",
+            "meaning": "终端创新利好消费电子情绪，但需要销量、备货、毛利率和应用场景兑现。",
+            "watch": "智能眼镜销量、消费电子供应链订单、光学器件、芯片和终端厂商指引",
+        }
+    if any(word in text for word in ["tariff", "trade", "manufacturing", "export", "import"]):
+        return {
+            "title": "贸易和关税变量继续影响制造业利润，订单、成本和供应链风险需跟踪",
+            "content": "贸易政策相关消息显示，关税和供应链安排仍可能影响制造业成本、订单节奏和企业利润预期。",
+            "meaning": "若关税压力上升，制造业和工业链利润会承压；若政策缓和，风险偏好可能修复。",
+            "watch": "关税政策、制造业订单、企业毛利率、出口数据、汽车和工业品板块",
+        }
+    if any(word in text for word in ["china", "hong kong", "yuan", "beijing", "property"]):
+        return {
+            "title": "中国资产仍受政策、盈利和资金流共同影响，科技制造方向更值得跟踪",
+            "content": "中国资产相关消息显示，政策预期、盈利修复和资金流变化仍是影响A股和港股表现的核心变量。",
+            "meaning": "若政策和盈利同时改善，中国资产有修复机会；若成交不足，反弹持续性仍需验证。",
+            "watch": "A股成交额、港股成交额、南向资金、人民币汇率、政策表态和科技制造板块",
+        }
+    return {
+        "title": f"{category}重要消息待复核，需观察是否改变市场风险偏好",
+        "content": f"{category}方向出现重要消息，但具体影响仍需结合官方信息、价格反应和成交确认。",
+        "meaning": "先观察价格和成交是否确认，避免只根据单条新闻做仓位动作。",
+        "watch": "官方公告、相关指数、成交额、利率、美元、商品价格和行业龙头表现",
+    }
+
+
 def classify_news(title: str, content: str) -> tuple[str, str, str, int]:
     text = f"{title} {content}".lower()
     category = "全球市场"
@@ -418,24 +495,28 @@ def fetch_rss_news(as_of: date) -> tuple[list[dict[str, Any]], list[str]]:
             seen.add(title)
             impact = "高" if score >= 6 else ("中高" if score >= 4 else "中")
             horizon = "短期：1天-2周" if category in {"央行", "能源", "地缘", "风险事件"} else "中期：2周-3个月"
+            source_label = chinese_source_label(item_source)
+            zh = chinese_news_summary(title, content, category)
+            display_title = zh["title"] if mostly_english_text(title) else title
+            display_content = zh["content"] if mostly_english_text(content) or not content else content
             rows.append(
                 {
                     "date": fmt_slash(pub_dt.date() if pub_dt else as_of),
                     "category": category,
-                    "title": title[:120],
-                    "content": content[:220] or title,
+                    "title": display_title[:120],
+                    "content": display_content[:220] or display_title,
                     "assets": assets,
                     "direction": direction,
                     "impact": impact,
                     "horizon": horizon,
-                    "meaning": f"{category}新闻需观察是否改变利率、估值、商品价格或风险偏好；若市场确认，相关资产波动可能放大。",
+                    "meaning": zh["meaning"],
                     "action": "等待" if category in {"央行", "地缘", "风险事件"} else "观察等待",
-                    "watch": "官方公告、收益率/美元/油价、相关指数成交额和行业龙头表现",
-                    "source": item_source,
+                    "watch": zh["watch"],
+                    "source": source_label,
                     "confidence": "高" if item_source == "Federal Reserve" else "中高",
                     "included": "是" if impact in {"高", "中高"} else "否",
                     "score": score,
-                    "refreshStatus": f"RSS刷新：{item_source}，发布时间 {pub_dt.isoformat(timespec='minutes') if pub_dt else '待核验'}",
+                    "refreshStatus": f"公开新闻源刷新：{source_label}，发布时间 {pub_dt.isoformat(timespec='minutes') if pub_dt else '待核验'}",
                 }
             )
     rows.sort(key=lambda row: (-int(row.get("score", 0)), row.get("title", "")))
@@ -568,7 +649,7 @@ def update_finance_news(data: dict[str, Any], as_of: date) -> None:
         item.setdefault("horizon", "短期：1天-2周")
         item.setdefault("meaning", "等待可靠新闻源确认。")
         item.setdefault("action", "观察等待")
-        item.setdefault("watch", "官方公告、Reuters/Bloomberg/CNBC/WSJ、成交与利率")
+        item.setdefault("watch", "官方公告、主流财经媒体、成交额、利率、美元和油价")
         item.setdefault("source", "待核验")
         item.setdefault("confidence", "中")
         item.setdefault("included", "否：待核验")
