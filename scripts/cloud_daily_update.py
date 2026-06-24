@@ -341,6 +341,89 @@ def clean_html_text(value: str) -> str:
     return re.sub(r"\s+", " ", value).strip()
 
 
+def find_risk_item(data: dict[str, Any], name: str) -> dict[str, Any] | None:
+    for item in data.get("riskDashboard", []):
+        if item.get("name") == name:
+            return item
+    return None
+
+
+def risk_signal_from_threshold(value: float, normal: tuple[float, float] | None = None, *,
+                               green_if_below: float | None = None,
+                               green_if_above: float | None = None,
+                               yellow_if_below: float | None = None) -> tuple[int, str]:
+    if normal and normal[0] <= value <= normal[1]:
+        return 35, "正常绿灯"
+    if green_if_below is not None and value < green_if_below:
+        return 35, "正常绿灯"
+    if green_if_above is not None and value > green_if_above:
+        return 35, "正常绿灯"
+    if yellow_if_below is not None and value < yellow_if_below:
+        return 72, "危险红灯"
+    return 55, "预警黄灯"
+
+
+def update_risk_market_data(data: dict[str, Any], as_of: date) -> None:
+    """Refresh risk items that can be fetched reliably without paid data."""
+    try:
+        market = request_json(
+            "https://push2.eastmoney.com/api/qt/ulist.np/get?"
+            "fltt=2&fields=f2,f3,f6,f12,f14&secids=1.000001,0.399001,100.HSI,100.UDI",
+            timeout=20,
+        )
+        rows = {str(row.get("f12")): row for row in market.get("data", {}).get("diff", [])}
+
+        sh_amount = float(rows.get("000001", {}).get("f6") or 0)
+        sz_amount = float(rows.get("399001", {}).get("f6") or 0)
+        if sh_amount > 0 and sz_amount > 0:
+            a_turnover = (sh_amount + sz_amount) / 1_000_000_000_000
+            item = find_risk_item(data, "A股成交额")
+            if item:
+                score, signal = risk_signal_from_threshold(a_turnover, green_if_above=1.0, yellow_if_below=0.7)
+                item.update(
+                    {
+                        "value": f"沪深两市成交约{a_turnover:.2f}万亿元（东方财富指数口径，{fmt_cn(as_of)}）",
+                        "score": score,
+                        "signal": signal,
+                        "sourceDate": as_of.isoformat(),
+                        "refreshStatus": f"东方财富指数成交额，{fmt_cn(as_of)}可用；沪深两市合计约{a_turnover:.2f}万亿元",
+                    }
+                )
+
+        hsi_amount = float(rows.get("HSI", {}).get("f6") or 0)
+        if hsi_amount > 0:
+            hsi_turnover = hsi_amount / 100_000_000
+            item = find_risk_item(data, "港股成交额")
+            if item:
+                # HSI turnover is not whole-market turnover, so keep it yellow unless a full-market source is added.
+                item.update(
+                    {
+                        "value": f"恒生指数成分成交约{hsi_turnover:.0f}亿港元（非港股全市场口径，{fmt_cn(as_of)}）",
+                        "score": 55,
+                        "signal": "预警黄灯",
+                        "sourceDate": as_of.isoformat(),
+                        "refreshStatus": f"东方财富恒生指数成交口径，{fmt_cn(as_of)}可用；非港股全市场成交额，需继续核验",
+                    }
+                )
+
+        dxy = float(rows.get("UDI", {}).get("f2") or 0)
+        if dxy > 0:
+            item = find_risk_item(data, "美元指数")
+            if item:
+                score, signal = risk_signal_from_threshold(dxy, green_if_below=103.0)
+                item.update(
+                    {
+                        "value": f"DXY约{dxy:.2f}（东方财富美元指数口径，{fmt_cn(as_of)}）",
+                        "score": score,
+                        "signal": signal,
+                        "sourceDate": as_of.isoformat(),
+                        "refreshStatus": f"东方财富美元指数，{fmt_cn(as_of)}可用",
+                    }
+                )
+    except (HTTPError, URLError, TimeoutError, ValueError, KeyError, TypeError) as exc:
+        log(f"risk market data refresh failed: {exc}")
+
+
 def mostly_english_text(value: str) -> bool:
     text = value or ""
     latin = len(re.findall(r"[A-Za-z]", text))
@@ -815,6 +898,7 @@ def build_dashboard() -> tuple[dict[str, Any], list[str]]:
         raise FileNotFoundError(f"missing dashboard data: {DATA_PATH}")
     data = json.loads(DATA_PATH.read_text(encoding="utf-8"))
     as_of = today_hkt()
+    update_risk_market_data(data, as_of)
     risk_status = annotate_risk_status(data, as_of)
     update_industry(data, as_of)
     update_experts(data, as_of)
