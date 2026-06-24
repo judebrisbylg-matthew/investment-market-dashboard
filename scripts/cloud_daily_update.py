@@ -889,6 +889,23 @@ def top_fund_moves(funds: list[dict[str, Any]]) -> tuple[dict[str, Any] | None, 
     return max(sortable, key=lambda item: to_number(item.get("day"))), min(sortable, key=lambda item: to_number(item.get("day")))
 
 
+def compact_daily_text(signal: str, action: str, core_names: str, risk_names: str) -> tuple[str, str, str]:
+    core_short = core_names or "核心主线"
+    if action == "进攻":
+        judgement = f"今天结论：绿灯偏进攻，风险整体可控，围绕{core_short}小幅试探，不追高。"
+        reason = "操作原因：多数风控指标转绿，主线有成交和催化支撑，但仓位仍要分批控制。"
+        risk = f"主要风险：{core_short}若放量不持续或业绩不兑现，短线仍可能回撤。"
+    elif action == "防守":
+        judgement = "今天结论：红灯防守，市场风险升温，先降低高波动资产暴露。"
+        reason = f"防守原因：{risk_names or '关键风险指标'}出现红灯或系统性扰动，先保留现金等待风险回落。"
+        risk = "主要风险：利率、美元、油价或信用风险继续上行，可能压制权益估值和风险偏好。"
+    else:
+        judgement = f"今天结论：黄灯等待，市场风险未失控，但估值和利率仍压制成长资产，先看{core_short}能否放量确认。"
+        reason = "不操作原因：风控灯未转绿，实际利率和估值仍偏敏感，主线虽强但不适合追高。"
+        risk = "主要风险：AI链局部偏贵，实际利率处在预警区；若美元/美债上行或成交不足，成长资产容易回撤。"
+    return judgement, reason, risk
+
+
 def update_daily(data: dict[str, Any], as_of: date) -> None:
     risk_items = data.get("riskDashboard", [])
     yellow = sum(1 for item in risk_items if "黄" in str(item.get("signal", "")))
@@ -942,19 +959,16 @@ def update_daily(data: dict[str, Any], as_of: date) -> None:
             "若A股/港股成交不能延续放大，主线修复容易变成短线轮动",
         ]
     )
+    compact_judgement, compact_reason, compact_risk = compact_daily_text(signal, action, core_names, risk_names)
     data["daily"] = {
         "asOf": f"{fmt_slash(as_of)} 05:00 HKT",
         "signal": signal,
         "action": action,
-        "marketJudgement": (
-            f"今天结论：{signal}，{action_tone}。"
-            f"核心关注{core_names}；候补观察{reserve_names}。"
-            f"数据状态：{quality}，需核验模块：{stale_modules}。"
-        ),
+        "marketJudgement": compact_judgement,
         "positionAdvice": f"不主动追高；若{risk_names}未转绿，权益维持中性偏谨慎。只有核心主线放量、订单/业绩兑现且估值不过热，才考虑小幅提高仓位。",
         "needAction": f"今天先核验三件事：{risk_explain}。",
-        "actionReason": f"不操作原因：{wait_reason}。",
-        "riskPoint": f"主要风险：{risk_sentence}。",
+        "actionReason": compact_reason,
+        "riskPoint": compact_risk,
         "nextReview": f"下一次复盘看：{core_names}的订单/成交额；{reserve_names}是否升温；基金净值是否跟上盘中涨跌；新闻是否出现央行/油价/地缘新增冲击。",
     }
 
