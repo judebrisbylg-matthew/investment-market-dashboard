@@ -906,6 +906,24 @@ def compact_daily_text(signal: str, action: str, core_names: str, risk_names: st
     return judgement, reason, risk
 
 
+def compact_action_text(action: str, core_names: str, reserve_names: str, risk_names: str) -> tuple[str, str, str]:
+    core_short = core_names or "核心主线"
+    reserve_short = reserve_names or "候补轮动"
+    if action == "进攻":
+        position = f"仓位建议：小幅进攻{core_short}，只分批买回调，不追高。"
+        need = f"今日动作：重点看{core_short}能否继续放量，确认后再小幅加仓。"
+        review = f"下次复盘：看{core_short}成交、订单和业绩是否继续兑现。"
+    elif action == "防守":
+        position = "仓位建议：先降高波动资产，保留现金，等待风险回落。"
+        need = "今日动作：先防守，不加仓；优先检查红灯风险是否扩散。"
+        review = f"下次复盘：看{risk_names or '关键风险'}是否回落，主线是否止跌。"
+    else:
+        position = "仓位建议：维持中性偏谨慎，不追高，等主线确认。"
+        need = f"今日动作：先等待；只观察{core_short}，看成交和业绩是否确认。"
+        review = f"下次复盘：看{core_short}是否放量，{reserve_short}是否升温。"
+    return position, need, review
+
+
 def update_daily(data: dict[str, Any], as_of: date) -> None:
     risk_items = data.get("riskDashboard", [])
     yellow = sum(1 for item in risk_items if "黄" in str(item.get("signal", "")))
@@ -960,16 +978,19 @@ def update_daily(data: dict[str, Any], as_of: date) -> None:
         ]
     )
     compact_judgement, compact_reason, compact_risk = compact_daily_text(signal, action, core_names, risk_names)
+    compact_position, compact_need_action, compact_next_review = compact_action_text(
+        action, core_names, reserve_names, risk_names
+    )
     data["daily"] = {
         "asOf": f"{fmt_slash(as_of)} 05:00 HKT",
         "signal": signal,
         "action": action,
         "marketJudgement": compact_judgement,
-        "positionAdvice": f"不主动追高；若{risk_names}未转绿，权益维持中性偏谨慎。只有核心主线放量、订单/业绩兑现且估值不过热，才考虑小幅提高仓位。",
-        "needAction": f"今天先核验三件事：{risk_explain}。",
+        "positionAdvice": compact_position,
+        "needAction": compact_need_action,
         "actionReason": compact_reason,
         "riskPoint": compact_risk,
-        "nextReview": f"下一次复盘看：{core_names}的订单/成交额；{reserve_names}是否升温；基金净值是否跟上盘中涨跌；新闻是否出现央行/油价/地缘新增冲击。",
+        "nextReview": compact_next_review,
     }
 
 
