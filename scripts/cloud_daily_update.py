@@ -120,6 +120,16 @@ NEWS_IMPACT_WORDS = [
     "credit",
 ]
 
+NEWS_CATEGORY_PRIORITY = {
+    "地缘": 8,
+    "央行": 7,
+    "能源": 6,
+    "风险事件": 5,
+    "中国资产": 4,
+    "科技": 3,
+    "贸易": 2,
+}
+
 EXCLUDE_NEWS_TERMS = [
     "dies at age",
     "passing of",
@@ -168,6 +178,13 @@ def fmt_cn(d: date) -> str:
 
 def fmt_slash(d: date) -> str:
     return f"{d.year}/{d.month}/{d.day}"
+
+
+def normalize_key(value: Any) -> str:
+    text = str(value or "").lower()
+    text = re.sub(r"\s+", "", text)
+    text = re.sub(r"[，。；：、,.!?:;|/\\()（）【】\[\]\"'“”‘’\-—_]", "", text)
+    return text
 
 
 def status_date_text(source_date: date | None, as_of: date, *, prefix: str = "来源") -> str:
@@ -505,11 +522,14 @@ def classify_news(title: str, content: str) -> tuple[str, str, str, int]:
     text = f"{title} {content}".lower()
     category = "全球市场"
     score = 0
+    best_rank = -1
     for candidate, words in NEWS_KEYWORDS.items():
         hits = sum(1 for word in words if word in text)
-        if hits and hits + 1 > score:
+        rank = NEWS_CATEGORY_PRIORITY.get(candidate, 0)
+        if hits and (hits + 1 > score or (hits + 1 == score and rank > best_rank)):
             category = candidate
             score = hits + 1
+            best_rank = rank
     score += sum(1 for word in NEWS_IMPACT_WORDS if word in text)
     if category in {"央行", "能源", "地缘", "科技", "中国资产"}:
         score += 2
@@ -581,6 +601,10 @@ def fetch_rss_news(as_of: date) -> tuple[list[dict[str, Any]], list[str]]:
             source_label = chinese_source_label(item_source)
             zh = chinese_news_summary(title, content, category)
             display_title = zh["title"] if mostly_english_text(title) else title
+            display_key = normalize_key(display_title)
+            if display_key in seen:
+                continue
+            seen.add(display_key)
             display_content = zh["content"] if mostly_english_text(content) or not content else content
             rows.append(
                 {
@@ -711,16 +735,25 @@ def update_finance_news(data: dict[str, Any], as_of: date) -> None:
     news as today's new news.
     """
     fetched, errors = fetch_rss_news(as_of)
+    fetched = dedupe_news_items(fetched, 10)
     if len(fetched) >= 5:
-        data["financeNews"] = fetched[:10]
+        existing = dedupe_news_items(list(data.get("financeNews", [])), 10)
+        combined = dedupe_news_items(fetched + existing, 10)
+        for item in combined[len(fetched) :]:
+            item["refreshStatus"] = (
+                f"当天RSS有效新闻不足10条，沿用最近可靠新闻；原始来源日期 {safe_text(item.get('date'), '待核验')}。"
+            )
+            item["included"] = safe_text(item.get("included"), "否：沿用最近可靠新闻")
+        data["financeNews"] = combined
         data["financeNewsStatus"] = {
             "status": "RSS刷新",
-            "count": len(fetched[:10]),
-            "note": "已从公开RSS源筛选高影响新闻；仍需人工复核标题重要性。",
+            "count": len(combined),
+            "freshCount": len(fetched),
+            "note": "优先使用当天公开RSS高影响新闻；不足10条时用最近可靠新闻补齐并标注沿用。",
             "errors": errors[:3],
         }
         return
-    existing = list(data.get("financeNews", []))[:10]
+    existing = dedupe_news_items(list(data.get("financeNews", [])), 10)
     for item in existing:
         item["date"] = safe_text(item.get("date"), fmt_slash(as_of))
         item.setdefault("category", "财经")
@@ -737,7 +770,7 @@ def update_finance_news(data: dict[str, Any], as_of: date) -> None:
         item.setdefault("confidence", "中")
         item.setdefault("included", "否：待核验")
         item["refreshStatus"] = f"今日RSS有效新闻不足（{len(fetched)}条），沿用最近可靠新闻；需人工补充。"
-    data["financeNews"] = existing
+    data["financeNews"] = existing[:10]
     data["financeNewsStatus"] = {
         "status": "沿用最近可靠新闻",
         "count": len(existing),
@@ -805,24 +838,144 @@ def short_text(value: Any, limit: int) -> str:
 
 def news_focus_text(item: dict[str, Any]) -> str:
     category = str(item.get("category") or "财经")
-    title = str(item.get("title") or "")
-    content = str(item.get("content") or "")
-    text = content if mostly_english_text(title) else title
-    if mostly_english_text(text):
-        category_focus = {
-            "央行": "央行政策与利率路径",
-            "科技": "科技主线和估值压力",
-            "地缘": "地缘风险和油金波动",
-            "能源": "油价供给和通胀预期",
-            "商品": "商品价格和资源品传导",
-            "中国资产": "中国资产政策和盈利修复",
-            "美股": "美股估值和成长股拥挤度",
-            "港股": "港股资金面和中国科技资产",
-            "风险事件": "信用风险和流动性冲击",
-            "贸易": "关税和供应链扰动",
-        }
-        text = category_focus.get(category, "重要财经变量")
-    return f"{category}：{short_text(text, 18)}"
+    category_focus = {
+        "央行": "利率路径",
+        "科技": "AI财报验证",
+        "地缘": "油金波动",
+        "能源": "油价供给",
+        "商品": "资源品传导",
+        "中国资产": "政策和盈利修复",
+        "美股": "估值和拥挤度",
+        "港股": "资金面和科技资产",
+        "风险事件": "信用和流动性",
+        "贸易": "关税和供应链",
+    }
+    text = category_focus.get(category)
+    if not text:
+        title = str(item.get("title") or item.get("content") or "重要财经变量")
+        text = short_text(title, 12).replace("...", "")
+    return f"{category}：{text}"
+
+
+def dedupe_news_items(items: list[dict[str, Any]], limit: int = 10) -> list[dict[str, Any]]:
+    selected: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        key = normalize_key(item.get("title") or item.get("content") or item.get("category"))
+        if key and key in seen:
+            continue
+        if key:
+            seen.add(key)
+        selected.append(item)
+        if len(selected) >= limit:
+            break
+    return selected
+
+
+def best_news_items(items: list[dict[str, Any]], limit: int = 3) -> list[dict[str, Any]]:
+    def weight(item: dict[str, Any]) -> tuple[int, int, int, str]:
+        included = 0 if str(item.get("included", "")).startswith("是") else 1
+        impact = {"高": 0, "中高": 1, "中": 2}.get(str(item.get("impact", "")), 3)
+        score = -int(to_number(item.get("score"), 0))
+        return included, impact, score, str(item.get("title", ""))
+
+    return sorted(dedupe_news_items(items, 20), key=weight)[:limit]
+
+
+def compact_fund_focus(top_fund: dict[str, Any] | None, weak_fund: dict[str, Any] | None) -> str:
+    if not top_fund or not weak_fund:
+        return "基金净值待核验"
+    top_code = safe_text(top_fund.get("code"))
+    top_theme = safe_text(top_fund.get("theme"))
+    weak_code = safe_text(weak_fund.get("code"))
+    weak_theme = safe_text(weak_fund.get("theme"))
+    return (
+        f"强项{top_code}({top_theme})日涨{to_number(top_fund.get('day')):.2f}%，"
+        f"弱项{weak_code}({weak_theme})日涨{to_number(weak_fund.get('day')):.2f}%"
+    )
+
+
+def short_join(names: str, limit: int = 2) -> str:
+    parts = [part.strip() for part in re.split(r"[、,，]", names or "") if part.strip()]
+    return "、".join(parts[:limit]) or "核心主线"
+
+
+def compact_news_focus(items: list[dict[str, Any]], limit: int = 2) -> str:
+    focus = [news_focus_text(item) for item in best_news_items(items, limit)]
+    return "；".join(focus) or "财经新闻待核验"
+
+
+def compact_daily_news(items: list[dict[str, Any]]) -> str:
+    best = best_news_items(items, 1)
+    if not best:
+        return "财经新闻待核验"
+    item = best[0]
+    category = safe_text(item.get("category"), "财经")
+    watch = safe_text(item.get("watch"), "")
+    title = safe_text(item.get("title"), "")
+    if watch:
+        first_watch = re.split(r"[、,，；;]", watch)[0].strip()
+        return f"{category}看{first_watch}"
+    return short_text(title, 18)
+
+
+def compact_risk_names(risk_names: str) -> str:
+    names = [part.strip() for part in re.split(r"[、,，]", risk_names or "") if part.strip()]
+    return "、".join(names[:2]) or "关键风险"
+
+
+def compact_daily_fields(
+    *,
+    as_of: date,
+    signal: str,
+    action: str,
+    core_names: str,
+    reserve_names: str,
+    risk_names: str,
+    risk_focus: str,
+    top_fund: dict[str, Any] | None,
+    weak_fund: dict[str, Any] | None,
+    news_items: list[dict[str, Any]],
+) -> dict[str, str]:
+    core_short = core_names or "核心主线"
+    reserve_short = reserve_names or "候补轮动"
+    core_tight = short_join(core_names, 2)
+    reserve_tight = short_join(reserve_names, 2)
+    risk_tight = compact_risk_names(risk_names)
+    fund_short = compact_fund_focus(top_fund, weak_fund)
+    news_short = compact_daily_news(news_items)
+    if action == "进攻":
+        judgement = f"今天结论：绿灯偏进攻，风险可控，围绕{core_tight}小幅试探。"
+        position = f"仓位建议：小幅进攻{core_tight}，只买回调，不追高。"
+        need = f"今日动作：看{core_tight}放量；基金看{fund_short}。"
+        reason = f"操作原因：风控转绿，{news_short}，主线有确认。"
+        risk = f"主要风险：{risk_tight}升温，或{core_tight}放量不持续。"
+    elif action == "防守":
+        judgement = f"今天结论：红灯防守，{news_short}扰动偏大，先控高波动仓位。"
+        position = "仓位建议：降低高波动仓位，保留现金，不做左侧加仓。"
+        need = f"今日动作：检查{risk_focus}；基金看{fund_short}。"
+        reason = f"防守原因：{risk_tight}有压力，{news_short}仍扰动风险偏好。"
+        risk = "主要风险：利率、美元、油价或信用风险上行，压制权益估值。"
+    else:
+        judgement = f"今天结论：黄灯等待，{news_short}待确认，先看{core_tight}能否放量。"
+        position = "仓位建议：维持中性偏谨慎，不追高，等主线确认。"
+        need = f"今日动作：盯{core_tight}成交/订单；基金看{fund_short}。"
+        reason = f"不操作原因：{risk_tight}未转绿，{news_short}仍待确认。"
+        risk = f"主要风险：{risk_tight}；若成交不足或消息反复，成长资产易回撤。"
+    review = f"下次复盘：看{core_tight}是否放量，{reserve_tight}是否升温，新闻是否新增冲击。"
+    return {
+        "asOf": f"{fmt_slash(as_of)} 05:00 HKT",
+        "signal": signal,
+        "action": action,
+        "marketJudgement": judgement,
+        "positionAdvice": position,
+        "needAction": need,
+        "actionReason": reason,
+        "riskPoint": risk,
+        "nextReview": review,
+    }
 
 
 def industry_score(item: dict[str, Any]) -> float:
@@ -941,57 +1094,21 @@ def update_daily(data: dict[str, Any], as_of: date) -> None:
     core_names = format_focus_names(core, 3)
     reserve_names = format_focus_names(reserve, 2)
     top_fund, weak_fund = top_fund_moves(data.get("fundHoldings", []))
-    fund_focus = "基金净值待核验"
-    if top_fund and weak_fund:
-        fund_focus = (
-            f"强项{top_fund.get('code')}({top_fund.get('theme')})日涨{to_number(top_fund.get('day')):.2f}%，"
-            f"弱项{weak_fund.get('code')}({weak_fund.get('theme')})日涨{to_number(weak_fund.get('day')):.2f}%，"
-            f"净值日{top_fund.get('navDate') or weak_fund.get('navDate') or '待核验'}"
-        )
-    news = data.get("financeNews", [])[:3]
-    news_focus = "；".join(news_focus_text(item) for item in news if item.get("title") or item.get("content")) or "新闻待核验"
+    news = dedupe_news_items(data.get("financeNews", []), 10)
+    data["financeNews"] = news
     risk_names = "、".join(short_text(item.get("name"), 8) for item in risks[:3]) or "风险指标"
-    action_tone = {
-        "进攻": "可以小幅进攻，但仍要控制节奏",
-        "等待": "不主动追高，先等关键变量确认",
-        "防守": "先防守，降低高波动资产暴露",
-    }.get(action, "先等待确认")
-    risk_explain = numbered_focus(
-        [
-            risk_focus,
-            f"核心主线只看{core_names}，必须有成交放大、订单或业绩兑现",
-            f"基金强弱分化看{fund_focus}",
-        ]
+    data["daily"] = compact_daily_fields(
+        as_of=as_of,
+        signal=signal,
+        action=action,
+        core_names=core_names,
+        reserve_names=reserve_names,
+        risk_names=risk_names,
+        risk_focus=risk_focus,
+        top_fund=top_fund,
+        weak_fund=weak_fund,
+        news_items=news,
     )
-    wait_reason = numbered_focus(
-        [
-            f"当前灯号是{signal}，结论是{action}",
-            f"{risk_names}仍未完全转绿或仍需核验",
-            f"新闻重点看{news_focus}",
-        ]
-    )
-    risk_sentence = numbered_focus(
-        [
-            risk_focus,
-            "若实际利率或美元继续上行，高估值成长会受压",
-            "若A股/港股成交不能延续放大，主线修复容易变成短线轮动",
-        ]
-    )
-    compact_judgement, compact_reason, compact_risk = compact_daily_text(signal, action, core_names, risk_names)
-    compact_position, compact_need_action, compact_next_review = compact_action_text(
-        action, core_names, reserve_names, risk_names
-    )
-    data["daily"] = {
-        "asOf": f"{fmt_slash(as_of)} 05:00 HKT",
-        "signal": signal,
-        "action": action,
-        "marketJudgement": compact_judgement,
-        "positionAdvice": compact_position,
-        "needAction": compact_need_action,
-        "actionReason": compact_reason,
-        "riskPoint": compact_risk,
-        "nextReview": compact_next_review,
-    }
 
 
 def build_dashboard() -> tuple[dict[str, Any], list[str]]:
