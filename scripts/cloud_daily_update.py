@@ -825,6 +825,13 @@ def build_source_status(
 
 
 def to_number(value: Any, default: float = 0.0) -> float:
+    if isinstance(value, str):
+        match = re.search(r"[-+]?\d+(?:\.\d+)?", value.replace("％", "%"))
+        if match:
+            try:
+                return float(match.group(0))
+            except ValueError:
+                return default
     try:
         return float(value)
     except (TypeError, ValueError):
@@ -891,9 +898,11 @@ def compact_fund_focus(top_fund: dict[str, Any] | None, weak_fund: dict[str, Any
     top_theme = safe_text(top_fund.get("theme"))
     weak_code = safe_text(weak_fund.get("code"))
     weak_theme = safe_text(weak_fund.get("theme"))
+    weak_move = to_number(weak_fund.get("day"))
+    weak_word = "跌" if weak_move < 0 else "涨"
     return (
         f"强项{top_code}({top_theme})日涨{to_number(top_fund.get('day')):.2f}%，"
-        f"弱项{weak_code}({weak_theme})日涨{to_number(weak_fund.get('day')):.2f}%"
+        f"弱项{weak_code}({weak_theme})日{weak_word}{abs(weak_move):.2f}%"
     )
 
 
@@ -919,6 +928,68 @@ def compact_daily_news(items: list[dict[str, Any]]) -> str:
         first_watch = re.split(r"[、,，；;]", watch)[0].strip()
         return f"{category}看{first_watch}"
     return short_text(title, 18)
+
+
+def fund_stress_state(funds: list[dict[str, Any]]) -> dict[str, Any]:
+    moves = [to_number(item.get("day")) for item in funds if item.get("day") not in (None, "", "待核验")]
+    if not moves:
+        return {"active": False, "avg": 0.0, "weak_count": 0, "total": 0, "worst": 0.0}
+    weak_count = sum(1 for value in moves if value < 0)
+    total = len(moves)
+    avg = sum(moves) / total
+    worst = min(moves)
+    active = weak_count >= max(4, total // 3) or avg <= -0.8 or worst <= -2.5
+    return {
+        "active": active,
+        "avg": avg,
+        "weak_count": weak_count,
+        "total": total,
+        "worst": worst,
+    }
+
+
+def urgent_daily_fields(
+    *,
+    as_of: date,
+    signal: str,
+    action: str,
+    core_names: str,
+    reserve_names: str,
+    risk_names: str,
+    top_fund: dict[str, Any] | None,
+    weak_fund: dict[str, Any] | None,
+    stress: dict[str, Any],
+) -> dict[str, str]:
+    core_tight = short_join(core_names, 3)
+    reserve_tight = short_join(reserve_names, 2)
+    risk_tight = compact_risk_names(risk_names)
+    top_text = compact_fund_focus(top_fund, weak_fund)
+    weak_count = int(stress.get("weak_count") or 0)
+    total = int(stress.get("total") or 0)
+    if action == "防守" or signal == "红灯":
+        judgement = f"今天结论：红灯防守，{weak_count}/{total}只基金走弱，先把目标从找机会切到控回撤。"
+        position = "仓位建议：先降高波动仓位，暂停左侧加仓，保留现金等风险回落。"
+        need = f"今日动作：先做三件事：1）不加仓；2）检查弱项是否破位；3）只看{core_tight}能否放量止跌。"
+        reason = f"防守原因：{risk_tight}压制风险偏好，弱项扩散时先保护本金。"
+        risk = f"主要风险：普跌后弱修复再下杀；若{core_tight}缩量反弹，继续防守。"
+    else:
+        judgement = f"今天结论：黄灯偏防守，{weak_count}/{total}只基金走弱，不是普通震荡；先控回撤，暂停加仓。"
+        position = "仓位建议：高波动仓位先降速，AI/半导体、PCB、有色等只等放量修复，不补跌。"
+        need = f"今日动作：1）停止追高和补跌；2）盯{core_tight}能否放量收复；3）核对强弱分化：{top_text}。"
+        reason = f"不操作原因：基金端普跌，{risk_tight}仍偏敏感，主线需成交和订单重新确认。"
+        risk = f"主要风险：科技链和高波动资产同步补跌；若成交不足，{reserve_tight}可能继续拖累组合。"
+    review = f"下次复盘：看{core_tight}是否放量止跌，{reserve_tight}是否继续转弱。"
+    return {
+        "asOf": f"{fmt_slash(as_of)} 05:00 HKT",
+        "signal": signal,
+        "action": action,
+        "marketJudgement": judgement,
+        "positionAdvice": position,
+        "needAction": need,
+        "actionReason": reason,
+        "riskPoint": risk,
+        "nextReview": review,
+    }
 
 
 def compact_risk_names(risk_names: str) -> str:
@@ -1036,7 +1107,7 @@ def cn_blocking_modules(modules: list[str]) -> str:
 def top_fund_moves(funds: list[dict[str, Any]]) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
     if not funds:
         return None, None
-    sortable = [item for item in funds if isinstance(item.get("day"), (int, float))]
+    sortable = [item for item in funds if item.get("day") not in (None, "", "待核验")]
     if not sortable:
         return None, None
     return max(sortable, key=lambda item: to_number(item.get("day"))), min(sortable, key=lambda item: to_number(item.get("day")))
@@ -1097,18 +1168,32 @@ def update_daily(data: dict[str, Any], as_of: date) -> None:
     news = dedupe_news_items(data.get("financeNews", []), 10)
     data["financeNews"] = news
     risk_names = "、".join(short_text(item.get("name"), 8) for item in risks[:3]) or "风险指标"
-    data["daily"] = compact_daily_fields(
-        as_of=as_of,
-        signal=signal,
-        action=action,
-        core_names=core_names,
-        reserve_names=reserve_names,
-        risk_names=risk_names,
-        risk_focus=risk_focus,
-        top_fund=top_fund,
-        weak_fund=weak_fund,
-        news_items=news,
-    )
+    stress = fund_stress_state(data.get("fundHoldings", []))
+    if stress.get("active"):
+        data["daily"] = urgent_daily_fields(
+            as_of=as_of,
+            signal=signal,
+            action=action,
+            core_names=core_names,
+            reserve_names=reserve_names,
+            risk_names=risk_names,
+            top_fund=top_fund,
+            weak_fund=weak_fund,
+            stress=stress,
+        )
+    else:
+        data["daily"] = compact_daily_fields(
+            as_of=as_of,
+            signal=signal,
+            action=action,
+            core_names=core_names,
+            reserve_names=reserve_names,
+            risk_names=risk_names,
+            risk_focus=risk_focus,
+            top_fund=top_fund,
+            weak_fund=weak_fund,
+            news_items=news,
+        )
 
 
 def build_dashboard() -> tuple[dict[str, Any], list[str]]:
