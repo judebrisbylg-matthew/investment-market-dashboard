@@ -669,7 +669,7 @@
       "confidence": "中高",
       "included": "是",
       "score": 5,
-      "refreshStatus": "公开新闻源刷新：公开新闻聚合源，发布时间 2026-06-28T02:02+08:00"
+      "refreshStatus": "公开新闻源刷新：公开新闻聚合源，发布时间 2026-06-28T03:58+08:00"
     },
     {
       "date": "2026/6/27",
@@ -780,7 +780,7 @@
       "refreshStatus": "当天RSS有效新闻不足10条，沿用最近可靠新闻；原始来源日期 2026/6/25。"
     }
   ],
-  "generatedAt": "2026-06-28T05:06:35+08:00",
+  "generatedAt": "2026-06-28T05:59:18+08:00",
   "automation": {
     "source": "GitHub Actions",
     "timezone": "Asia/Hong_Kong",
