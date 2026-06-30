@@ -695,9 +695,94 @@ def update_industry(data: dict[str, Any], as_of: date) -> None:
     items = list(data.get("industryWatch", []))
     if not items:
         return
+    tactical_overlay = {
+        "创新药/生物科技": {
+            "tier": "核心主线",
+            "prosperity": 80,
+            "heat": 82,
+            "risk": 62,
+            "operation": "继续观察",
+            "news": "创新药阶段强度明显提升，若指数创阶段新高且成交放大，说明资金正在从纯AI拥挤交易切向医药成长。",
+            "valuation": "不能只看过去几年跌幅，重点看管线价值、BD授权、临床数据、现金消耗和港股医药成交。",
+            "reason": "由候补上调为核心主线，但不直接追高；先看新高后能否放量站稳。",
+            "nextSignal": "创新药指数是否放量新高、港股医药成交额、BD授权金额、临床数据、FDA/国内审批",
+        },
+        "有色金属/资源品": {
+            "tier": "核心主线",
+            "prosperity": 78,
+            "heat": 76,
+            "risk": 68,
+            "operation": "止盈跟踪",
+            "news": "有色仍受美元、实际利率和商品价格联动影响，是宏观与商品共振的交易主线。",
+            "reason": "趋势仍强，但对美元、实际利率和商品价格很敏感，适合边走边看。",
+        },
+        "PCB/高速铜连接": {
+            "tier": "核心主线",
+            "prosperity": 74,
+            "heat": 72,
+            "risk": 80,
+            "operation": "暂不追高",
+            "news": "PCB和高速铜连接仍受AI服务器订单预期支撑，但若AI链连续调整，短线也会被估值和拥挤度拖累。",
+            "reason": "逻辑还在，但需要订单、毛利率和成交额确认，不能只按AI外溢逻辑排在前面。",
+        },
+        "AI算力/半导体": {
+            "tier": "核心主线",
+            "prosperity": 72,
+            "heat": 68,
+            "risk": 88,
+            "operation": "暂不追高",
+            "news": "AI仍是长期主线，但若板块持续大跌，说明拥挤交易和估值压力正在释放，当前机会评分必须下调。",
+            "valuation": "AI/半导体估值仍偏高，必须看云厂Capex、英伟达链条订单、毛利率和成交额能否修复。",
+            "reason": "长期主线不等于当天排名第一；没有止跌放量前，只能观察，不主动加仓。",
+            "nextSignal": "云厂Capex、英伟达链条订单、HBM/先进封装、费半/纳指、成交额、10Y TIPS",
+        },
+        "电力/数据中心能源": {
+            "tier": "核心主线",
+            "prosperity": 66,
+            "heat": 58,
+            "risk": 46,
+            "operation": "继续观察",
+        },
+        "机器人/智能制造": {
+            "tier": "候补轮动",
+            "prosperity": 64,
+            "heat": 58,
+            "risk": 66,
+            "operation": "继续观察",
+        },
+        "新能源车/电池": {
+            "tier": "候补轮动",
+            "prosperity": 59,
+            "heat": 50,
+            "risk": 52,
+            "operation": "继续观察",
+        },
+        "消费电子/AI终端": {
+            "tier": "候补轮动",
+            "prosperity": 56,
+            "heat": 49,
+            "risk": 66,
+            "operation": "观察等待",
+        },
+        "低空经济/军工": {
+            "tier": "候补轮动",
+            "prosperity": 54,
+            "heat": 50,
+            "risk": 74,
+            "operation": "观察等待",
+        },
+        "游戏传媒/AI应用": {
+            "tier": "候补轮动",
+            "prosperity": 52,
+            "heat": 46,
+            "risk": 66,
+            "operation": "观察等待",
+        },
+    }
     for item in items:
+        item.update(tactical_overlay.get(str(item.get("name", "")), {}))
         item["reviewDate"] = fmt_cn(as_of + timedelta(days=1))
-        item["refreshStatus"] = "云端复核排序；新闻/估值若无新增可靠源，则沿用最近可得判断"
+        item["refreshStatus"] = "云端复核排序；按当前机会评分重排，连续大跌降权，阶段新高升权"
         item.setdefault("news", "当日新闻/催化待核验。")
         item.setdefault("valuation", "估值待核验。")
         item.setdefault("reason", "操作原因待核验。")
@@ -705,8 +790,7 @@ def update_industry(data: dict[str, Any], as_of: date) -> None:
     items.sort(
         key=lambda x: (
             0 if x.get("tier") == "核心主线" else 1,
-            -float(x.get("prosperity", 0)),
-            -float(x.get("heat", 0)),
+            -industry_score(x),
             operation_priority(str(x.get("operation", ""))),
         )
     )
