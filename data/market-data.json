@@ -577,11 +577,11 @@
       "week": -4.47,
       "risk": "中",
       "decision": "观察等待",
-      "reason": "绿色电力信号不够强，维持观察。 净值日期 2026-06-30，沿用最近可得数据（滞后1天）；数据源：天天基金/东方财富。",
+      "reason": "绿色电力信号不够强，维持观察。 净值日期 2026-06-30，沿用最近可得数据（滞后1天）；数据源：天天基金/东方财富。 报表更新日期：2026年7月1日；数据源本次待核验。",
       "type": "指数/ETF联接",
       "latestNav": 1.0793,
       "navDate": "2026-06-30",
-      "refreshStatus": "净值日期 2026-06-30，沿用最近可得数据（滞后1天）"
+      "refreshStatus": "抓取失败，沿用上一版并待核验"
     },
     {
       "name": "华夏中证电网设备主题ETF发起式联接A",
@@ -615,7 +615,7 @@
       "confidence": "中高",
       "included": "是",
       "score": 9,
-      "refreshStatus": "公开新闻源刷新：美国财经电视台，发布时间 2026-07-01T04:46+08:00"
+      "refreshStatus": "今日RSS有效新闻不足（4条），沿用最近可靠新闻；需人工补充。"
     },
     {
       "date": "2026/6/30",
@@ -633,7 +633,7 @@
       "confidence": "中高",
       "included": "是",
       "score": 7,
-      "refreshStatus": "公开新闻源刷新：公开新闻聚合源，发布时间 2026-06-30T05:26+08:00"
+      "refreshStatus": "今日RSS有效新闻不足（4条），沿用最近可靠新闻；需人工补充。"
     },
     {
       "date": "2026/6/30",
@@ -651,7 +651,7 @@
       "confidence": "中高",
       "included": "是",
       "score": 6,
-      "refreshStatus": "公开新闻源刷新：公开新闻聚合源，发布时间 2026-06-30T10:39+08:00"
+      "refreshStatus": "今日RSS有效新闻不足（4条），沿用最近可靠新闻；需人工补充。"
     },
     {
       "date": "2026/6/30",
@@ -669,7 +669,7 @@
       "confidence": "中高",
       "included": "是",
       "score": 5,
-      "refreshStatus": "公开新闻源刷新：美国财经电视台，发布时间 2026-06-30T23:31+08:00"
+      "refreshStatus": "今日RSS有效新闻不足（4条），沿用最近可靠新闻；需人工补充。"
     },
     {
       "date": "2026/6/30",
@@ -687,7 +687,7 @@
       "confidence": "中高",
       "included": "是",
       "score": 5,
-      "refreshStatus": "公开新闻源刷新：公开新闻聚合源，发布时间 2026-06-30T11:41+08:00"
+      "refreshStatus": "今日RSS有效新闻不足（4条），沿用最近可靠新闻；需人工补充。"
     },
     {
       "date": "2026/6/29",
@@ -705,7 +705,7 @@
       "confidence": "中高",
       "included": "是",
       "score": 5,
-      "refreshStatus": "当天RSS有效新闻不足10条，沿用最近可靠新闻；原始来源日期 2026/6/29。"
+      "refreshStatus": "今日RSS有效新闻不足（4条），沿用最近可靠新闻；需人工补充。"
     },
     {
       "date": "2026/6/26",
@@ -723,7 +723,7 @@
       "confidence": "中高",
       "included": "是",
       "score": 4,
-      "refreshStatus": "当天RSS有效新闻不足10条，沿用最近可靠新闻；原始来源日期 2026/6/26。"
+      "refreshStatus": "今日RSS有效新闻不足（4条），沿用最近可靠新闻；需人工补充。"
     },
     {
       "date": "2026/6/25",
@@ -741,7 +741,7 @@
       "confidence": "中高",
       "included": "是",
       "score": 6,
-      "refreshStatus": "当天RSS有效新闻不足10条，沿用最近可靠新闻；原始来源日期 2026/6/25。"
+      "refreshStatus": "今日RSS有效新闻不足（4条），沿用最近可靠新闻；需人工补充。"
     },
     {
       "date": "2026/6/25",
@@ -759,7 +759,7 @@
       "confidence": "中高",
       "included": "是",
       "score": 6,
-      "refreshStatus": "当天RSS有效新闻不足10条，沿用最近可靠新闻；原始来源日期 2026/6/25。"
+      "refreshStatus": "今日RSS有效新闻不足（4条），沿用最近可靠新闻；需人工补充。"
     },
     {
       "date": "2026/6/25",
@@ -777,10 +777,10 @@
       "confidence": "中高",
       "included": "是",
       "score": 5,
-      "refreshStatus": "当天RSS有效新闻不足10条，沿用最近可靠新闻；原始来源日期 2026/6/25。"
+      "refreshStatus": "今日RSS有效新闻不足（4条），沿用最近可靠新闻；需人工补充。"
     }
   ],
-  "generatedAt": "2026-07-01T05:06:35+08:00",
+  "generatedAt": "2026-07-01T06:14:04+08:00",
   "automation": {
     "source": "GitHub Actions",
     "timezone": "Asia/Hong_Kong",
@@ -788,10 +788,9 @@
     "notionUpsert": "enabled when NOTION_* secrets exist"
   },
   "financeNewsStatus": {
-    "status": "RSS刷新",
+    "status": "沿用最近可靠新闻",
     "count": 10,
-    "freshCount": 5,
-    "note": "优先使用当天公开RSS高影响新闻；不足10条时用最近可靠新闻补齐并标注沿用。",
+    "note": "公开RSS有效新闻不足，仅抓到4条；未将旧新闻伪装成当天新新闻。",
     "errors": []
   },
   "sourceStatus": {
@@ -829,16 +828,16 @@
       ]
     },
     "news": {
-      "status": "RSS刷新",
+      "status": "沿用最近可靠新闻",
       "count": 10,
-      "freshCount": 5,
-      "note": "优先使用当天公开RSS高影响新闻；不足10条时用最近可靠新闻补齐并标注沿用。",
+      "note": "公开RSS有效新闻不足，仅抓到4条；未将旧新闻伪装成当天新新闻。",
       "errors": []
     },
     "asOf": "2026/7/1 05:00 HKT",
     "overall": "部分模块需核验",
     "blockingModules": [
-      "risk"
+      "risk",
+      "news"
     ]
   }
 }
