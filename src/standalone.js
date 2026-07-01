@@ -114,6 +114,8 @@ function formatIndustryLabel(name, compact) {
 }
 
 function industryScore(item) {
+  const explicitScore = Number(item.score);
+  if (Number.isFinite(explicitScore)) return Math.round(explicitScore);
   return Math.round(item.prosperity * .45 + item.heat * .3 + (100 - item.risk) * .25);
 }
 

@@ -691,110 +691,277 @@ def operation_priority(operation: str) -> int:
     return order.get(operation, 8)
 
 
-def update_industry(data: dict[str, Any], as_of: date) -> None:
-    items = list(data.get("industryWatch", []))
-    if not items:
-        return
-    tactical_overlay = {
-        "创新药/生物科技": {
-            "tier": "核心主线",
-            "prosperity": 80,
-            "heat": 82,
-            "risk": 62,
-            "operation": "继续观察",
-            "news": "创新药阶段强度明显提升，若指数创阶段新高且成交放大，说明资金正在从纯AI拥挤交易切向医药成长。",
-            "valuation": "不能只看过去几年跌幅，重点看管线价值、BD授权、临床数据、现金消耗和港股医药成交。",
-            "reason": "由候补上调为核心主线，但不直接追高；先看新高后能否放量站稳。",
-            "nextSignal": "创新药指数是否放量新高、港股医药成交额、BD授权金额、临床数据、FDA/国内审批",
-        },
-        "有色金属/资源品": {
-            "tier": "核心主线",
-            "prosperity": 78,
-            "heat": 76,
-            "risk": 68,
-            "operation": "止盈跟踪",
-            "news": "有色仍受美元、实际利率和商品价格联动影响，是宏观与商品共振的交易主线。",
-            "reason": "趋势仍强，但对美元、实际利率和商品价格很敏感，适合边走边看。",
-        },
-        "PCB/高速铜连接": {
-            "tier": "核心主线",
-            "prosperity": 74,
-            "heat": 72,
-            "risk": 80,
-            "operation": "暂不追高",
-            "news": "PCB和高速铜连接仍受AI服务器订单预期支撑，但若AI链连续调整，短线也会被估值和拥挤度拖累。",
-            "reason": "逻辑还在，但需要订单、毛利率和成交额确认，不能只按AI外溢逻辑排在前面。",
-        },
-        "AI算力/半导体": {
-            "tier": "核心主线",
-            "prosperity": 72,
-            "heat": 68,
-            "risk": 88,
-            "operation": "暂不追高",
-            "news": "AI仍是长期主线，但若板块持续大跌，说明拥挤交易和估值压力正在释放，当前机会评分必须下调。",
-            "valuation": "AI/半导体估值仍偏高，必须看云厂Capex、英伟达链条订单、毛利率和成交额能否修复。",
-            "reason": "长期主线不等于当天排名第一；没有止跌放量前，只能观察，不主动加仓。",
-            "nextSignal": "云厂Capex、英伟达链条订单、HBM/先进封装、费半/纳指、成交额、10Y TIPS",
-        },
-        "电力/数据中心能源": {
-            "tier": "核心主线",
-            "prosperity": 66,
-            "heat": 58,
-            "risk": 46,
-            "operation": "继续观察",
-        },
-        "机器人/智能制造": {
-            "tier": "候补轮动",
-            "prosperity": 64,
-            "heat": 58,
-            "risk": 66,
-            "operation": "继续观察",
-        },
-        "新能源车/电池": {
-            "tier": "候补轮动",
-            "prosperity": 59,
-            "heat": 50,
-            "risk": 52,
-            "operation": "继续观察",
-        },
-        "消费电子/AI终端": {
-            "tier": "候补轮动",
-            "prosperity": 56,
-            "heat": 49,
-            "risk": 66,
-            "operation": "观察等待",
-        },
-        "低空经济/军工": {
-            "tier": "候补轮动",
-            "prosperity": 54,
-            "heat": 50,
-            "risk": 74,
-            "operation": "观察等待",
-        },
-        "游戏传媒/AI应用": {
-            "tier": "候补轮动",
-            "prosperity": 52,
-            "heat": 46,
-            "risk": 66,
-            "operation": "观察等待",
-        },
-    }
-    for item in items:
-        item.update(tactical_overlay.get(str(item.get("name", "")), {}))
-        item["reviewDate"] = fmt_cn(as_of + timedelta(days=1))
-        item["refreshStatus"] = "云端复核排序；按当前机会评分重排，连续大跌降权，阶段新高升权"
-        item.setdefault("news", "当日新闻/催化待核验。")
-        item.setdefault("valuation", "估值待核验。")
-        item.setdefault("reason", "操作原因待核验。")
-        item.setdefault("nextSignal", "成交额、政策、订单、价格、业绩")
-    items.sort(
-        key=lambda x: (
-            0 if x.get("tier") == "核心主线" else 1,
-            -industry_score(x),
-            operation_priority(str(x.get("operation", ""))),
+def clamp_score(value: float, low: int = 30, high: int = 95) -> int:
+    return int(max(low, min(high, round(value))))
+
+
+def keyword_count(text: str, keywords: list[str]) -> int:
+    count = 0
+    for keyword in keywords:
+        if keyword:
+            count += text.count(keyword)
+    return count
+
+
+def fund_theme_stats(data: dict[str, Any], keywords: list[str]) -> dict[str, float]:
+    values: list[float] = []
+    for fund in data.get("fundHoldings", []):
+        haystack = " ".join(
+            str(fund.get(key, ""))
+            for key in ("name", "theme", "code", "reason", "decision")
         )
+        if any(keyword in haystack for keyword in keywords):
+            values.append(to_number(fund.get("day")))
+    if not values:
+        return {"count": 0, "avg": 0.0, "max": 0.0, "min": 0.0}
+    return {
+        "count": float(len(values)),
+        "avg": sum(values) / len(values),
+        "max": max(values),
+        "min": min(values),
+    }
+
+
+def operation_from_score(score: int, risk: int, day_max: float, day_min: float) -> str:
+    if day_max >= 4.0 and score >= 72:
+        return "止盈跟踪" if risk >= 75 else "继续观察"
+    if score >= 76:
+        return "暂不追高" if risk >= 76 else "建议加仓"
+    if score >= 66:
+        return "继续观察"
+    if score >= 56:
+        return "观察等待"
+    if day_min <= -4.0:
+        return "暂不加仓"
+    return "观察等待"
+
+
+def build_dynamic_industry_pool(data: dict[str, Any], as_of: date) -> list[dict[str, Any]]:
+    news_text = " ".join(
+        " ".join(
+            str(news.get(key, ""))
+            for key in (
+                "title",
+                "content",
+                "summary",
+                "category",
+                "assets",
+                "meaning",
+                "action",
+                "watch",
+                "source",
+                "direction",
+                "impact",
+                "horizon",
+                "follow",
+            )
+        )
+        for news in data.get("financeNews", [])
     )
-    data["industryWatch"] = items
+    today_label = fmt_cn(as_of)
+    specs = [
+        {
+            "name": "AI芯片/半导体",
+            "base": 66,
+            "risk": 84,
+            "keywords": ["AI", "人工智能", "芯片", "半导体", "英伟达", "美光", "高通", "GPU", "算力", "先进封装"],
+            "fundKeywords": ["AI/半导体", "通信/设备", "全球科技互联网", "AI/互联网"],
+            "companies": "英伟达、台积电、中际旭创、新易盛、寒武纪、海光信息",
+            "etf": "中证人工智能931071、半导体ETF、通信设备ETF、全球科技QDII",
+            "valuation": "估值偏高但主线最强，必须看订单、业绩、Capex和成交额是否继续放大。",
+            "signal": "美股芯片、费半、AI链成交额、云厂Capex、先进封装和HBM订单",
+        },
+        {
+            "name": "存储/HBM",
+            "base": 67,
+            "risk": 78,
+            "keywords": ["存储", "HBM", "美光", "DRAM", "NAND", "内存", "高带宽内存"],
+            "fundKeywords": ["AI/半导体", "全球科技互联网"],
+            "companies": "美光、SK海力士、三星电子、兆易创新、澜起科技、佰维存储",
+            "etf": "半导体ETF、存储芯片指数、科创芯片ETF",
+            "valuation": "周期修复和AI需求共振，重点看价格、库存和HBM订单，不按传统医药逻辑排序。",
+            "signal": "美光指引、DRAM/NAND价格、HBM供需、国产存储成交额",
+        },
+        {
+            "name": "PCB/高速铜连接",
+            "base": 65,
+            "risk": 80,
+            "keywords": ["PCB", "高速铜", "铜连接", "交换机", "服务器", "AI服务器", "光模块"],
+            "fundKeywords": ["通信/设备", "先进制造", "AI/半导体"],
+            "companies": "沪电股份、胜宏科技、生益科技、深南电路、沃尔核材",
+            "etf": "PCB指数、通信设备ETF、电子ETF",
+            "valuation": "AI服务器扩散方向，订单兑现前估值容易波动。",
+            "signal": "交换机订单、PCB毛利率、高速铜连接订单、服务器出货",
+        },
+        {
+            "name": "光模块/CPO",
+            "base": 64,
+            "risk": 76,
+            "keywords": ["光模块", "CPO", "光通信", "交换机", "数据中心", "高速互联"],
+            "fundKeywords": ["通信/设备", "AI/半导体"],
+            "companies": "中际旭创、新易盛、天孚通信、光迅科技、源杰科技",
+            "etf": "通信设备ETF、光模块指数、人工智能ETF",
+            "valuation": "AI互联核心方向，订单和业绩确定性比纯题材更重要。",
+            "signal": "800G/1.6T订单、云厂资本开支、光模块毛利率",
+        },
+        {
+            "name": "AI服务器/液冷",
+            "base": 64,
+            "risk": 72,
+            "keywords": ["AI服务器", "液冷", "数据中心", "服务器", "算力中心", "电源"],
+            "fundKeywords": ["通信/设备", "先进制造", "电网设备", "绿色电力"],
+            "companies": "工业富联、浪潮信息、中科曙光、英维克、申菱环境",
+            "etf": "云计算ETF、数据中心指数、通信设备ETF",
+            "valuation": "AI算力扩散到服务器和散热，订单能见度决定排名。",
+            "signal": "服务器订单、液冷招标、云厂Capex、电力配套",
+        },
+        {
+            "name": "有色金属/资源品",
+            "base": 48,
+            "risk": 68,
+            "keywords": ["有色", "铜", "铝", "黄金", "资源品", "金属"],
+            "newsCap": 14,
+            "fundKeywords": ["有色金属"],
+            "companies": "紫金矿业、洛阳钼业、中国铝业、江西铜业、山东黄金",
+            "etf": "中证有色金属000819、有色ETF、黄金ETF",
+            "valuation": "商品价格、美元和实际利率共同定价，强趋势可跟踪但不宜盲追。",
+            "signal": "铜价、金价、美元指数、实际利率、库存",
+        },
+        {
+            "name": "机器人/智能制造",
+            "base": 54,
+            "risk": 66,
+            "keywords": ["机器人", "智能制造", "自动化", "工业软件", "具身智能"],
+            "fundKeywords": ["先进制造", "成长/动力"],
+            "companies": "汇川技术、三花智控、绿的谐波、埃斯顿、鸣志电器",
+            "etf": "机器人指数、智能制造ETF、先进制造ETF",
+            "valuation": "政策和产业预期仍在，但需要订单兑现。",
+            "signal": "机器人订单、量产进度、设备更新政策、工业自动化数据",
+        },
+        {
+            "name": "电力/数据中心能源",
+            "base": 53,
+            "risk": 46,
+            "keywords": ["电力", "数据中心", "绿电", "核电", "电网", "用电需求"],
+            "fundKeywords": ["绿色电力", "电网设备"],
+            "companies": "长江电力、华能国际、中国核电、国电南瑞、许继电气",
+            "etf": "绿色电力指数、公用事业指数、电网设备ETF",
+            "valuation": "AI耗电和电网投资提供中期支撑，但弹性低于芯片链。",
+            "signal": "数据中心用电、电价政策、电网投资、核电审批",
+        },
+        {
+            "name": "消费电子/AI终端",
+            "base": 48,
+            "risk": 66,
+            "keywords": ["消费电子", "AI终端", "AI手机", "智能眼镜", "苹果", "Meta", "端侧AI"],
+            "newsCap": 16,
+            "fundKeywords": ["消费电子", "AI/互联网"],
+            "companies": "立讯精密、歌尔股份、蓝思科技、鹏鼎控股、传音控股",
+            "etf": "消费电子931494、电子ETF、AI终端指数",
+            "valuation": "终端销量和新品验证决定强弱，不能只靠概念。",
+            "signal": "AI手机/眼镜销量、苹果链订单、端侧AI渗透率",
+        },
+        {
+            "name": "创新药/生物科技",
+            "base": 49,
+            "risk": 62,
+            "keywords": ["创新药", "医药", "生物科技", "ADC", "BD", "临床", "FDA"],
+            "fundKeywords": ["医药", "创新药"],
+            "companies": "百济神州、恒瑞医药、信达生物、科伦博泰、康方生物",
+            "etf": "创新药指数、恒生医疗保健、医药ETF",
+            "valuation": "长期下跌后有修复空间，但只有放量新高和BD现金流确认才上调。",
+            "signal": "BD授权金额、临床数据、审批进度、港股医药成交额",
+        },
+        {
+            "name": "新能源车/电池",
+            "base": 47,
+            "risk": 52,
+            "keywords": ["新能源车", "电池", "锂", "储能", "车企", "销量"],
+            "fundKeywords": ["新能源车/电池"],
+            "companies": "宁德时代、比亚迪、亿纬锂能、阳光电源、赣锋锂业",
+            "etf": "新能源车399417、电池ETF、储能ETF",
+            "valuation": "价格战和盈利周期仍压制，反弹要看销量和锂价止跌。",
+            "signal": "月度销量、锂价、电池毛利率、储能订单",
+        },
+        {
+            "name": "低空经济/军工",
+            "base": 46,
+            "risk": 74,
+            "keywords": ["低空经济", "军工", "无人机", "航空", "商业航天", "订单"],
+            "fundKeywords": ["航空航天"],
+            "companies": "中无人机、中航沈飞、航天电子、纵横股份、宗申动力",
+            "etf": "军工指数、低空经济概念指数、航空航天ETF",
+            "valuation": "政策主题热度在，但商业化和订单兑现不足时只作轮动。",
+            "signal": "适航审批、军工订单、低空商业化、无人机交付",
+        },
+        {
+            "name": "游戏传媒/AI应用",
+            "base": 45,
+            "risk": 66,
+            "keywords": ["游戏", "传媒", "AI应用", "内容生成", "广告", "短剧"],
+            "fundKeywords": ["游戏", "传媒", "AI/互联网"],
+            "companies": "腾讯控股、网易、三七互娱、恺英网络、昆仑万维",
+            "etf": "游戏ETF、传媒ETF、软件服务指数",
+            "valuation": "AI应用商业化仍在验证，必须看到收入兑现。",
+            "signal": "流水、版号、广告收入、AI应用付费率",
+        },
+    ]
+
+    scored: list[dict[str, Any]] = []
+    for spec in specs:
+        hits = keyword_count(news_text, spec["keywords"])
+        fund_stats = fund_theme_stats(data, spec["fundKeywords"])
+        fund_boost = max(-8.0, min(14.0, fund_stats["max"] * 2.2))
+        if fund_stats["avg"] < -2.0:
+            fund_boost -= 4.0
+        if fund_stats["max"] >= 3.0:
+            fund_boost += 4.0
+        news_boost = min(float(spec.get("newsCap", 24.0)), hits * 2.2)
+        mainline_bonus = 0.0
+        if spec["name"] in {"AI芯片/半导体", "存储/HBM", "PCB/高速铜连接", "光模块/CPO", "AI服务器/液冷"}:
+            if hits > 0 or fund_stats["max"] > 0:
+                mainline_bonus = 5.0
+        risk_penalty = max(0.0, (spec["risk"] - 72) * 0.22)
+        score = clamp_score(spec["base"] + news_boost + fund_boost + mainline_bonus - risk_penalty)
+        prosperity = clamp_score(score + min(8, hits) - max(0, (spec["risk"] - 80) // 4))
+        heat = clamp_score(score + min(10, hits * 2) + max(0.0, fund_stats["max"]))
+        operation = operation_from_score(score, spec["risk"], fund_stats["max"], fund_stats["min"])
+        if hits == 0 and fund_stats["count"] == 0:
+            summary = f"{spec['name']}暂无新增强催化，保留观察但不作为优先主线。"
+        elif fund_stats["max"] >= 3:
+            summary = f"{spec['name']}短线放量升温，资金正在验证；先看强度能否延续，不盲目追高。"
+        elif hits >= 3:
+            summary = f"{spec['name']}新闻催化升温，需结合成交和订单/业绩确认。"
+        else:
+            summary = f"{spec['name']}有边际催化，但强度仍需市场确认。"
+        scored.append(
+            {
+                "name": spec["name"],
+                "score": score,
+                "prosperity": prosperity,
+                "heat": heat,
+                "risk": spec["risk"],
+                "operation": operation,
+                "companies": spec["companies"],
+                "etf": spec["etf"],
+                "valuation": spec["valuation"],
+                "news": summary,
+                "reason": f"动态评分={score}；新闻命中{hits}项，关联基金/指数最高日涨跌{fund_stats['max']:.2f}%。",
+                "nextSignal": spec["signal"],
+                "reviewDate": fmt_cn(as_of + timedelta(days=1)),
+                "refreshStatus": f"{today_label}动态重排：按新闻催化、关联行情、资金热度和风险扣分评分",
+            }
+        )
+
+    scored.sort(key=lambda x: (-to_number(x.get("score")), operation_priority(str(x.get("operation", ""))), x["name"]))
+    selected = scored[:10]
+    for idx, item in enumerate(selected):
+        item["tier"] = "核心主线" if idx < 5 else "候补轮动"
+    return selected
+
+
+def update_industry(data: dict[str, Any], as_of: date) -> None:
+    data["industryWatch"] = build_dynamic_industry_pool(data, as_of)
 
 
 def update_experts(data: dict[str, Any], as_of: date) -> None:
@@ -1134,6 +1301,9 @@ def compact_daily_fields(
 
 
 def industry_score(item: dict[str, Any]) -> float:
+    explicit = to_number(item.get("score"))
+    if explicit:
+        return explicit
     prosperity = to_number(item.get("prosperity"))
     heat = to_number(item.get("heat"))
     risk = to_number(item.get("risk"))
@@ -1287,10 +1457,10 @@ def build_dashboard() -> tuple[dict[str, Any], list[str]]:
     as_of = today_hkt()
     update_risk_market_data(data, as_of)
     risk_status = annotate_risk_status(data, as_of)
-    update_industry(data, as_of)
-    update_experts(data, as_of)
     update_finance_news(data, as_of)
     _, checks = update_funds(data, as_of)
+    update_industry(data, as_of)
+    update_experts(data, as_of)
     build_source_status(data, as_of, risk_status, checks)
     update_daily(data, as_of)
     data["generatedAt"] = datetime.now(HKT).isoformat(timespec="seconds")
