@@ -736,41 +736,24 @@ def operation_from_score(score: int, risk: int, day_max: float, day_min: float) 
     return "观察等待"
 
 
-def build_dynamic_industry_pool(data: dict[str, Any], as_of: date) -> list[dict[str, Any]]:
-    news_text = " ".join(
-        " ".join(
-            str(news.get(key, ""))
-            for key in (
-                "title",
-                "content",
-                "summary",
-                "category",
-                "assets",
-                "meaning",
-                "action",
-                "watch",
-                "source",
-                "direction",
-                "impact",
-                "horizon",
-                "follow",
-            )
-        )
-        for news in data.get("financeNews", [])
-    )
-    today_label = fmt_cn(as_of)
-    specs = [
-        {
-            "name": "AI芯片/半导体",
-            "base": 66,
-            "risk": 84,
-            "keywords": ["AI", "人工智能", "芯片", "半导体", "英伟达", "美光", "高通", "GPU", "算力", "先进封装"],
-            "fundKeywords": ["AI/半导体", "通信/设备", "全球科技互联网", "AI/互联网"],
-            "companies": "英伟达、台积电、中际旭创、新易盛、寒武纪、海光信息",
-            "etf": "中证人工智能931071、半导体ETF、通信设备ETF、全球科技QDII",
-            "valuation": "估值偏高但主线最强，必须看订单、业绩、Capex和成交额是否继续放大。",
-            "signal": "美股芯片、费半、AI链成交额、云厂Capex、先进封装和HBM订单",
-        },
+def compact_keywords(text: str, keywords: list[str], limit: int = 4) -> str:
+    hits = [keyword for keyword in keywords if keyword and keyword in text]
+    return "、".join(hits[:limit]) if hits else "成交额、新闻催化、代表ETF"
+
+
+def discover_emerging_industry_specs(
+    data: dict[str, Any],
+    news_text: str,
+    existing_specs: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Find non-fixed market themes from current news and fund/ETF movement."""
+    existing_names = {str(spec["name"]) for spec in existing_specs}
+    existing_fund_keywords = {
+        keyword
+        for spec in existing_specs
+        for keyword in spec.get("fundKeywords", [])
+    }
+    emerging_rules = [
         {
             "name": "存储/HBM",
             "base": 67,
@@ -779,19 +762,8 @@ def build_dynamic_industry_pool(data: dict[str, Any], as_of: date) -> list[dict[
             "fundKeywords": ["AI/半导体", "全球科技互联网"],
             "companies": "美光、SK海力士、三星电子、兆易创新、澜起科技、佰维存储",
             "etf": "半导体ETF、存储芯片指数、科创芯片ETF",
-            "valuation": "周期修复和AI需求共振，重点看价格、库存和HBM订单，不按传统医药逻辑排序。",
+            "valuation": "周期修复和AI需求共振，重点看价格、库存和HBM订单。",
             "signal": "美光指引、DRAM/NAND价格、HBM供需、国产存储成交额",
-        },
-        {
-            "name": "PCB/高速铜连接",
-            "base": 65,
-            "risk": 80,
-            "keywords": ["PCB", "高速铜", "铜连接", "交换机", "服务器", "AI服务器", "光模块"],
-            "fundKeywords": ["通信/设备", "先进制造", "AI/半导体"],
-            "companies": "沪电股份、胜宏科技、生益科技、深南电路、沃尔核材",
-            "etf": "PCB指数、通信设备ETF、电子ETF",
-            "valuation": "AI服务器扩散方向，订单兑现前估值容易波动。",
-            "signal": "交换机订单、PCB毛利率、高速铜连接订单、服务器出货",
         },
         {
             "name": "光模块/CPO",
@@ -816,6 +788,181 @@ def build_dynamic_industry_pool(data: dict[str, Any], as_of: date) -> list[dict[
             "signal": "服务器订单、液冷招标、云厂Capex、电力配套",
         },
         {
+            "name": "机器人/智能制造",
+            "base": 54,
+            "risk": 66,
+            "keywords": ["机器人", "智能制造", "自动化", "工业软件", "具身智能"],
+            "fundKeywords": ["先进制造", "成长/动力"],
+            "companies": "汇川技术、三花智控、绿的谐波、埃斯顿、鸣志电器",
+            "etf": "机器人指数、智能制造ETF、先进制造ETF",
+            "valuation": "政策和产业预期仍在，但需要订单兑现。",
+            "signal": "机器人订单、量产进度、设备更新政策、工业自动化数据",
+        },
+        {
+            "name": "低空经济/军工",
+            "base": 46,
+            "risk": 74,
+            "keywords": ["低空经济", "军工", "无人机", "航空", "商业航天", "订单"],
+            "fundKeywords": ["航空航天"],
+            "companies": "中无人机、中航沈飞、航天电子、纵横股份、宗申动力",
+            "etf": "军工指数、低空经济概念指数、航空航天ETF",
+            "valuation": "政策主题热度在，但商业化和订单兑现不足时只作轮动。",
+            "signal": "适航审批、军工订单、低空商业化、无人机交付",
+        },
+        {
+            "name": "电网设备/特高压",
+            "base": 50,
+            "risk": 52,
+            "keywords": ["电网", "特高压", "电力设备", "变压器", "出海", "电网投资"],
+            "fundKeywords": ["电网设备", "绿色电力"],
+            "companies": "国电南瑞、许继电气、平高电气、思源电气、特变电工",
+            "etf": "电网设备ETF、绿色电力ETF、公用事业指数",
+            "valuation": "电网投资和设备出海支撑中线，但弹性取决于订单。",
+            "signal": "电网投资、特高压核准、设备出海订单、变压器价格",
+        },
+        {
+            "name": "稀土/小金属",
+            "base": 49,
+            "risk": 70,
+            "keywords": ["稀土", "小金属", "钨", "锑", "钼", "战略金属"],
+            "fundKeywords": ["有色金属"],
+            "companies": "北方稀土、中国稀土、厦门钨业、洛阳钼业、湖南黄金",
+            "etf": "有色ETF、稀土指数、小金属指数",
+            "valuation": "商品与供给约束驱动，必须结合价格和库存确认。",
+            "signal": "稀土价格、出口管制、库存、资源品成交额",
+        },
+        {
+            "name": "券商/金融科技",
+            "base": 45,
+            "risk": 60,
+            "keywords": ["券商", "金融科技", "证券", "牛市", "成交额", "并购重组"],
+            "fundKeywords": ["A股宽基"],
+            "companies": "东方财富、中信证券、华泰证券、同花顺、指南针",
+            "etf": "证券ETF、金融科技指数、沪深300",
+            "valuation": "只在成交额和风险偏好明显扩张时进入主线。",
+            "signal": "A股成交额、两融余额、券商政策、指数放量",
+        },
+        {
+            "name": "稳定币/金融科技",
+            "base": 44,
+            "risk": 78,
+            "keywords": ["稳定币", "数字货币", "加密", "Web3", "支付", "区块链"],
+            "fundKeywords": ["AI/互联网", "全球科技互联网"],
+            "companies": "港股金融科技、互联网支付、区块链服务商",
+            "etf": "金融科技指数、港股互联网ETF、全球科技QDII",
+            "valuation": "政策和交易弹性强，但主题波动大，需要严格风控。",
+            "signal": "监管政策、稳定币法案、交易量、港股金融科技成交额",
+        },
+        {
+            "name": "港股科技/平台经济",
+            "base": 50,
+            "risk": 66,
+            "keywords": ["港股", "恒生科技", "平台经济", "互联网平台", "南向资金"],
+            "fundKeywords": ["AI/互联网", "全球科技互联网"],
+            "companies": "腾讯、阿里、美团、快手、小米、京东",
+            "etf": "恒生科技指数、港股互联网ETF、中概互联网ETF",
+            "valuation": "受南向资金、美元利率和盈利修复共同影响。",
+            "signal": "南向资金、恒生科技成交额、平台盈利、美元利率",
+        },
+        {
+            "name": "银行/红利资产",
+            "base": 43,
+            "risk": 38,
+            "keywords": ["银行", "红利", "股息", "高股息", "保险", "防御"],
+            "fundKeywords": ["A股宽基"],
+            "companies": "工商银行、农业银行、中国移动、长江电力、中国神华",
+            "etf": "红利低波ETF、银行ETF、高股息指数",
+            "valuation": "防御属性强，但不是进攻主线；风险偏好下降时升权。",
+            "signal": "股息率、10年期国债收益率、资金防御偏好",
+        },
+    ]
+
+    discovered: list[dict[str, Any]] = []
+    for spec in emerging_rules:
+        if spec["name"] in existing_names:
+            continue
+        hits = keyword_count(news_text, spec["keywords"])
+        stats = fund_theme_stats(data, spec["fundKeywords"])
+        if hits > 0 or stats["max"] >= 2.5 or stats["avg"] >= 1.5:
+            discovered.append(spec)
+            existing_names.add(spec["name"])
+
+    theme_rows: dict[str, list[dict[str, Any]]] = {}
+    for fund in data.get("fundHoldings", []):
+        theme = str(fund.get("theme", "")).strip()
+        if not theme or theme in existing_fund_keywords:
+            continue
+        theme_rows.setdefault(theme, []).append(fund)
+    for theme, rows in theme_rows.items():
+        day_values = [to_number(row.get("day")) for row in rows]
+        avg_day = sum(day_values) / len(day_values)
+        max_day = max(day_values)
+        if max_day < 2.8 and avg_day < 1.8:
+            continue
+        fund_names = "、".join(str(row.get("name", "")) for row in rows[:4])
+        discovered.append(
+            {
+                "name": theme,
+                "base": 48,
+                "risk": 66,
+                "keywords": [theme],
+                "fundKeywords": [theme],
+                "companies": fund_names or f"{theme}代表基金/ETF",
+                "etf": fund_names or f"{theme}相关指数/ETF",
+                "valuation": "由当天基金/ETF表现触发进入动态候选池，需补充估值和成交验证。",
+                "signal": f"{theme}基金净值、成交额、新闻催化、代表ETF强弱",
+            }
+        )
+    return discovered
+
+
+def build_dynamic_industry_pool(data: dict[str, Any], as_of: date) -> list[dict[str, Any]]:
+    news_text = " ".join(
+        " ".join(
+            str(news.get(key, ""))
+            for key in (
+                "title",
+                "content",
+                "summary",
+                "category",
+                "assets",
+                "meaning",
+                "action",
+                "watch",
+                "source",
+                "direction",
+                "impact",
+                "horizon",
+                "follow",
+            )
+        )
+        for news in data.get("financeNews", [])
+    )
+    today_label = fmt_cn(as_of)
+    core_specs = [
+        {
+            "name": "AI芯片/半导体",
+            "base": 66,
+            "risk": 84,
+            "keywords": ["AI", "人工智能", "芯片", "半导体", "英伟达", "美光", "高通", "GPU", "算力", "先进封装"],
+            "fundKeywords": ["AI/半导体", "通信/设备", "全球科技互联网", "AI/互联网"],
+            "companies": "英伟达、台积电、中际旭创、新易盛、寒武纪、海光信息",
+            "etf": "中证人工智能931071、半导体ETF、通信设备ETF、全球科技QDII",
+            "valuation": "估值偏高但主线最强，必须看订单、业绩、Capex和成交额是否继续放大。",
+            "signal": "美股芯片、费半、AI链成交额、云厂Capex、先进封装和HBM订单",
+        },
+        {
+            "name": "PCB/高速铜连接",
+            "base": 65,
+            "risk": 80,
+            "keywords": ["PCB", "高速铜", "铜连接", "交换机", "服务器", "AI服务器", "光模块"],
+            "fundKeywords": ["通信/设备", "先进制造", "AI/半导体"],
+            "companies": "沪电股份、胜宏科技、生益科技、深南电路、沃尔核材",
+            "etf": "PCB指数、通信设备ETF、电子ETF",
+            "valuation": "AI服务器扩散方向，订单兑现前估值容易波动。",
+            "signal": "交换机订单、PCB毛利率、高速铜连接订单、服务器出货",
+        },
+        {
             "name": "有色金属/资源品",
             "base": 48,
             "risk": 68,
@@ -826,17 +973,6 @@ def build_dynamic_industry_pool(data: dict[str, Any], as_of: date) -> list[dict[
             "etf": "中证有色金属000819、有色ETF、黄金ETF",
             "valuation": "商品价格、美元和实际利率共同定价，强趋势可跟踪但不宜盲追。",
             "signal": "铜价、金价、美元指数、实际利率、库存",
-        },
-        {
-            "name": "机器人/智能制造",
-            "base": 54,
-            "risk": 66,
-            "keywords": ["机器人", "智能制造", "自动化", "工业软件", "具身智能"],
-            "fundKeywords": ["先进制造", "成长/动力"],
-            "companies": "汇川技术、三花智控、绿的谐波、埃斯顿、鸣志电器",
-            "etf": "机器人指数、智能制造ETF、先进制造ETF",
-            "valuation": "政策和产业预期仍在，但需要订单兑现。",
-            "signal": "机器人订单、量产进度、设备更新政策、工业自动化数据",
         },
         {
             "name": "电力/数据中心能源",
@@ -884,17 +1020,6 @@ def build_dynamic_industry_pool(data: dict[str, Any], as_of: date) -> list[dict[
             "signal": "月度销量、锂价、电池毛利率、储能订单",
         },
         {
-            "name": "低空经济/军工",
-            "base": 46,
-            "risk": 74,
-            "keywords": ["低空经济", "军工", "无人机", "航空", "商业航天", "订单"],
-            "fundKeywords": ["航空航天"],
-            "companies": "中无人机、中航沈飞、航天电子、纵横股份、宗申动力",
-            "etf": "军工指数、低空经济概念指数、航空航天ETF",
-            "valuation": "政策主题热度在，但商业化和订单兑现不足时只作轮动。",
-            "signal": "适航审批、军工订单、低空商业化、无人机交付",
-        },
-        {
             "name": "游戏传媒/AI应用",
             "base": 45,
             "risk": 66,
@@ -906,6 +1031,7 @@ def build_dynamic_industry_pool(data: dict[str, Any], as_of: date) -> list[dict[
             "signal": "流水、版号、广告收入、AI应用付费率",
         },
     ]
+    specs = core_specs + discover_emerging_industry_specs(data, news_text, core_specs)
 
     scored: list[dict[str, Any]] = []
     for spec in specs:
