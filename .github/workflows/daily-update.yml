@@ -39,6 +39,26 @@ jobs:
           NOTION_DB_NEWS: ${{ secrets.NOTION_DB_NEWS }}
         run: python scripts/cloud_daily_update.py
 
+      - name: Validate industry discovery and dashboard payload
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          data = json.loads(Path("data/market-data.json").read_text(encoding="utf-8"))
+          status = data.get("industryDiscoveryStatus", {})
+          industries = data.get("industryWatch", [])
+          assert status.get("status") == "全市场扫描完成", status
+          assert int(status.get("boardCount", 0)) >= 100, status
+          assert len(industries) == 10, len(industries)
+          assert sum(item.get("tier") == "核心主线" for item in industries) == 5
+          assert sum(item.get("tier") == "候补轮动" for item in industries) == 5
+          assert all(item.get("marketDate") for item in industries)
+          assert all(item.get("reason") and item.get("refreshStatus") for item in industries)
+          assert len({item.get("name") for item in industries}) == 10
+          print("Industry discovery validation passed:", status)
+          PY
+
       - name: Commit and push if data changed
         run: |
           if git diff --quiet -- data/market-data.json; then

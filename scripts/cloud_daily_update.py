@@ -741,6 +741,139 @@ def compact_keywords(text: str, keywords: list[str], limit: int = 4) -> str:
     return "、".join(hits[:limit]) if hits else "成交额、新闻催化、代表ETF"
 
 
+BOARD_SCAN_URL = (
+    "https://push2.eastmoney.com/api/qt/clist/get?"
+    "pn={page}&pz=100&po=1&np=1&fltt=2&invt=2&fid=f3&"
+    "fs={market}&fields=f12,f14,f2,f3,f4,f8,f22,f62,f104,f105,f106,f124"
+)
+
+BOARD_FAMILIES: list[tuple[str, list[str]]] = [
+    ("机器人", ["机器人", "减速器", "执行器", "PEEK", "丝杠", "伺服", "电机"]),
+    ("AI算力", ["AI服务器", "液冷", "算力", "数据中心", "服务器", "英伟达"]),
+    ("半导体", ["芯片", "半导体", "存储", "HBM", "先进封装", "光刻", "GPU"]),
+    ("高速互联", ["光模块", "CPO", "铜连接", "PCB", "交换机", "光通信"]),
+    ("创新药", ["创新药", "生物医药", "医药", "医疗", "CXO", "ADC"]),
+    ("军工低空", ["军工", "低空", "航空", "航天", "无人机", "大飞机", "船舶"]),
+    ("汽车", ["汽车", "特斯拉", "智驾", "一体化压铸", "热管理", "底盘", "发动机"]),
+    ("新能源", ["电池", "储能", "锂", "光伏", "风电", "新能源"]),
+    ("电力电网", ["电网", "特高压", "电力", "核电", "变压器", "绿电"]),
+    ("资源品", ["黄金", "贵金属", "白银", "有色", "稀土", "小金属", "铜", "铝", "钨", "锑"]),
+    ("消费电子", ["消费电子", "AI眼镜", "智能眼镜", "苹果", "华为手机"]),
+    ("传媒应用", ["游戏", "传媒", "短剧", "AI应用", "广告营销"]),
+    ("金融", ["券商", "金融科技", "银行", "保险", "稳定币", "数字货币"]),
+]
+
+
+def board_family(name: str) -> str:
+    for family, keywords in BOARD_FAMILIES:
+        if any(keyword.lower() in name.lower() for keyword in keywords):
+            return family
+    return name
+
+
+def fetch_market_board_scan(as_of: date) -> list[dict[str, Any]]:
+    """Scan the whole Eastmoney industry/concept universe for daily leaders.
+
+    This is the discovery layer. Fund holdings are only a validation signal and
+    never define the candidate universe.
+    """
+    rows: list[dict[str, Any]] = []
+    errors: list[str] = []
+    for market in ("m:90+t:3", "m:90+t:2"):
+        for page in range(1, 7):
+            try:
+                payload = request_json(BOARD_SCAN_URL.format(market=market, page=page), timeout=25)
+                page_rows = payload.get("data", {}).get("diff", []) or []
+                rows.extend(page_rows)
+                if len(page_rows) < 100:
+                    break
+            except (HTTPError, URLError, TimeoutError, ValueError, TypeError) as exc:
+                errors.append(f"{market}/page{page}: {exc}")
+                break
+    if not rows:
+        raise RuntimeError("全市场板块扫描失败：" + "；".join(errors or ["接口无数据"]))
+
+    normalized: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for row in rows:
+        name = safe_text(row.get("f14"))
+        code = safe_text(row.get("f12"))
+        if not name or not code or code in seen:
+            continue
+        if name.startswith("其他") or re.search(r"[ⅠⅡⅢⅣⅤⅥ]$", name):
+            continue
+        seen.add(code)
+        change = to_number(row.get("f3"))
+        turnover = max(0.0, to_number(row.get("f8")))
+        inflow = to_number(row.get("f62")) / 100_000_000
+        up = max(0.0, to_number(row.get("f104")))
+        down = max(0.0, to_number(row.get("f105")))
+        flat = max(0.0, to_number(row.get("f106")))
+        total = max(1.0, up + down + flat)
+        breadth = up / total * 100
+        quote_ts = int(to_number(row.get("f124")))
+        quote_date = datetime.fromtimestamp(quote_ts, HKT).date() if quote_ts > 0 else None
+        if quote_date and (as_of - quote_date).days > 5:
+            continue
+        # Momentum is important, but broad participation and real inflow prevent
+        # a tiny concept with one limit-up stock from becoming the top theme.
+        market_score = (
+            48
+            + max(-24.0, min(30.0, change * 6.0))
+            + max(-8.0, min(12.0, (breadth - 50) * 0.20))
+            + max(-8.0, min(10.0, inflow / 8.0))
+            + min(6.0, turnover * 0.8)
+        )
+        normalized.append(
+            {
+                "name": name,
+                "code": code,
+                "family": board_family(name),
+                "change": change,
+                "turnover": turnover,
+                "inflow": inflow,
+                "breadth": breadth,
+                "marketScore": clamp_score(market_score, 20, 98),
+                "sourceDate": (quote_date or as_of).isoformat(),
+            }
+        )
+    normalized.sort(key=lambda item: (-item["marketScore"], -item["change"], -item["inflow"]))
+    return normalized
+
+
+def emerging_specs_from_board_scan(boards: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Turn market leaders into candidates while limiting family crowding."""
+    selected: list[dict[str, Any]] = []
+    family_count: dict[str, int] = {}
+    for board in boards:
+        family = board["family"]
+        if family_count.get(family, 0) >= 1:
+            continue
+        # A board may enter through strong price action, broad participation or
+        # exceptional net inflow. This allows true black-horse themes to appear.
+        if board["change"] < 0.8 and board["breadth"] < 68 and board["inflow"] < 12:
+            continue
+        family_count[family] = family_count.get(family, 0) + 1
+        selected.append(
+            {
+                "name": board["name"],
+                "base": 45,
+                "risk": 72 if board["change"] >= 3.5 else 62,
+                "keywords": [board["name"], family],
+                "fundKeywords": [family, board["name"]],
+                "companies": f"东方财富板块 {board['name']}（{board['code']}）成分股",
+                "etf": f"{board['name']}相关指数/ETF；需按当日可交易产品复核",
+                "valuation": "由全市场板块扫描进入候选池；估值必须结合指数口径、盈利和成交确认。",
+                "signal": f"板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
+                "board": board,
+                "discovery": "全市场扫描",
+            }
+        )
+        if len(selected) >= 12:
+            break
+    return selected
+
+
 def discover_emerging_industry_specs(
     data: dict[str, Any],
     news_text: str,
@@ -1031,7 +1164,11 @@ def build_dynamic_industry_pool(data: dict[str, Any], as_of: date) -> list[dict[
             "signal": "流水、版号、广告收入、AI应用付费率",
         },
     ]
-    specs = core_specs + discover_emerging_industry_specs(data, news_text, core_specs)
+    boards = fetch_market_board_scan(as_of)
+    board_specs = emerging_specs_from_board_scan(boards)
+    # Structural themes remain eligible, but the daily market scan can replace
+    # them. The selected top 10 is never constrained to a fixed candidate list.
+    specs = core_specs + discover_emerging_industry_specs(data, news_text, core_specs) + board_specs
 
     scored: list[dict[str, Any]] = []
     for spec in specs:
@@ -1048,11 +1185,27 @@ def build_dynamic_industry_pool(data: dict[str, Any], as_of: date) -> list[dict[
             if hits > 0 or fund_stats["max"] > 0:
                 mainline_bonus = 5.0
         risk_penalty = max(0.0, (spec["risk"] - 72) * 0.22)
-        score = clamp_score(spec["base"] + news_boost + fund_boost + mainline_bonus - risk_penalty)
+        board = spec.get("board") or {}
+        board_score = to_number(board.get("marketScore"))
+        board_change = to_number(board.get("change"))
+        board_breadth = to_number(board.get("breadth"))
+        board_inflow = to_number(board.get("inflow"))
+        market_boost = 0.0
+        if board:
+            market_boost = (board_score - 50) * 0.72
+            fund_boost = 0.0  # Avoid double counting held-fund performance.
+        score = clamp_score(spec["base"] + news_boost + fund_boost + market_boost + mainline_bonus - risk_penalty)
         prosperity = clamp_score(score + min(8, hits) - max(0, (spec["risk"] - 80) // 4))
         heat = clamp_score(score + min(10, hits * 2) + max(0.0, fund_stats["max"]))
-        operation = operation_from_score(score, spec["risk"], fund_stats["max"], fund_stats["min"])
-        if hits == 0 and fund_stats["count"] == 0:
+        action_day_max = max(fund_stats["max"], board_change) if board else fund_stats["max"]
+        action_day_min = min(fund_stats["min"], board_change) if board else fund_stats["min"]
+        operation = operation_from_score(score, spec["risk"], action_day_max, action_day_min)
+        if board:
+            summary = (
+                f"{spec['name']}当日涨{board_change:.2f}%，上涨家数占比{board_breadth:.0f}%，"
+                f"主力净流入约{board_inflow:.1f}亿元；由全市场扫描进入前列。"
+            )
+        elif hits == 0 and fund_stats["count"] == 0:
             summary = f"{spec['name']}暂无新增强催化，保留观察但不作为优先主线。"
         elif fund_stats["max"] >= 3:
             summary = f"{spec['name']}短线放量升温，资金正在验证；先看强度能否延续，不盲目追高。"
@@ -1072,10 +1225,21 @@ def build_dynamic_industry_pool(data: dict[str, Any], as_of: date) -> list[dict[
                 "etf": spec["etf"],
                 "valuation": spec["valuation"],
                 "news": summary,
-                "reason": f"动态评分={score}；新闻命中{hits}项，关联基金/指数最高日涨跌{fund_stats['max']:.2f}%。",
+                "reason": (
+                    f"动态评分={score}；新闻命中{hits}项；"
+                    + (
+                        f"东方财富板块涨跌{board_change:.2f}%，上涨家数占比{board_breadth:.0f}%，主力净流入{board_inflow:.1f}亿元。"
+                        if board
+                        else f"关联基金/指数最高日涨跌{fund_stats['max']:.2f}%。"
+                    )
+                ),
                 "nextSignal": spec["signal"],
                 "reviewDate": fmt_cn(as_of + timedelta(days=1)),
-                "refreshStatus": f"{today_label}动态重排：按新闻催化、关联行情、资金热度和风险扣分评分",
+                "refreshStatus": (
+                    f"{today_label}全市场动态重排：东方财富板块行情+新闻催化+资金广度+风险扣分"
+                ),
+                "marketSource": "东方财富全市场概念/行业板块" if board else "结构主题+公开新闻+基金验证",
+                "marketDate": board.get("sourceDate", as_of.isoformat()),
             }
         )
 
@@ -1083,6 +1247,15 @@ def build_dynamic_industry_pool(data: dict[str, Any], as_of: date) -> list[dict[
     selected = scored[:10]
     for idx, item in enumerate(selected):
         item["tier"] = "核心主线" if idx < 5 else "候补轮动"
+    data["industryDiscoveryStatus"] = {
+        "status": "全市场扫描完成",
+        "source": "东方财富概念板块+行业板块",
+        "sourceDate": as_of.isoformat(),
+        "boardCount": len(boards),
+        "dynamicCandidateCount": len(board_specs),
+        "selectedCount": len(selected),
+        "note": "候选池不固定；每日从全市场板块中发现强势主题，再与结构主题共同评分。",
+    }
     return selected
 
 
@@ -1171,9 +1344,14 @@ def build_source_status(
         "daily": {"status": "汇总生成", "note": "基于6个模块最新可得资料生成，不直接构成交易建议。"},
         "risk": risk_status,
         "industry": {
-            "status": "云端复核排序",
+            "status": safe_text(data.get("industryDiscoveryStatus", {}).get("status"), "待核验"),
             "count": len(industries),
-            "note": "行业主线每日重新排序；若无新增可靠新闻/估值源，保留最近判断并标注复核。",
+            "note": safe_text(
+                data.get("industryDiscoveryStatus", {}).get("note"),
+                "行业发现状态待核验。",
+            ),
+            "sourceDate": safe_text(data.get("industryDiscoveryStatus", {}).get("sourceDate"), "待核验"),
+            "boardCount": data.get("industryDiscoveryStatus", {}).get("boardCount", 0),
         },
         "experts": {
             "status": "公开资料复核",
