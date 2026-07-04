@@ -575,10 +575,24 @@ function renderAll() {
 }
 
 async function boot() {
-  const response = await fetch(`./data/market-data.json?t=${Date.now()}`, { cache: 'no-store' });
-  if (!response.ok) throw new Error(`数据文件读取失败：${response.status}`);
-  dashboardData = await response.json();
-  renderAll();
+  const stamp = Date.now();
+  const sources = [
+    `https://raw.githubusercontent.com/judebrisbylg-matthew/investment-market-dashboard/main/data/market-data.json?t=${stamp}`,
+    `./data/market-data.json?t=${stamp}`,
+  ];
+  let lastError;
+  for (const source of sources) {
+    try {
+      const response = await fetch(source, { cache: 'no-store' });
+      if (!response.ok) throw new Error(`数据文件读取失败：${response.status}`);
+      dashboardData = await response.json();
+      renderAll();
+      return;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError || new Error('最新数据加载失败');
 }
 
 window.addEventListener('resize', () => {

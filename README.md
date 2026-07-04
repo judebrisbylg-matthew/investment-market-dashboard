@@ -31,6 +31,8 @@ https://judebrisbylg-matthew.github.io/investment-market-dashboard/
 2. 本地打开 `index.html` 预览看板。
 3. 每天自动更新后，将最新 `data/market-data.json` 和页面文件推送到这个仓库，使线上看板刷新。
 
+数据加载采用双通道：页面优先读取 GitHub `main` 分支的最新 JSON，失败时再读取 Pages 同域 JSON。这样即使 GitHub Pages 某次部署延迟，已提交到仓库的每日数据仍可及时显示。
+
 说明：
 
 - 当前 GitHub 账号计划不支持 private 仓库直接启用 GitHub Pages。
