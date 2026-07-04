@@ -781,14 +781,31 @@ def fetch_market_board_scan(as_of: date) -> list[dict[str, Any]]:
     errors: list[str] = []
     for market in ("m:90+t:3", "m:90+t:2"):
         for page in range(1, 7):
-            try:
-                payload = request_json(BOARD_SCAN_URL.format(market=market, page=page), timeout=25)
-                page_rows = payload.get("data", {}).get("diff", []) or []
-                rows.extend(page_rows)
-                if len(page_rows) < 100:
-                    break
-            except (HTTPError, URLError, TimeoutError, ValueError, TypeError) as exc:
-                errors.append(f"{market}/page{page}: {exc}")
+            page_rows: list[dict[str, Any]] = []
+            for attempt in range(1, 4):
+                try:
+                    cache_buster = int(time.time() * 1000) + attempt
+                    url = BOARD_SCAN_URL.format(market=market, page=page) + f"&_={cache_buster}"
+                    payload = request_json(
+                        url,
+                        timeout=30,
+                        headers={
+                            "User-Agent": "Mozilla/5.0 investment-center-bot/2.0",
+                            "Referer": "https://quote.eastmoney.com/center/boardlist.html",
+                            "Accept": "application/json,text/plain,*/*",
+                        },
+                    )
+                    page_rows = payload.get("data", {}).get("diff", []) or []
+                    if page_rows:
+                        break
+                except (HTTPError, URLError, TimeoutError, ValueError, TypeError) as exc:
+                    errors.append(f"{market}/page{page}/attempt{attempt}: {exc}")
+                    if attempt < 3:
+                        time.sleep(attempt * 4)
+            if not page_rows:
+                break
+            rows.extend(page_rows)
+            if len(page_rows) < 100:
                 break
     if not rows:
         raise RuntimeError("全市场板块扫描失败：" + "；".join(errors or ["接口无数据"]))
@@ -1260,7 +1277,38 @@ def build_dynamic_industry_pool(data: dict[str, Any], as_of: date) -> list[dict[
 
 
 def update_industry(data: dict[str, Any], as_of: date) -> None:
-    data["industryWatch"] = build_dynamic_industry_pool(data, as_of)
+    previous = list(data.get("industryWatch", []))
+    try:
+        data["industryWatch"] = build_dynamic_industry_pool(data, as_of)
+    except Exception as exc:
+        if not previous:
+            raise
+        source_dates = [
+            safe_text(item.get("marketDate"))
+            for item in previous
+            if safe_text(item.get("marketDate"), "待核验") != "待核验"
+        ]
+        latest_source = max(source_dates) if source_dates else "待核验"
+        for item in previous:
+            item["refreshStatus"] = (
+                f"{fmt_cn(as_of)}休市或板块接口异常，沿用最近可得交易日排名；"
+                f"原行情日期{safe_text(item.get('marketDate'), latest_source)}。"
+            )
+            item["reason"] = (
+                f"今日全市场扫描待核验；{safe_text(item.get('reason'), '保留最近有效评分。')}"
+            )
+            item["reviewDate"] = fmt_cn(as_of + timedelta(days=1))
+        data["industryWatch"] = previous
+        data["industryDiscoveryStatus"] = {
+            "status": "休市/接口异常，沿用最近交易日",
+            "source": "东方财富概念板块+行业板块",
+            "sourceDate": latest_source,
+            "boardCount": 0,
+            "dynamicCandidateCount": 0,
+            "selectedCount": len(previous),
+            "note": f"全市场接口暂不可用（{short_text(exc, 80)}）；其余模块继续更新，行业排名明确沿用而不伪装成当天行情。",
+        }
+        log(f"industry scan fallback: {exc}")
 
 
 def update_experts(data: dict[str, Any], as_of: date) -> None:
@@ -1371,7 +1419,9 @@ def build_source_status(
     blocking = [
         name
         for name, item in status.items()
-        if isinstance(item, dict) and item.get("status") in {"待核验", "部分沿用/待核验", "沿用最近可靠新闻"}
+        if isinstance(item, dict)
+        and item.get("status")
+        in {"待核验", "部分沿用/待核验", "沿用最近可靠新闻", "休市/接口异常，沿用最近交易日"}
     ]
     status["overall"] = "部分模块需核验" if blocking else "全部模块已刷新"
     status["blockingModules"] = blocking
