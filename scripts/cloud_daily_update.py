@@ -22,6 +22,7 @@ from email.utils import parsedate_to_datetime
 from pathlib import Path
 from typing import Any
 import xml.etree.ElementTree as ET
+from http.client import RemoteDisconnected
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
@@ -287,7 +288,7 @@ def fetch_fund(code: str) -> dict[str, Any] | None:
     url = f"https://fundf10.eastmoney.com/F10DataApi.aspx?{query}"
     try:
         rows = parse_fund_rows(request_text(url))
-    except (HTTPError, URLError, TimeoutError, ValueError) as exc:
+    except (HTTPError, URLError, TimeoutError, RemoteDisconnected, ValueError) as exc:
         log(f"fund {code} fetch failed: {exc}")
         return None
     if not rows:
@@ -440,7 +441,7 @@ def update_risk_market_data(data: dict[str, Any], as_of: date) -> None:
                         "refreshStatus": f"东方财富美元指数，{fmt_cn(as_of)}可用",
                     }
                 )
-    except (HTTPError, URLError, TimeoutError, ValueError, KeyError, TypeError) as exc:
+    except (HTTPError, URLError, TimeoutError, RemoteDisconnected, ValueError, KeyError, TypeError) as exc:
         log(f"risk market data refresh failed: {exc}")
 
 
@@ -574,7 +575,7 @@ def fetch_rss_news(as_of: date) -> tuple[list[dict[str, Any]], list[str]]:
         try:
             xml_text = request_text(url, timeout=20)
             root = ET.fromstring(xml_text)
-        except (HTTPError, URLError, TimeoutError, ET.ParseError, ValueError) as exc:
+        except (HTTPError, URLError, TimeoutError, RemoteDisconnected, ET.ParseError, ValueError) as exc:
             errors.append(f"{source}: {exc}")
             continue
         for item in root.findall(".//item")[:30]:
@@ -766,6 +767,60 @@ BOARD_FAMILIES: list[tuple[str, list[str]]] = [
     ("金融", ["券商", "金融科技", "银行", "保险", "稳定币", "数字货币"]),
 ]
 
+NON_INDUSTRY_BOARD_KEYWORDS = [
+    "昨日",
+    "涨停",
+    "跌停",
+    "连板",
+    "打板",
+    "触板",
+    "强势股",
+    "破净股",
+    "低价股",
+    "高价股",
+    "百元股",
+    "次新股",
+    "预盈预增",
+    "预亏预减",
+    "机构重仓",
+    "基金重仓",
+    "社保重仓",
+    "证金持股",
+    "融资融券",
+    "沪股通",
+    "深股通",
+]
+
+# Only A-share tradable themes may enter the opportunity ranking. Overseas
+# markets remain useful macro/news inputs, but they must not occupy ranking
+# slots when the user cannot directly trade them.
+A_SHARE_STRUCTURAL_THEMES = {
+    "AI芯片/半导体",
+    "PCB/高速铜连接",
+    "有色金属/资源品",
+    "电力/数据中心能源",
+    "消费电子/AI终端",
+    "创新药/生物科技",
+    "新能源车/电池",
+    "游戏传媒/AI应用",
+    "存储/HBM",
+    "光模块/CPO",
+    "AI服务器/液冷",
+    "机器人/智能制造",
+    "低空经济/军工",
+    "电网设备/特高压",
+    "稀土/小金属",
+    "券商/金融科技",
+    "银行/红利资产",
+}
+
+
+def is_a_share_ranking_spec(spec: dict[str, Any]) -> bool:
+    """Return whether a candidate is directly mapped to the A-share market."""
+    if spec.get("board"):
+        return True
+    return safe_text(spec.get("name")) in A_SHARE_STRUCTURAL_THEMES
+
 
 def board_family(name: str) -> str:
     for family, keywords in BOARD_FAMILIES:
@@ -801,7 +856,7 @@ def fetch_market_board_scan(as_of: date) -> list[dict[str, Any]]:
                     page_rows = payload.get("data", {}).get("diff", []) or []
                     if page_rows:
                         break
-                except (HTTPError, URLError, TimeoutError, ValueError, TypeError) as exc:
+                except (HTTPError, URLError, TimeoutError, RemoteDisconnected, ValueError, TypeError) as exc:
                     errors.append(f"{market}/page{page}/attempt{attempt}: {exc}")
                     if attempt < 3:
                         time.sleep(attempt * 4)
@@ -821,6 +876,8 @@ def fetch_market_board_scan(as_of: date) -> list[dict[str, Any]]:
         if not name or not code or code in seen:
             continue
         if name.startswith("其他") or re.search(r"[ⅠⅡⅢⅣⅤⅥ]$", name):
+            continue
+        if any(keyword in name for keyword in NON_INDUSTRY_BOARD_KEYWORDS):
             continue
         seen.add(code)
         change = to_number(row.get("f3"))
@@ -883,10 +940,11 @@ def emerging_specs_from_board_scan(boards: list[dict[str, Any]]) -> list[dict[st
                 "fundKeywords": [family, board["name"]],
                 "companies": f"东方财富板块 {board['name']}（{board['code']}）成分股",
                 "etf": f"{board['name']}相关指数/ETF；需按当日可交易产品复核",
-                "valuation": "由全市场板块扫描进入候选池；估值必须结合指数口径、盈利和成交确认。",
+                "valuation": "由A股全市场板块扫描进入候选池；估值必须结合指数口径、盈利和成交确认。",
                 "signal": f"板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
                 "board": board,
                 "discovery": "全市场扫描",
+                "rankingMarket": "A股",
             }
         )
         if len(selected) >= 12:
@@ -913,7 +971,7 @@ def discover_emerging_industry_specs(
             "risk": 78,
             "keywords": ["存储", "HBM", "美光", "DRAM", "NAND", "内存", "高带宽内存"],
             "fundKeywords": ["AI/半导体", "全球科技互联网"],
-            "companies": "美光、SK海力士、三星电子、兆易创新、澜起科技、佰维存储",
+            "companies": "兆易创新、北京君正、澜起科技、佰维存储、江波龙、香农芯创",
             "etf": "半导体ETF、存储芯片指数、科创芯片ETF",
             "valuation": "周期修复和AI需求共振，重点看价格、库存和HBM订单。",
             "signal": "美光指引、DRAM/NAND价格、HBM供需、国产存储成交额",
@@ -1099,7 +1157,7 @@ def build_dynamic_industry_pool(data: dict[str, Any], as_of: date) -> list[dict[
             "risk": 84,
             "keywords": ["AI", "人工智能", "芯片", "半导体", "英伟达", "美光", "高通", "GPU", "算力", "先进封装"],
             "fundKeywords": ["AI/半导体", "通信/设备", "全球科技互联网", "AI/互联网"],
-            "companies": "英伟达、台积电、中际旭创、新易盛、寒武纪、海光信息",
+            "companies": "寒武纪、海光信息、中芯国际、北方华创、中际旭创、新易盛",
             "etf": "中证人工智能931071、半导体ETF、通信设备ETF、全球科技QDII",
             "valuation": "估值偏高但主线最强，必须看订单、业绩、Capex和成交额是否继续放大。",
             "signal": "美股芯片、费半、AI链成交额、云厂Capex、先进封装和HBM订单",
@@ -1156,8 +1214,8 @@ def build_dynamic_industry_pool(data: dict[str, Any], as_of: date) -> list[dict[
             "risk": 62,
             "keywords": ["创新药", "医药", "生物科技", "ADC", "BD", "临床", "FDA"],
             "fundKeywords": ["医药", "创新药"],
-            "companies": "百济神州、恒瑞医药、信达生物、科伦博泰、康方生物",
-            "etf": "创新药指数、恒生医疗保健、医药ETF",
+            "companies": "恒瑞医药、百利天恒、科伦药业、荣昌生物、泽璟制药、迪哲医药",
+            "etf": "A股创新药指数、医药ETF、科创生物医药ETF",
             "valuation": "长期下跌后有修复空间，但只有放量新高和BD现金流确认才上调。",
             "signal": "BD授权金额、临床数据、审批进度、港股医药成交额",
         },
@@ -1178,7 +1236,7 @@ def build_dynamic_industry_pool(data: dict[str, Any], as_of: date) -> list[dict[
             "risk": 66,
             "keywords": ["游戏", "传媒", "AI应用", "内容生成", "广告", "短剧"],
             "fundKeywords": ["游戏", "传媒", "AI/互联网"],
-            "companies": "腾讯控股、网易、三七互娱、恺英网络、昆仑万维",
+            "companies": "三七互娱、恺英网络、巨人网络、吉比特、完美世界、昆仑万维",
             "etf": "游戏ETF、传媒ETF、软件服务指数",
             "valuation": "AI应用商业化仍在验证，必须看到收入兑现。",
             "signal": "流水、版号、广告收入、AI应用付费率",
@@ -1188,7 +1246,8 @@ def build_dynamic_industry_pool(data: dict[str, Any], as_of: date) -> list[dict[
     board_specs = emerging_specs_from_board_scan(boards)
     # Structural themes remain eligible, but the daily market scan can replace
     # them. The selected top 10 is never constrained to a fixed candidate list.
-    specs = core_specs + discover_emerging_industry_specs(data, news_text, core_specs) + board_specs
+    all_specs = core_specs + discover_emerging_industry_specs(data, news_text, core_specs) + board_specs
+    specs = [spec for spec in all_specs if is_a_share_ranking_spec(spec)]
 
     scored: list[dict[str, Any]] = []
     for spec in specs:
@@ -1223,7 +1282,7 @@ def build_dynamic_industry_pool(data: dict[str, Any], as_of: date) -> list[dict[
         if board:
             summary = (
                 f"{spec['name']}当日涨{board_change:.2f}%，上涨家数占比{board_breadth:.0f}%，"
-                f"主力净流入约{board_inflow:.1f}亿元；由全市场扫描进入前列。"
+                f"主力净流入约{board_inflow:.1f}亿元；由A股全市场扫描进入前列。"
             )
         elif hits == 0 and fund_stats["count"] == 0:
             summary = f"{spec['name']}暂无新增强催化，保留观察但不作为优先主线。"
@@ -1256,10 +1315,11 @@ def build_dynamic_industry_pool(data: dict[str, Any], as_of: date) -> list[dict[
                 "nextSignal": spec["signal"],
                 "reviewDate": fmt_cn(as_of + timedelta(days=1)),
                 "refreshStatus": (
-                    f"{today_label}全市场动态重排：东方财富板块行情+新闻催化+资金广度+风险扣分"
+                    f"{today_label}A股全市场动态重排：东方财富板块行情+新闻催化+资金广度+风险扣分"
                 ),
-                "marketSource": "东方财富全市场概念/行业板块" if board else "结构主题+公开新闻+基金验证",
+                "marketSource": "东方财富A股概念/行业板块" if board else "A股结构主题+公开新闻+基金验证",
                 "marketDate": board.get("sourceDate", as_of.isoformat()),
+                "rankingMarket": "A股",
             }
         )
 
@@ -1269,18 +1329,24 @@ def build_dynamic_industry_pool(data: dict[str, Any], as_of: date) -> list[dict[
         item["tier"] = "核心主线" if idx < 5 else "候补轮动"
     data["industryDiscoveryStatus"] = {
         "status": "全市场扫描完成",
-        "source": "东方财富概念板块+行业板块",
+        "source": "东方财富A股概念板块+行业板块",
         "sourceDate": as_of.isoformat(),
         "boardCount": len(boards),
         "dynamicCandidateCount": len(board_specs),
         "selectedCount": len(selected),
-        "note": "候选池不固定；每日从全市场板块中发现强势主题，再与结构主题共同评分。",
+        "note": "仅排行A股可交易赛道；候选池不固定，每日从A股全市场发现强势主题。港股、美股仅作为外部变量影响A股风险与催化判断。",
     }
     return selected
 
 
 def update_industry(data: dict[str, Any], as_of: date) -> None:
-    previous = list(data.get("industryWatch", []))
+    previous = [
+        item
+        for item in data.get("industryWatch", [])
+        if safe_text(item.get("rankingMarket")) == "A股"
+        or safe_text(item.get("name")) in A_SHARE_STRUCTURAL_THEMES
+        or "东方财富" in safe_text(item.get("marketSource"))
+    ]
     try:
         data["industryWatch"] = build_dynamic_industry_pool(data, as_of)
     except Exception as exc:
@@ -1304,12 +1370,12 @@ def update_industry(data: dict[str, Any], as_of: date) -> None:
         data["industryWatch"] = previous
         data["industryDiscoveryStatus"] = {
             "status": "休市/接口异常，沿用最近交易日",
-            "source": "东方财富概念板块+行业板块",
+            "source": "东方财富A股概念板块+行业板块",
             "sourceDate": latest_source,
             "boardCount": 0,
             "dynamicCandidateCount": 0,
             "selectedCount": len(previous),
-            "note": f"全市场接口暂不可用（{short_text(exc, 80)}）；其余模块继续更新，行业排名明确沿用而不伪装成当天行情。",
+            "note": f"A股全市场接口暂不可用（{short_text(exc, 80)}）；其余模块继续更新，行业排名明确沿用而不伪装成当天行情。港股、美股只作外部变量。",
         }
         log(f"industry scan fallback: {exc}")
 
