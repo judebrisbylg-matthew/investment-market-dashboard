@@ -516,6 +516,19 @@ canvas {
   gap: 12px;
 }
 
+.fund-chart-scroll {
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border-radius: 6px;
+  background: rgba(15, 23, 42, .74);
+}
+
+#fundPerformance {
+  height: 280px;
+  background: transparent;
+}
+
 .fund-actions {
   display: grid;
   gap: 8px;
@@ -836,7 +849,8 @@ canvas {
   }
 
   #fundPerformance {
-    height: 260px;
+    min-width: 900px;
+    height: 280px;
   }
 
   .fund-actions {

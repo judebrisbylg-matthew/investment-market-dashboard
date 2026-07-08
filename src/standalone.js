@@ -337,7 +337,11 @@ function drawFundPerformance(funds) {
   };
   const sorted = sortFundsByPerformance(funds);
   const pad = compact ? 24 : 32;
-  const zeroY = height / 2;
+  const labelArea = compact ? 54 : 64;
+  const plotTop = 22;
+  const plotBottom = height - labelArea;
+  const plotHeight = plotBottom - plotTop;
+  const zeroY = plotTop + plotHeight * .42;
   const max = Math.max(...sorted.map((fund) => Math.abs(fundPerformanceValue(fund))), 1);
   ctx.strokeStyle = '#263448';
   ctx.beginPath();
@@ -349,13 +353,15 @@ function drawFundPerformance(funds) {
     const day = fundPerformanceValue(fund);
     const x = pad + i * step + step * .22;
     const barW = step * .56;
-    const h = Math.abs(day) / max * (height * .36);
+    const availableHeight = day >= 0 ? zeroY - plotTop : plotBottom - zeroY;
+    const h = Math.abs(day) / max * availableHeight;
     const y = day >= 0 ? zeroY - h : zeroY;
     ctx.fillStyle = day >= 0 ? '#ef4444' : '#22c55e';
     ctx.fillRect(x, y, barW, h);
-    drawText(ctx, shortTheme[fund.theme] || fund.theme, x + barW / 2, height - 28, { size: compact ? 8 : 9, align: 'center', color: '#cbd5e1', weight: 700 });
-    drawText(ctx, compact ? fund.code.slice(-4) : fund.code, x + barW / 2, height - 12, { size: compact ? 8 : 10, align: 'center', color: '#94a3b8' });
-    drawText(ctx, `${day}%`, x + barW / 2, day >= 0 ? y - 7 : y + h + 15, { size: compact ? 9 : 10, align: 'center', color: day >= 0 ? '#fca5a5' : '#86efac' });
+    drawText(ctx, shortTheme[fund.theme] || fund.theme, x + barW / 2, plotBottom + 22, { size: compact ? 8 : 9, align: 'center', color: '#cbd5e1', weight: 700 });
+    drawText(ctx, compact ? fund.code.slice(-4) : fund.code, x + barW / 2, plotBottom + 40, { size: compact ? 8 : 10, align: 'center', color: '#94a3b8' });
+    const valueY = day >= 0 ? Math.max(plotTop + 10, y - 8) : Math.min(plotBottom - 8, y + h + 16);
+    drawText(ctx, `${day}%`, x + barW / 2, valueY, { size: compact ? 9 : 10, align: 'center', color: day >= 0 ? '#fca5a5' : '#86efac' });
   });
 }
 
