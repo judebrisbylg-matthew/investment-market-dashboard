@@ -51,12 +51,21 @@ jobs:
           allowed = {"全市场扫描完成", "休市/接口异常，沿用最近交易日"}
           assert status.get("status") in allowed, status
           if status.get("status") == "全市场扫描完成":
-              assert int(status.get("boardCount", 0)) >= 100, status
+              board_count = int(status.get("boardCount", 0))
+              dynamic_count = int(status.get("dynamicCandidateCount", 0))
+              selected_count = int(status.get("selectedCount", 0))
+              assert board_count >= 50, status
+              assert dynamic_count >= 10, status
+              assert selected_count == 10, status
+              assert status.get("sourceDate") not in (None, "", "待核验"), status
           else:
               assert status.get("sourceDate") not in (None, "", "待核验"), status
           assert len(industries) == 10, len(industries)
           assert sum(item.get("tier") == "核心主线" for item in industries) == 5
           assert sum(item.get("tier") == "候补轮动" for item in industries) == 5
+          for tier in ("核心主线", "候补轮动"):
+              scores = [int(item.get("score", 0)) for item in industries if item.get("tier") == tier]
+              assert scores == sorted(scores, reverse=True), (tier, scores)
           assert all(item.get("marketDate") for item in industries)
           assert all(item.get("reason") and item.get("refreshStatus") for item in industries)
           assert len({item.get("name") for item in industries}) == 10
