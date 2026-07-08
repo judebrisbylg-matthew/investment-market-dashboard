@@ -319,10 +319,20 @@ function sortFundsByPerformance(funds) {
 
 function drawFundPerformance(funds) {
   const sorted = sortFundsByPerformance(funds);
-  const magnitude = Math.max(...sorted.map((fund) => Math.abs(fundPerformanceValue(fund))), 1);
+  if (!sorted.length) {
+    $('fundPerformance').style.height = '260px';
+    const { ctx, width, height } = setupCanvas('fundPerformance');
+    clear(ctx, width, height);
+    drawText(ctx, '暂无基金表现数据', width / 2, height / 2, { align: 'center', color: '#94a3b8', size: 14, weight: 700 });
+    return;
+  }
+  const values = sorted.map((fund) => fundPerformanceValue(fund));
+  const positiveMax = Math.max(...values.filter((value) => value > 0), 0);
+  const negativeMax = Math.max(...values.filter((value) => value < 0).map((value) => Math.abs(value)), 0);
+  const magnitude = Math.max(positiveMax, negativeMax, 1);
   const dynamicHeight = Math.round(Math.min(
-    360,
-    280 + Math.max(0, magnitude - 2) * 18 + Math.max(0, sorted.length - 12) * 4
+    460,
+    Math.max(300, 265 + sorted.length * 7 + Math.max(0, magnitude - 1.8) * 24)
   ));
   $('fundPerformance').style.height = `${dynamicHeight}px`;
   const { ctx, width, height } = setupCanvas('fundPerformance');
@@ -343,13 +353,17 @@ function drawFundPerformance(funds) {
     'AI/半导体': 'AI半导体'
   };
   const pad = compact ? 24 : 32;
-  const labelArea = compact ? 54 : 64;
-  const valueReserve = compact ? 20 : 24;
+  const labelArea = compact ? 76 : 88;
+  const valueTopGap = compact ? 18 : 22;
+  const valueBottomGap = compact ? 28 : 34;
   const plotTop = 22;
   const plotBottom = height - labelArea;
   const plotHeight = plotBottom - plotTop;
-  const zeroY = plotTop + plotHeight * .42;
-  const max = magnitude;
+  const positiveRatioRaw = positiveMax / Math.max(positiveMax + negativeMax, 1);
+  const positiveRatio = Math.min(.42, Math.max(.22, positiveRatioRaw || .34));
+  const zeroY = plotTop + plotHeight * positiveRatio;
+  const positiveSpace = Math.max(12, zeroY - plotTop - valueTopGap);
+  const negativeSpace = Math.max(12, plotBottom - zeroY - valueBottomGap);
   ctx.strokeStyle = '#263448';
   ctx.beginPath();
   ctx.moveTo(pad, zeroY);
@@ -360,15 +374,23 @@ function drawFundPerformance(funds) {
     const day = fundPerformanceValue(fund);
     const x = pad + i * step + step * .22;
     const barW = step * .56;
-    const availableHeight = day >= 0 ? zeroY - plotTop : plotBottom - zeroY;
-    const h = Math.abs(day) / max * Math.max(12, availableHeight - valueReserve);
+    const scaleMax = day >= 0 ? Math.max(positiveMax, 1) : Math.max(negativeMax, 1);
+    const scaleSpace = day >= 0 ? positiveSpace : negativeSpace;
+    const h = Math.max(day === 0 ? 0 : 4, Math.abs(day) / scaleMax * scaleSpace);
     const y = day >= 0 ? zeroY - h : zeroY;
     ctx.fillStyle = day >= 0 ? '#ef4444' : '#22c55e';
     ctx.fillRect(x, y, barW, h);
-    drawText(ctx, shortTheme[fund.theme] || fund.theme, x + barW / 2, plotBottom + 22, { size: compact ? 8 : 9, align: 'center', color: '#cbd5e1', weight: 700 });
-    drawText(ctx, compact ? fund.code.slice(-4) : fund.code, x + barW / 2, plotBottom + 40, { size: compact ? 8 : 10, align: 'center', color: '#94a3b8' });
-    const valueY = day >= 0 ? Math.max(plotTop + 10, y - 10) : Math.min(plotBottom - 8, y + h + 16);
-    drawText(ctx, `${day}%`, x + barW / 2, valueY, { size: compact ? 9 : 10, align: 'center', color: day >= 0 ? '#fca5a5' : '#86efac' });
+    const valueY = day >= 0
+      ? Math.max(plotTop + 12, y - 12)
+      : Math.min(plotBottom - 14, y + h + 18);
+    drawText(ctx, `${day}%`, x + barW / 2, valueY, {
+      size: compact ? 9 : 10,
+      align: 'center',
+      color: day >= 0 ? '#fca5a5' : '#86efac',
+      weight: 800
+    });
+    drawText(ctx, shortTheme[fund.theme] || fund.theme, x + barW / 2, plotBottom + 30, { size: compact ? 8 : 9, align: 'center', color: '#cbd5e1', weight: 700 });
+    drawText(ctx, compact ? fund.code.slice(-4) : fund.code, x + barW / 2, plotBottom + 50, { size: compact ? 8 : 10, align: 'center', color: '#94a3b8' });
   });
 }
 
