@@ -576,6 +576,22 @@ def update_risk_market_data(data: dict[str, Any], as_of: date) -> None:
     except (HTTPError, URLError, TimeoutError, RemoteDisconnected, ValueError, KeyError, TypeError) as exc:
         log(f"risk market data refresh failed: {exc}")
 
+    # One-time and ongoing provenance guard: an API refresh timestamp on a
+    # weekend must never masquerade as the underlying market's trading date.
+    completed_date = latest_completed_market_date(as_of)
+    for item_name in ("A股成交额", "港股成交额", "美元指数"):
+        item = find_risk_item(data, item_name)
+        if not item:
+            continue
+        raw_date = str(item.get("sourceDate") or "")
+        if re.fullmatch(r"20\d{2}-\d{2}-\d{2}", raw_date) and parse_date(raw_date) > completed_date:
+            item["sourceDate"] = completed_date.isoformat()
+            for key in ("value", "refreshStatus"):
+                text = str(item.get(key) or "")
+                text = re.sub(r"20\d{2}年\d{1,2}月\d{1,2}日", fmt_cn(completed_date), text)
+                text = re.sub(r"20\d{2}-\d{2}-\d{2}", completed_date.isoformat(), text)
+                item[key] = text
+
 
 def update_derived_risk_data(data: dict[str, Any], as_of: date) -> None:
     """Refresh transparent derived indicators only after the industry scan completes."""
@@ -1518,10 +1534,17 @@ def update_industry(data: dict[str, Any], as_of: date) -> None:
             if safe_text(item.get("marketDate"), "待核验") != "待核验"
         ]
         latest_source = max(source_dates) if source_dates else "待核验"
+        completed_date = latest_completed_market_date(as_of)
+        if re.fullmatch(r"20\d{2}-\d{2}-\d{2}", latest_source) and parse_date(latest_source) > completed_date:
+            latest_source = completed_date.isoformat()
         for item in previous:
+            market_date = safe_text(item.get("marketDate"), latest_source)
+            if re.fullmatch(r"20\d{2}-\d{2}-\d{2}", market_date) and parse_date(market_date) > completed_date:
+                market_date = completed_date.isoformat()
+            item["marketDate"] = market_date
             item["refreshStatus"] = (
                 f"{fmt_cn(as_of)}休市或板块接口异常，沿用最近可得交易日排名；"
-                f"原行情日期{safe_text(item.get('marketDate'), latest_source)}。"
+                f"原行情日期{market_date}。"
             )
             item["reason"] = (
                 f"今日全市场扫描待核验；{safe_text(item.get('reason'), '保留最近有效评分。')}"
