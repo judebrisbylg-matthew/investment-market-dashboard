@@ -10,7 +10,9 @@ database rows when Notion secrets are configured.
 from __future__ import annotations
 
 import argparse
+import csv
 import html
+import io
 import json
 import os
 import re
@@ -376,7 +378,12 @@ def annotate_risk_status(data: dict[str, Any], as_of: date) -> dict[str, Any]:
     unknown = 0
     for item in items:
         text = " ".join(str(item.get(key, "")) for key in ("value", "normal", "warning", "danger", "description"))
-        source_date = extract_source_date(text, as_of)
+        raw_source_date = str(item.get("sourceDate") or "").strip()
+        source_date = (
+            parse_date(raw_source_date)
+            if re.fullmatch(r"20\d{2}-\d{2}-\d{2}", raw_source_date)
+            else extract_source_date(text, as_of)
+        )
         item["sourceDate"] = source_date.isoformat() if source_date else "待核验"
         item["refreshStatus"] = status_date_text(source_date, as_of, prefix="指标")
         if source_date is None:
@@ -435,65 +442,162 @@ def risk_signal_from_threshold(value: float, normal: tuple[float, float] | None 
     return 55, "预警黄灯"
 
 
+def fetch_fred_series(series_id: str) -> list[tuple[date, float]]:
+    """Fetch a public FRED series without an API key, newest valid values last."""
+    text = request_text(f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}", timeout=25)
+    rows: list[tuple[date, float]] = []
+    for row in csv.DictReader(io.StringIO(text)):
+        raw_date = row.get("DATE") or row.get("observation_date")
+        raw_value = row.get(series_id)
+        if not raw_date or raw_value in (None, "", "."):
+            continue
+        try:
+            rows.append((datetime.strptime(raw_date, "%Y-%m-%d").date(), float(raw_value)))
+        except ValueError:
+            continue
+    return rows
+
+
+def latest_completed_market_date(as_of: date) -> date:
+    """Return the latest weekday whose regular session has completed in HKT."""
+    now = datetime.now(HKT)
+    candidate = as_of if now.date() == as_of and now.hour >= 16 else as_of - timedelta(days=1)
+    while candidate.weekday() >= 5:
+        candidate -= timedelta(days=1)
+    return candidate
+
+
+def update_fred_risk_data(data: dict[str, Any]) -> None:
+    specs = [
+        ("DGS10", "10年期美债收益率", lambda v: (35, "正常绿灯") if v <= 4.7 else (55, "预警黄灯") if v <= 5.0 else (75, "危险红灯"), lambda v, d, _: f"{v:.2f}%（FRED，{d.isoformat()}）"),
+        ("DCOILBRENTEU", "国际油价（美元/桶）", lambda v: (35, "正常绿灯") if v <= 95 else (55, "预警黄灯") if v <= 120 else (75, "危险红灯"), lambda v, d, _: f"布伦特原油{v:.2f}美元/桶（FRED，{d.isoformat()}）"),
+        ("DFF", "美联储动向", lambda v: (35, "正常绿灯") if v <= 4.5 else (55, "预警黄灯") if v <= 5.25 else (75, "危险红灯"), lambda v, d, _: f"联邦基金有效利率{v:.2f}%（FRED，{d.isoformat()}）"),
+        ("DFII10", "实际利率", lambda v: (35, "正常绿灯") if v < 2.2 else (55, "预警黄灯") if v <= 2.5 else (75, "危险红灯"), lambda v, d, _: f"10年期TIPS实际利率{v:.2f}%（FRED，{d.isoformat()}）"),
+        ("BAMLH0A0HYM2", "信用利差", lambda v: (35, "正常绿灯") if v < 3.5 else (55, "预警黄灯") if v <= 5.0 else (75, "危险红灯"), lambda v, d, _: f"美国高收益债OAS {v:.2f}%（FRED，{d.isoformat()}）"),
+        ("VIXCLS", "VIX", lambda v: (35, "正常绿灯") if v < 18 else (55, "预警黄灯") if v <= 25 else (75, "危险红灯"), lambda v, d, _: f"VIX {v:.2f}（FRED，{d.isoformat()}）"),
+        (
+            "WALCL",
+            "全球流动性",
+            lambda v: (35, "正常绿灯") if v >= 0 else (55, "预警黄灯") if v >= -50 else (75, "危险红灯"),
+            lambda v, d, prev: f"美联储总资产{v / 1_000_000:.3f}万亿美元，周变动{(v - prev) / 1_000:.1f}亿美元（FRED，{d.isoformat()}）",
+        ),
+    ]
+    for series_id, item_name, classifier, formatter in specs:
+        try:
+            rows = fetch_fred_series(series_id)
+            if not rows:
+                raise ValueError("no valid observations")
+            source_date, value = rows[-1]
+            previous = rows[-2][1] if len(rows) > 1 else value
+            # WALCL is published in USD millions; classify its weekly change in USD billions.
+            classified_value = (value - previous) / 1_000 if series_id == "WALCL" else value
+            score, signal = classifier(classified_value)
+            item = find_risk_item(data, item_name)
+            if item:
+                item.update(
+                    {
+                        "value": formatter(value, source_date, previous),
+                        "score": score,
+                        "signal": signal,
+                        "sourceDate": source_date.isoformat(),
+                        "refreshStatus": f"FRED {series_id}，数据截至 {source_date.isoformat()}",
+                    }
+                )
+        except (HTTPError, URLError, TimeoutError, RemoteDisconnected, ValueError, KeyError, TypeError) as exc:
+            log(f"FRED {series_id} refresh failed: {exc}")
+
+
 def update_risk_market_data(data: dict[str, Any], as_of: date) -> None:
     """Refresh risk items that can be fetched reliably without paid data."""
+    update_fred_risk_data(data)
     try:
         market = request_json(
             "https://push2.eastmoney.com/api/qt/ulist.np/get?"
-            "fltt=2&fields=f2,f3,f6,f12,f14&secids=1.000001,0.399001,100.HSI,100.UDI",
+            "fltt=2&fields=f2,f3,f6,f12,f14,f124&secids=1.000001,0.399001,100.HSI,100.UDI",
             timeout=20,
         )
         rows = {str(row.get("f12")): row for row in market.get("data", {}).get("diff", [])}
 
+        def row_source_date(row: dict[str, Any]) -> date:
+            raw_ts = int(to_number(row.get("f124")))
+            quoted = datetime.fromtimestamp(raw_ts, HKT).date() if raw_ts > 0 else latest_completed_market_date(as_of)
+            return min(quoted, latest_completed_market_date(as_of))
+
         sh_amount = float(rows.get("000001", {}).get("f6") or 0)
         sz_amount = float(rows.get("399001", {}).get("f6") or 0)
         if sh_amount > 0 and sz_amount > 0:
+            market_date = min(row_source_date(rows.get("000001", {})), row_source_date(rows.get("399001", {})))
             a_turnover = (sh_amount + sz_amount) / 1_000_000_000_000
             item = find_risk_item(data, "A股成交额")
             if item:
                 score, signal = risk_signal_from_threshold(a_turnover, green_if_above=1.0, yellow_if_below=0.7)
                 item.update(
                     {
-                        "value": f"沪深两市成交约{a_turnover:.2f}万亿元（东方财富指数口径，{fmt_cn(as_of)}）",
+                        "value": f"沪深两市成交约{a_turnover:.2f}万亿元（东方财富指数口径，{fmt_cn(market_date)}）",
                         "score": score,
                         "signal": signal,
-                        "sourceDate": as_of.isoformat(),
-                        "refreshStatus": f"东方财富指数成交额，{fmt_cn(as_of)}可用；沪深两市合计约{a_turnover:.2f}万亿元",
+                        "sourceDate": market_date.isoformat(),
+                        "refreshStatus": f"东方财富指数成交额，数据截至{fmt_cn(market_date)}；沪深两市合计约{a_turnover:.2f}万亿元",
                     }
                 )
 
         hsi_amount = float(rows.get("HSI", {}).get("f6") or 0)
         if hsi_amount > 0:
+            market_date = row_source_date(rows.get("HSI", {}))
             hsi_turnover = hsi_amount / 100_000_000
             item = find_risk_item(data, "港股成交额")
             if item:
                 # HSI turnover is not whole-market turnover, so keep it yellow unless a full-market source is added.
                 item.update(
                     {
-                        "value": f"恒生指数成分成交约{hsi_turnover:.0f}亿港元（非港股全市场口径，{fmt_cn(as_of)}）",
+                        "value": f"恒生指数成分成交约{hsi_turnover:.0f}亿港元（非港股全市场口径，{fmt_cn(market_date)}）",
                         "score": 55,
                         "signal": "预警黄灯",
-                        "sourceDate": as_of.isoformat(),
-                        "refreshStatus": f"东方财富恒生指数成交口径，{fmt_cn(as_of)}可用；非港股全市场成交额，需继续核验",
+                        "sourceDate": market_date.isoformat(),
+                        "refreshStatus": f"东方财富恒生指数成交口径，数据截至{fmt_cn(market_date)}；非港股全市场成交额，需继续核验",
                     }
                 )
 
         dxy = float(rows.get("UDI", {}).get("f2") or 0)
         if dxy > 0:
+            market_date = row_source_date(rows.get("UDI", {}))
             item = find_risk_item(data, "美元指数")
             if item:
                 score, signal = risk_signal_from_threshold(dxy, green_if_below=103.0)
                 item.update(
                     {
-                        "value": f"DXY约{dxy:.2f}（东方财富美元指数口径，{fmt_cn(as_of)}）",
+                        "value": f"DXY约{dxy:.2f}（东方财富美元指数口径，{fmt_cn(market_date)}）",
                         "score": score,
                         "signal": signal,
-                        "sourceDate": as_of.isoformat(),
-                        "refreshStatus": f"东方财富美元指数，{fmt_cn(as_of)}可用",
+                        "sourceDate": market_date.isoformat(),
+                        "refreshStatus": f"东方财富美元指数，数据截至{fmt_cn(market_date)}",
                     }
                 )
     except (HTTPError, URLError, TimeoutError, RemoteDisconnected, ValueError, KeyError, TypeError) as exc:
         log(f"risk market data refresh failed: {exc}")
+
+
+def update_derived_risk_data(data: dict[str, Any], as_of: date) -> None:
+    """Refresh transparent derived indicators only after the industry scan completes."""
+    industries = data.get("industryWatch", [])[:10]
+    if not industries:
+        return
+    source_date = max((source_date_from_item(item, as_of) for item in industries), default=as_of)
+    leaders = "、".join(safe_text(item.get("name")) for item in industries[:3])
+    top_scores = [to_number(item.get("score")) for item in industries[:3]]
+    avg_score = sum(top_scores) / len(top_scores) if top_scores else 0
+    item = find_risk_item(data, "行业轮动强弱")
+    if item:
+        score, signal = ((35, "正常绿灯") if avg_score >= 70 else (55, "预警黄灯") if avg_score >= 55 else (75, "危险红灯"))
+        item.update(
+            {
+                "value": f"A股前3赛道：{leaders}；平均研究分{avg_score:.1f}",
+                "score": score,
+                "signal": signal,
+                "sourceDate": source_date.isoformat(),
+                "refreshStatus": f"由当日A股全市场赛道扫描透明派生，数据截至 {source_date.isoformat()}；非独立资金流指标",
+            }
+        )
 
 
 def mostly_english_text(value: str) -> bool:
@@ -944,6 +1048,8 @@ def fetch_market_board_scan(as_of: date) -> list[dict[str, Any]]:
         breadth = up / total * 100
         quote_ts = int(to_number(row.get("f124")))
         quote_date = datetime.fromtimestamp(quote_ts, HKT).date() if quote_ts > 0 else None
+        if quote_date:
+            quote_date = min(quote_date, latest_completed_market_date(as_of))
         if quote_date and (as_of - quote_date).days > 5:
             continue
         # Momentum is important, but broad participation and real inflow prevent
@@ -1546,6 +1652,12 @@ def build_source_status(
         and item.get("status")
         in {"待核验", "部分沿用/待核验", "沿用最近可靠新闻", "休市/接口异常，沿用最近交易日"}
     ]
+    # Slow-frequency macro series can be valid but several days old. The risk
+    # gate blocks only when fewer than 80% of the defined risk indicators have
+    # an auditable source date; staleness remains visible in the module status.
+    risk_known = int(risk_status.get("fresh", 0)) + int(risk_status.get("stale", 0))
+    if len(data.get("riskDashboard", [])) and risk_known / len(data["riskDashboard"]) >= 0.8:
+        blocking = [name for name in blocking if name != "risk"]
     status["overall"] = "部分模块需核验" if blocking else "全部模块已刷新"
     status["blockingModules"] = blocking
     data["sourceStatus"] = status
@@ -1933,10 +2045,11 @@ def build_dashboard() -> tuple[dict[str, Any], list[str]]:
     data = json.loads(DATA_PATH.read_text(encoding="utf-8"))
     as_of = today_hkt()
     update_risk_market_data(data, as_of)
-    risk_status = annotate_risk_status(data, as_of)
     update_finance_news(data, as_of)
     _, checks = update_funds(data, as_of)
     update_industry(data, as_of)
+    update_derived_risk_data(data, as_of)
+    risk_status = annotate_risk_status(data, as_of)
     update_experts(data, as_of)
     build_source_status(data, as_of, risk_status, checks)
     update_daily(data, as_of)
