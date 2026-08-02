@@ -27,6 +27,13 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: dashboard/package-lock.json
+
       - name: Update market data and Notion
         env:
           REQUIRE_NOTION: "true"
@@ -84,14 +91,28 @@ jobs:
           print("Industry discovery/fallback validation passed:", status)
           PY
 
+      - name: Build B dashboard from audited data
+        run: |
+          python scripts/generate_dashboard_data.py
+          npm ci --prefix dashboard --ignore-scripts
+          npm run build --prefix dashboard
+          python scripts/publish_dashboard_build.py
+
+      - name: Validate published dashboard
+        run: |
+          test -s index.html
+          test -d _next/static
+          grep -q "每日综合大看板" index.html
+          grep -q "投资研究中心 2.0" index.html
+
       - name: Commit and push if data changed
         run: |
-          if git diff --quiet -- data/market-data.json; then
-            echo "No dashboard data changes to commit."
+          if git diff --quiet; then
+            echo "No dashboard changes to commit."
             exit 0
           fi
           git config user.name "investment-center-bot"
           git config user.email "actions@github.com"
-          git add data/market-data.json
-          git commit -m "Update daily investment center data"
+          git add data/market-data.json dashboard/app/dashboard-data.ts index.html _next .nojekyll
+          git commit -m "Update daily investment center dashboard"
           git push
