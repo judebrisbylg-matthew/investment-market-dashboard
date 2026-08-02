@@ -44,7 +44,7 @@ https://judebrisbylg-matthew.github.io/investment-market-dashboard/
 .
 ├── .github/
 │   └── workflows/
-│       └── daily-update.yml     # GitHub Actions 每天 05:00 HKT 自动更新
+│       └── daily-update.yml     # GitHub Actions 每天 06:15 HKT 自动更新
 ├── index.html                  # 数字看板主页面
 ├── src/
 │   ├── standalone.css          # 页面样式，包含 PC/手机响应式布局
@@ -66,7 +66,7 @@ https://judebrisbylg-matthew.github.io/investment-market-dashboard/
 自动更新规则：
 
 ```text
-每天 05:00 HKT 自动执行
+每天 06:15 HKT 自动执行
 ```
 
 对应工作流：
@@ -129,7 +129,7 @@ NOTION_DB_NEWS
 
 ## 每日更新流程
 
-每天凌晨 5:00 的自动流程应该按这个顺序执行：
+每天早上 06:15 的自动流程应该按这个顺序执行：
 
 1. 拉取/整理当天最新财经新闻。
 2. 更新 6 个 Excel 表格里的当天数据。

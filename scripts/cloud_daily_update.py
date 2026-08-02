@@ -1483,7 +1483,7 @@ def build_source_status(
             "sample": fund_checks[:4],
         },
         "news": news_status,
-        "asOf": f"{fmt_slash(as_of)} 05:00 HKT",
+        "asOf": f"{fmt_slash(as_of)} 06:15 HKT",
     }
     blocking = [
         name
@@ -1654,7 +1654,7 @@ def urgent_daily_fields(
         risk = f"主要风险：科技链和高波动资产同步补跌；若成交不足，{reserve_tight}可能继续拖累组合。"
     review = f"下次复盘：看{core_tight}是否放量止跌，{reserve_tight}是否继续转弱。"
     return {
-        "asOf": f"{fmt_slash(as_of)} 05:00 HKT",
+        "asOf": f"{fmt_slash(as_of)} 06:15 HKT",
         "signal": signal,
         "action": action,
         "marketJudgement": judgement,
@@ -1711,7 +1711,7 @@ def compact_daily_fields(
         risk = f"主要风险：{risk_tight}；若成交不足或消息反复，成长资产易回撤。"
     review = f"下次复盘：看{core_tight}是否放量，{reserve_tight}是否升温，新闻是否新增冲击。"
     return {
-        "asOf": f"{fmt_slash(as_of)} 05:00 HKT",
+        "asOf": f"{fmt_slash(as_of)} 06:15 HKT",
         "signal": signal,
         "action": action,
         "marketJudgement": judgement,
@@ -1890,7 +1890,7 @@ def build_dashboard() -> tuple[dict[str, Any], list[str]]:
     data["automation"] = {
         "source": "GitHub Actions",
         "timezone": "Asia/Hong_Kong",
-        "rule": "daily 05:00 HKT",
+        "rule": "daily 06:15 HKT",
         "notionUpsert": "enabled when NOTION_* secrets exist",
     }
     return data, checks

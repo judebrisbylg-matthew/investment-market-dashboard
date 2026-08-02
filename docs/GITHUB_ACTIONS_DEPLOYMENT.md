@@ -4,7 +4,7 @@
 
 ## 一、最终目标
 
-每天 05:00 HKT 自动完成：
+每天 06:15 HKT 自动完成：
 
 1. 更新 `data/market-data.json`
 2. 同步 GitHub Pages 数字看板
@@ -46,16 +46,16 @@ docs/GITHUB_ACTIONS_DEPLOYMENT.md       # 本说明
 GitHub Actions 使用 UTC 时间。
 
 ```yaml
-cron: "0 21 * * *"
+cron: "15 22 * * *"
 ```
 
 含义：
 
 ```text
-UTC 每天 21:00 = 香港/北京时间次日 05:00
+UTC 每天 22:15 = 香港/北京时间次日 06:15
 ```
 
-也就是说，你本地不需要打开 Codex，GitHub 会在每天凌晨 5 点执行。
+也就是说，你本地不需要打开 Codex，GitHub 会在每天早上 06:15 执行。
 
 ## 四、Notion 同步方式
 
