@@ -31,12 +31,12 @@ jobs:
         env:
           REQUIRE_NOTION: "true"
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
-          NOTION_DB_DAILY: ${{ secrets.NOTION_DB_DAILY }}
-          NOTION_DB_RISK: ${{ secrets.NOTION_DB_RISK }}
-          NOTION_DB_INDUSTRY: ${{ secrets.NOTION_DB_INDUSTRY }}
-          NOTION_DB_EXPERTS: ${{ secrets.NOTION_DB_EXPERTS }}
-          NOTION_DB_FUNDS: ${{ secrets.NOTION_DB_FUNDS }}
-          NOTION_DB_NEWS: ${{ secrets.NOTION_DB_NEWS }}
+          NOTION_DB_BATCH: ${{ secrets.NOTION_DB_BATCH }}
+          NOTION_DB_MODULES: ${{ secrets.NOTION_DB_MODULES }}
+          NOTION_DB_METRICS: ${{ secrets.NOTION_DB_METRICS }}
+          NOTION_DB_INDUSTRY_TOP10: ${{ secrets.NOTION_DB_INDUSTRY_TOP10 }}
+          NOTION_DB_EVENTS_TOP10: ${{ secrets.NOTION_DB_EVENTS_TOP10 }}
+          NOTION_DB_HOLDINGS: ${{ secrets.NOTION_DB_HOLDINGS }}
         run: python scripts/cloud_daily_update.py
 
       - name: Validate industry discovery and dashboard payload
@@ -70,6 +70,17 @@ jobs:
           assert all(item.get("reason") and item.get("refreshStatus") for item in industries)
           assert len({item.get("name") for item in industries}) == 10
           assert all(item.get("rankingMarket") == "A股" for item in industries)
+          contract = data.get("v2", {})
+          assert contract.get("contractVersion") == "dashboard-v2.0", contract
+          assert contract.get("marketGate") in {"风险允许", "风险偏高", "停止新增", "数据不足"}, contract
+          assert contract.get("dataHealth") in {"绿灯", "黄灯", "红灯", "灰灯"}, contract
+          assert set(contract.get("moduleCoverage", {})) == {"0", "1", "2", "3", "4", "5"}, contract
+          final_fund_codes = {
+              "012733", "100055", "006751", "014344", "007818", "013180",
+              "004432", "519704", "018125", "011103", "025856", "018896",
+          }
+          assert {str(item.get("code")) for item in data.get("fundHoldings", [])} == final_fund_codes
+          assert len(data.get("financeNews", [])[:10]) == 10
           print("Industry discovery/fallback validation passed:", status)
           PY
 

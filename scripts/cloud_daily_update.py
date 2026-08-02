@@ -44,22 +44,16 @@ FUND_META = {
     "519704": ("交银先进制造混合A", "先进制造", "主动权益"),
     "018896": ("易方达消费电子ETF联接A", "消费电子", "指数/ETF联接"),
     "018125": ("永赢先进制造智选混合发起C", "先进制造", "主动权益"),
-    "023531": ("永赢国证通用航空产业ETF发起联接C", "航空航天", "指数/ETF联接"),
-    "018734": ("华夏中证绿色电力ETF发起式联接A", "绿色电力", "指数/ETF联接"),
     "025856": ("华夏中证电网设备主题ETF发起式联接A", "电网设备", "指数/ETF联接"),
     "011103": ("天弘中证光伏产业指数C", "光伏产业", "指数基金"),
-    "377240": ("摩根新兴动力混合A", "成长/动力", "主动权益"),
     "007818": ("国泰中证全指通信设备ETF联接C", "通信/设备", "指数/ETF联接"),
 }
 
 FUND_RISK = {
     "006751": "中高",
     "018125": "高",
-    "023531": "中",
-    "018734": "中",
     "025856": "中高",
     "011103": "高",
-    "377240": "中",
     "007818": "高",
     "018896": "中高",
     "013180": "中",
@@ -71,21 +65,37 @@ FUND_RISK = {
 }
 
 FUND_ORDER = [
-    "018896",
-    "006751",
-    "007818",
     "012733",
-    "004432",
-    "018125",
-    "377240",
-    "519704",
-    "014344",
-    "013180",
     "100055",
-    "023531",
-    "018734",
-    "025856",
+    "006751",
+    "014344",
+    "007818",
+    "013180",
+    "004432",
+    "519704",
+    "018125",
     "011103",
+    "025856",
+    "018896",
+]
+
+STOCK_HOLDINGS = [
+    {
+        "code": "002837",
+        "name": "英维克",
+        "theme": "电力/数据中心能源",
+        "assetType": "股票",
+        "watch": "能否放量站回20日线并连续2日强于沪深300",
+        "invalid": "量价修复失败或相对沪深300继续走弱",
+    },
+    {
+        "code": "002555",
+        "name": "三七互娱",
+        "theme": "游戏传媒/AI应用",
+        "assetType": "股票",
+        "watch": "游戏ETF与个股是否同步放量、连续强于沪深300",
+        "invalid": "新品流水不及预期或相对沪深300继续走弱",
+    },
 ]
 
 NEWS_FEEDS = [
@@ -1899,12 +1909,12 @@ def build_dashboard() -> tuple[dict[str, Any], list[str]]:
 @dataclass
 class NotionConfig:
     token: str
-    db_daily: str
-    db_risk: str
-    db_industry: str
-    db_experts: str
-    db_funds: str
-    db_news: str
+    db_batch: str
+    db_modules: str
+    db_metrics: str
+    db_industry_top10: str
+    db_events_top10: str
+    db_holdings: str
 
 
 class NotionClient:
@@ -1948,7 +1958,9 @@ class NotionClient:
             names = [part.strip() for part in re.split(r"[,，/、|]", text) if part.strip()]
             return {"multi_select": [{"name": name[:100]} for name in names[:10]]}
         if prop_type == "date":
-            if isinstance(value, date):
+            if isinstance(value, datetime):
+                start = value.isoformat()
+            elif isinstance(value, date):
                 start = value.isoformat()
             else:
                 start = parse_date(text).isoformat()
@@ -2030,12 +2042,12 @@ def parse_date(value: str) -> date:
 def notion_config(require: bool) -> NotionConfig | None:
     keys = {
         "token": os.getenv("NOTION_TOKEN", ""),
-        "db_daily": os.getenv("NOTION_DB_DAILY", ""),
-        "db_risk": os.getenv("NOTION_DB_RISK", ""),
-        "db_industry": os.getenv("NOTION_DB_INDUSTRY", ""),
-        "db_experts": os.getenv("NOTION_DB_EXPERTS", ""),
-        "db_funds": os.getenv("NOTION_DB_FUNDS", ""),
-        "db_news": os.getenv("NOTION_DB_NEWS", ""),
+        "db_batch": os.getenv("NOTION_DB_BATCH", ""),
+        "db_modules": os.getenv("NOTION_DB_MODULES", ""),
+        "db_metrics": os.getenv("NOTION_DB_METRICS", ""),
+        "db_industry_top10": os.getenv("NOTION_DB_INDUSTRY_TOP10", ""),
+        "db_events_top10": os.getenv("NOTION_DB_EVENTS_TOP10", ""),
+        "db_holdings": os.getenv("NOTION_DB_HOLDINGS", ""),
     }
     missing = [name for name, value in keys.items() if not value]
     if missing and require:
@@ -2306,6 +2318,280 @@ def sync_notion(data: dict[str, Any], config: NotionConfig) -> dict[str, int]:
     return stats
 
 
+def normalize_light(value: Any, default: str = "灰灯") -> str:
+    text = str(value or "").strip()
+    if "绿" in text or text in {"正常", "风险允许"}:
+        return "绿灯"
+    if "黄" in text or text in {"观察", "预警", "风险偏高"}:
+        return "黄灯"
+    if "红" in text or text in {"危险", "停止新增"}:
+        return "红灯"
+    if "灰" in text or text in {"数据不足", "待核验", "未验证"}:
+        return "灰灯"
+    return default
+
+
+def light_from_score(value: Any) -> str:
+    try:
+        score = float(value)
+    except (TypeError, ValueError):
+        return "灰灯"
+    if score >= 75:
+        return "绿灯"
+    if score >= 55:
+        return "黄灯"
+    return "红灯"
+
+
+def pct_coverage(known: int, total: int) -> float:
+    return round(known / total, 4) if total else 0.0
+
+
+def source_date_from_item(item: dict[str, Any], fallback: date) -> date:
+    for key in ("sourceDate", "marketDate", "navDate", "date"):
+        value = item.get(key)
+        if value:
+            return parse_date(str(value))
+    text = safe_text(item.get("refreshStatus"), item.get("reason"), default="")
+    match = re.search(r"(20\d{2}-\d{2}-\d{2})", text)
+    return parse_date(match.group(1)) if match else fallback
+
+
+def lag_days(source_date: date, business_date: date) -> int:
+    return max((business_date - source_date).days, 0)
+
+
+def notion_v2_contract(data: dict[str, Any], as_of: date) -> dict[str, Any]:
+    """Build the auditable 2.0 contract consumed by Notion and the visual site."""
+    generated = datetime.now(HKT)
+    batch_id = f"HKT-{generated:%Y%m%dT%H%M%S}-dashboard-v2"
+    risks = data.get("riskDashboard", [])
+    risk_lights = [normalize_light(item.get("signal")) for item in risks]
+    light_counts = {light: risk_lights.count(light) for light in ("绿灯", "黄灯", "红灯", "灰灯")}
+    blocking = set(data.get("sourceStatus", {}).get("blockingModules", []))
+    if {"risk", "industry"} & blocking:
+        market_gate = "数据不足"
+    elif light_counts["红灯"] >= 3:
+        market_gate = "停止新增"
+    elif light_counts["红灯"] >= 1 or light_counts["黄灯"] >= 4:
+        market_gate = "风险偏高"
+    else:
+        market_gate = "风险允许"
+
+    source_status = data.get("sourceStatus", {})
+    risk_status = source_status.get("risk", {})
+    risk_known = int(risk_status.get("fresh", 0)) + int(risk_status.get("stale", 0))
+    risk_coverage = pct_coverage(risk_known, len(risks))
+    industries = data.get("industryWatch", [])[:10]
+    industry_coverage = pct_coverage(sum(bool(i.get("marketDate")) for i in industries), 10)
+    events = data.get("financeNews", [])[:10]
+    event_coverage = pct_coverage(sum(bool(i.get("title") and i.get("source")) for i in events), 10)
+    funds = [i for i in data.get("fundHoldings", []) if str(i.get("code")) in FUND_ORDER]
+    holding_coverage = pct_coverage(sum(bool(i.get("navDate") or extract_nav_date(str(i.get("reason", "")))) for i in funds), len(FUND_ORDER))
+    overall_coverage = round((risk_coverage + industry_coverage + event_coverage + holding_coverage) / 4, 4)
+    health = "灰灯" if market_gate == "数据不足" else ("黄灯" if overall_coverage < 0.9 else "绿灯")
+
+    return {
+        "contractVersion": "dashboard-v2.0",
+        "ruleVersion": "quant-gate-v2.0",
+        "batchId": batch_id,
+        "businessDate": as_of.isoformat(),
+        "generatedAt": generated.isoformat(timespec="seconds"),
+        "marketGate": market_gate,
+        "dataHealth": health,
+        "coverage": overall_coverage,
+        "riskLightCounts": light_counts,
+        "blockingModules": sorted(blocking),
+        "moduleCoverage": {
+            "0": overall_coverage,
+            "1": risk_coverage,
+            "2": industry_coverage,
+            "3": pct_coverage(len(data.get("expertViews", [])), 10),
+            "4": event_coverage,
+            "5": holding_coverage,
+        },
+    }
+
+
+def sync_notion_v2(data: dict[str, Any], config: NotionConfig) -> dict[str, int]:
+    client = NotionClient(config.token)
+    as_of = today_hkt()
+    contract = notion_v2_contract(data, as_of)
+    data["v2"] = contract
+    batch_id = contract["batchId"]
+    generated = datetime.fromisoformat(contract["generatedAt"])
+    stats = {"created": 0, "updated": 0, "skipped": 0}
+
+    def count(status: str) -> None:
+        key = "created" if status.startswith("created") else "updated" if status.startswith("updated") else "skipped"
+        stats[key] += 1
+
+    batch_key = {"批次键": batch_id}
+    batch_base = {
+        "批次键": batch_id,
+        "Batch ID": batch_id,
+        "业务日期": as_of,
+        "计划运行时间": generated.replace(hour=6, minute=15, second=0, microsecond=0),
+        "实际开始时间": generated,
+        "发布时间": generated,
+        "批次状态": "运行中",
+        "数据健康": contract["dataHealth"],
+        "市场闸门": contract["marketGate"],
+        "当前发布批次": True,
+        "成功模块数": 0,
+        "失败模块数": 0,
+        "数据契约版本": contract["contractVersion"],
+        "规则版本": contract["ruleVersion"],
+        "Git Commit": os.getenv("GITHUB_SHA", "local/manual")[:40],
+        "错误摘要": "；".join(contract["blockingModules"]) or "无阻断模块",
+    }
+    count(client.upsert(config.db_batch, batch_base, batch_key))
+    current_batch_page = client.find_page(config.db_batch, batch_key)
+    current_rows = client.api(
+        "POST",
+        f"/databases/{config.db_batch}/query",
+        {"filter": {"property": "当前发布批次", "checkbox": {"equals": True}}, "page_size": 100},
+    ).get("results", [])
+    for page in current_rows:
+        if page.get("id") != current_batch_page:
+            client.api("PATCH", f"/pages/{page['id']}", {"properties": {"当前发布批次": {"checkbox": False}}})
+
+    daily = data.get("daily", {})
+    industries = data.get("industryWatch", [])[:10]
+    events = data.get("financeNews", [])[:10]
+    final_funds = [i for i in data.get("fundHoldings", []) if str(i.get("code")) in FUND_ORDER]
+    module_rows = [
+        ("0", "每日综合大看板", daily.get("marketJudgement"), daily.get("needAction"), contract["coverage"], as_of),
+        ("1", "市场环境与风控", f"{contract['riskLightCounts']}；闸门={contract['marketGate']}", daily.get("positionAdvice"), contract["moduleCoverage"]["1"], max((source_date_from_item(i, as_of) for i in data.get("riskDashboard", [])), default=as_of)),
+        ("2", "行业赛道跟踪", "前10：" + "、".join(i.get("name", "待核验") for i in industries), "只研究前10；执行受市场闸门约束", contract["moduleCoverage"]["2"], max((source_date_from_item(i, as_of) for i in industries), default=as_of)),
+        ("3", "全球机构与跨市场验证", "机构观点只作佐证，不单独触发买入", "至少两类独立证据一致才升级", contract["moduleCoverage"]["3"], as_of),
+        ("4", "每日重大财经事件", f"按影响排序保留{len(events)}条", "先判断是否改变利率、流动性或盈利预期", contract["moduleCoverage"]["4"], max((source_date_from_item(i, as_of) for i in events), default=as_of)),
+        ("5", "我的持仓跟踪", f"2只股票+{len(final_funds)}只基金；只输出研究方向", "持仓变动由用户主动提供，系统不推断数量", contract["moduleCoverage"]["5"], max((source_date_from_item(i, as_of) for i in final_funds), default=as_of)),
+    ]
+    module_failures = 0
+    for seq, name, conclusion, action, coverage, source_date in module_rows:
+        status = "成功" if coverage >= 0.8 else "降级"
+        if coverage <= 0:
+            status = "失败"
+            module_failures += 1
+        research_light = "灰灯" if status == "失败" else ("黄灯" if status == "降级" else "绿灯")
+        execution_light = "灰灯" if contract["marketGate"] == "数据不足" else normalize_light(contract["marketGate"])
+        row = {
+            "快照键": f"{batch_id}|{seq}", "Batch ID": batch_id, "模块序号": seq, "模块名称": name,
+            "业务日期": as_of, "数据截至日": source_date, "滞后天数": lag_days(source_date, as_of),
+            "模块状态": status, "字段覆盖率": coverage, "研究灯": research_light, "执行灯": execution_light,
+            "核心结论": safe_text(conclusion), "今日动作": safe_text(action),
+            "失效条件": "关键数据过期、覆盖率低于80%或风险/行业模块阻断时自动降级。",
+            "下一触发": "下一批次重新抓取并按同一规则复核。", "规则版本": contract["ruleVersion"],
+        }
+        count(client.upsert(config.db_modules, row, {"快照键": row["快照键"]}))
+
+    for idx, item in enumerate(data.get("riskDashboard", []), 1):
+        source_date = source_date_from_item(item, as_of)
+        row = {
+            "记录键": f"{batch_id}|risk|{idx:02d}", "Batch ID": batch_id, "记录ID": f"risk-{idx:02d}",
+            "模块序号": "1", "业务日期": as_of, "数据截至日": source_date,
+            "类别": "市场环境与风控", "指标名称": item.get("name"), "显示值": item.get("value"),
+            "评分": item.get("score"), "排名": idx, "灯号": normalize_light(item.get("signal")),
+            "方向": "中性", "来源等级": "B", "来源名称": "公开市场数据/最近可得数据",
+            "覆盖率": 1.0 if source_date else 0.0, "滞后天数": lag_days(source_date, as_of),
+            "置信度": 0.8 if lag_days(source_date, as_of) <= 3 else 0.5,
+            "代理指标": False, "代理说明": safe_text(item.get("refreshStatus")),
+            "影响／动作": f"正常:{item.get('normal')}；预警:{item.get('warning')}；危险:{item.get('danger')}",
+            "下一触发": item.get("warning"), "失效条件": "来源日期过期或字段无法验证。",
+        }
+        count(client.upsert(config.db_metrics, row, {"记录键": row["记录键"]}))
+
+    for idx, item in enumerate(data.get("expertViews", [])[:10], 1):
+        strength = {"高": 85, "中高": 70, "中": 55, "低": 35}.get(str(item.get("strength")), 50)
+        row = {
+            "记录键": f"{batch_id}|cross|{idx:02d}", "Batch ID": batch_id, "记录ID": f"cross-{idx:02d}",
+            "模块序号": "3", "业务日期": as_of, "数据截至日": as_of, "类别": "机构/跨市场验证",
+            "指标名称": item.get("name"), "显示值": item.get("stance"), "评分": strength, "排名": idx,
+            "灯号": "黄灯" if "无新增" in safe_text(item.get("stance"), default="") else "绿灯",
+            "方向": "中性", "来源等级": "C", "来源名称": safe_text(item.get("refreshStatus")),
+            "覆盖率": 1.0, "滞后天数": 0, "置信度": strength / 100, "代理指标": False,
+            "代理说明": "机构观点只作佐证，不能独立触发买入。", "影响／动作": item.get("view"),
+            "下一触发": "公开信、13F、持仓披露或重大访谈出现新增信息。", "失效条件": "缺少原始披露或与价格/资金证据冲突。",
+        }
+        count(client.upsert(config.db_metrics, row, {"记录键": row["记录键"]}))
+
+    for idx, item in enumerate(industries, 1):
+        total = float(item.get("score", 0) or 0)
+        trend = round(total * 0.25)
+        flow = round(float(item.get("heat", 0) or 0) * 0.25)
+        fundamental = round(float(item.get("prosperity", 0) or 0) * 0.25)
+        hit = re.search(r"新闻命中(\d+)项", safe_text(item.get("reason"), default=""))
+        high_frequency = min(int(hit.group(1)) if hit else 0, 10)
+        valuation = round((100 - float(item.get("risk", 50) or 50)) * 0.15)
+        research_total = min(trend + flow + fundamental + high_frequency + valuation, 100)
+        research_light = light_from_score(research_total)
+        execution_light = "灰灯" if contract["marketGate"] == "数据不足" else ("红灯" if contract["marketGate"] == "停止新增" else research_light)
+        source_date = source_date_from_item(item, as_of)
+        row = {
+            "行业键": f"{batch_id}|industry|{idx:02d}", "Batch ID": batch_id, "赛道ID": f"sector-{idx:02d}",
+            "业务日期": as_of, "数据截至日": source_date, "排名": idx, "行业／赛道": item.get("name"),
+            "代表ETF名称": item.get("etf"), "代表ETF代码": "待核验", "市场确认": item.get("news"),
+            "趋势分": trend, "资金分": flow, "基本面分": fundamental, "高频分": high_frequency,
+            "估值分": valuation, "研究总分": research_total, "研究灯": research_light, "执行灯": execution_light,
+            "覆盖率": 0.8 if source_date else 0.5,
+            "代理字段": "趋势=总分×25%；资金=热度×25%；基本面=景气×25%；高频=新闻命中上限10；估值=(100-风险)×15%。均为透明代理，非真实资金流/PE。",
+            "执行动作": "仅研究" if execution_light == "灰灯" else safe_text(item.get("operation")),
+            "下一触发": item.get("nextSignal"), "失效条件": safe_text(item.get("reason")), "规则版本": contract["ruleVersion"],
+        }
+        count(client.upsert(config.db_industry_top10, row, {"行业键": row["行业键"]}))
+
+    for idx, item in enumerate(events, 1):
+        source_date = source_date_from_item(item, as_of)
+        confidence = {"高": 0.9, "中高": 0.75, "中": 0.6, "低": 0.4}.get(str(item.get("confidence")), 0.5)
+        impact_score = {"高": 85, "中高": 72, "中": 55, "低": 35}.get(str(item.get("impact")), 50)
+        direction = str(item.get("direction", "中性"))
+        row = {
+            "事件键": f"{batch_id}|event|{idx:02d}", "Batch ID": batch_id, "事件ID": f"event-{idx:02d}",
+            "事件簇ID": safe_text(item.get("category"), default="macro"), "业务日期": as_of, "数据截至日": source_date,
+            "排名": idx, "类别": item.get("category"), "重大事件": item.get("title"), "30秒结论": item.get("meaning"),
+            "A／H与持仓影响": item.get("assets"), "当前动作": item.get("action"), "触发条件": item.get("watch"),
+            "失效条件": "主来源撤回、后续官方数据反向或市场已充分计价。",
+            "信号灯": "红灯" if impact_score >= 80 and "偏空" in direction else "黄灯" if impact_score >= 70 else "绿灯",
+            "数据新鲜度": "新鲜" if lag_days(source_date, as_of) <= 1 else "可用" if lag_days(source_date, as_of) <= 3 else "滞后",
+            "最终优先级": impact_score, "方向分": 0, "置信度": confidence, "独立来源数": 1,
+            "已计价惩罚": 0, "主来源URL": item.get("url"), "确认来源URL": None,
+        }
+        count(client.upsert(config.db_events_top10, row, {"事件键": row["事件键"]}))
+
+    sector_map = {str(i.get("name")): i for i in industries}
+    holding_items: list[dict[str, Any]] = []
+    for stock in STOCK_HOLDINGS:
+        sector = next((i for i in industries if any(k in str(i.get("name")) for k in stock["theme"].split("/"))), None)
+        holding_items.append({**stock, "score": sector.get("score", 0) if sector else 0, "sourceDate": source_date_from_item(sector, as_of) if sector else as_of})
+    for item in final_funds:
+        holding_items.append({
+            "code": item.get("code"), "name": item.get("name"), "theme": item.get("theme"), "assetType": "基金",
+            "score": next((i.get("score", 0) for i in industries if any(k in str(i.get("name")) for k in str(item.get("theme", "")).split("/"))), 0),
+            "watch": safe_text(item.get("reason")), "invalid": "对应赛道转红、净值趋势持续弱于基准或数据覆盖不足。",
+            "sourceDate": source_date_from_item(item, as_of), "decision": item.get("decision"),
+        })
+    for idx, item in enumerate(holding_items, 1):
+        research_light = light_from_score(item.get("score"))
+        direction = "数据不足" if research_light == "灰灯" else "优先关注" if research_light == "绿灯" else "中性观察" if research_light == "黄灯" else "风险优先"
+        row = {
+            "持仓键": f"{batch_id}|holding|{idx:02d}", "Batch ID": batch_id, "业务日期": as_of,
+            "数据截至日": item.get("sourceDate"), "代码": item.get("code"), "持仓名称": item.get("name"),
+            "资产类型": item.get("assetType"), "对应赛道": item.get("theme"), "主题分组": item.get("theme"),
+            "赛道分": item.get("score"), "研究灯": research_light, "方向判断": direction,
+            "市场闸门": contract["marketGate"], "风险说明": safe_text(item.get("decision"), item.get("watch")),
+            "今日只看一个指标": item.get("watch"), "下一确认条件": item.get("watch"),
+            "失效条件": item.get("invalid"), "清单版本": "final-2stocks-12funds",
+        }
+        count(client.upsert(config.db_holdings, row, {"持仓键": row["持仓键"]}))
+
+    successful = 6 - module_failures
+    final_status = "失败" if successful == 0 else "降级成功" if contract["dataHealth"] != "绿灯" else "成功"
+    batch_base.update({"批次状态": final_status, "成功模块数": successful, "失败模块数": module_failures, "发布时间": datetime.now(HKT)})
+    count(client.upsert(config.db_batch, batch_base, batch_key))
+    return stats
+
+
 def label_score(value: Any) -> str:
     try:
         score = float(value)
@@ -2333,6 +2619,7 @@ def main() -> int:
     args = parser.parse_args()
 
     data, checks = build_dashboard()
+    data["v2"] = notion_v2_contract(data, today_hkt())
     log("fund sample checks:")
     for line in checks[:6]:
         log(f"  {line}")
@@ -2340,7 +2627,7 @@ def main() -> int:
     require_notion = os.getenv("REQUIRE_NOTION", "false").lower() == "true"
     config = notion_config(require_notion)
     if config and not args.dry_run:
-        stats = sync_notion(data, config)
+        stats = sync_notion_v2(data, config)
         log(f"Notion upsert stats: {stats}")
     elif args.dry_run:
         log("dry run: Notion sync and file write skipped")

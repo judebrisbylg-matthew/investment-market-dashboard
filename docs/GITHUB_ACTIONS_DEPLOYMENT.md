@@ -97,12 +97,12 @@ Settings -> Secrets and variables -> Actions -> New repository secret
 
 ```text
 NOTION_TOKEN
-NOTION_DB_DAILY
-NOTION_DB_RISK
-NOTION_DB_INDUSTRY
-NOTION_DB_EXPERTS
-NOTION_DB_FUNDS
-NOTION_DB_NEWS
+NOTION_DB_BATCH
+NOTION_DB_MODULES
+NOTION_DB_METRICS
+NOTION_DB_INDUSTRY_TOP10
+NOTION_DB_EVENTS_TOP10
+NOTION_DB_HOLDINGS
 ```
 
 说明：
@@ -110,12 +110,12 @@ NOTION_DB_NEWS
 | Secret | 内容 |
 | --- | --- |
 | `NOTION_TOKEN` | Notion integration token |
-| `NOTION_DB_DAILY` | `1.每日简报` 的 database id |
-| `NOTION_DB_RISK` | `2.风控仪表盘` 的 database id |
-| `NOTION_DB_INDUSTRY` | `3.行业观察池` 的 database id |
-| `NOTION_DB_EXPERTS` | `4.全球投资专家观点追踪` 的 database id |
-| `NOTION_DB_FUNDS` | `5.我的基金持仓跟踪` 的 database id |
-| `NOTION_DB_NEWS` | `6.每日财经新闻` 的 database id |
+| `NOTION_DB_BATCH` | `6A.运行批次` 的 database id |
+| `NOTION_DB_MODULES` | `6B.模块快照` 的 database id |
+| `NOTION_DB_METRICS` | `6C.指标明细` 的 database id |
+| `NOTION_DB_INDUSTRY_TOP10` | `6D.行业前10` 的 database id |
+| `NOTION_DB_EVENTS_TOP10` | `6E.事件前10` 的 database id |
+| `NOTION_DB_HOLDINGS` | `6F.持仓研究` 的 database id |
 
 当前工作流里 `REQUIRE_NOTION=true`。如果这些 Secret 没配齐，任务会失败，而不是假装更新成功。
 
@@ -160,11 +160,13 @@ https://www.notion.so/xxx/57a88e4152f547eb9171078d1702aa5d?v=...
 - 操作语言
 - 操作原因
 
-目前包含 13 只基金：
+目前包含最终确认的 12 只基金，并另行保留 2 只股票研究清单：
 
 ```text
-013180, 004432, 006751, 100055, 014344, 012733, 519704,
-018896, 018125, 023531, 018734, 377240, 007818
+012733, 100055, 006751, 014344, 007818, 013180,
+004432, 519704, 018125, 011103, 025856, 018896
+
+股票：002837, 002555
 ```
 
 ### 保守复核/沿用
