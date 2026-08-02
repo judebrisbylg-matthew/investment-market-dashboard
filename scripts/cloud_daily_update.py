@@ -293,14 +293,54 @@ def parse_fund_rows(html: str) -> list[dict[str, Any]]:
     return rows
 
 
+def parse_fund_json(payload: Any) -> list[dict[str, Any]]:
+    """Normalize Eastmoney's current fund-history JSON response."""
+    raw_rows = ((payload or {}).get("Data") or {}).get("LSJZList") or []
+    rows: list[dict[str, Any]] = []
+    for item in raw_rows:
+        nav_date = str(item.get("FSRQ") or "").strip()
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", nav_date):
+            continue
+        nav_text = str(item.get("DWJZ") or "").strip()
+        try:
+            nav = float(nav_text) if nav_text else None
+        except ValueError:
+            nav = None
+        rows.append(
+            {
+                "date": nav_date,
+                "nav": nav,
+                "acc_nav": str(item.get("LJJZ") or ""),
+                "daily": percent(str(item.get("JZZZL") or "")),
+            }
+        )
+    return rows
+
+
 def fetch_fund(code: str) -> dict[str, Any] | None:
-    query = urlencode({"type": "lsjz", "code": code, "page": 1, "per": 25})
-    url = f"https://fundf10.eastmoney.com/F10DataApi.aspx?{query}"
+    modern_query = urlencode({"fundCode": code, "pageIndex": 1, "pageSize": 25})
+    modern_url = f"https://api.fund.eastmoney.com/f10/lsjz?{modern_query}"
     try:
-        rows = parse_fund_rows(request_text(url))
+        payload = request_json(
+            modern_url,
+            headers={
+                "User-Agent": "Mozilla/5.0 investment-center-bot/2.0",
+                "Referer": "https://fundf10.eastmoney.com/",
+                "Accept": "application/json, text/plain, */*",
+            },
+        )
+        rows = parse_fund_json(payload)
     except (HTTPError, URLError, TimeoutError, RemoteDisconnected, ValueError) as exc:
-        log(f"fund {code} fetch failed: {exc}")
-        return None
+        log(f"fund {code} modern API failed: {exc}; trying legacy fallback")
+        rows = []
+    if not rows:
+        legacy_query = urlencode({"type": "lsjz", "code": code, "page": 1, "per": 25})
+        legacy_url = f"https://fundf10.eastmoney.com/F10DataApi.aspx?{legacy_query}"
+        try:
+            rows = parse_fund_rows(request_text(legacy_url))
+        except (HTTPError, URLError, TimeoutError, RemoteDisconnected, ValueError) as exc:
+            log(f"fund {code} legacy fallback failed: {exc}")
+            return None
     if not rows:
         log(f"fund {code} returned no rows")
         return None
@@ -313,6 +353,7 @@ def fetch_fund(code: str) -> dict[str, Any] | None:
         "nav": latest["nav"],
         "day": latest["daily"],
         "week": week,
+        "source": "东方财富基金历史净值API",
     }
 
 
@@ -660,16 +701,18 @@ def update_funds(data: dict[str, Any], as_of: date) -> tuple[list[dict[str, Any]
             day_value = round(float(fetched["day"]), 2) if fetched.get("day") is not None else old.get("day", 0)
             week_value = round(float(fetched["week"]), 2) if fetched.get("week") is not None else old.get("week", 0)
             nav_value = fetched.get("nav")
-            reason = f"{reason} {refresh_status}；数据源：天天基金/东方财富。"
+            reason = f"{reason} {refresh_status}；数据源：{fetched['source']}。"
+            fresh = True
             check_lines.append(f"{code}: nav={nav_value}, day={day_value}%, navDate={fetched['navDate']}")
         else:
             refresh_status = "抓取失败，沿用上一版并待核验"
             decision = old.get("decision", "待核验")
-            reason = old.get("reason", "数据源抓取失败，沿用上一版并待核验。")
             day_value = old.get("day", 0)
             week_value = old.get("week", 0)
             nav_value = old.get("nav") or old.get("latestNav")
-            reason = f"{reason} 报表更新日期：{fmt_cn(as_of)}；数据源本次待核验。"
+            old_nav_date = safe_text(old.get("navDate"), "未知")
+            reason = f"净值日期 {old_nav_date}；本批次接口失败，沿用最近有效数据，不据此新增风险暴露。"
+            fresh = False
             check_lines.append(f"{code}: fetch failed, carried forward")
         updated.append(
             {
@@ -685,6 +728,7 @@ def update_funds(data: dict[str, Any], as_of: date) -> tuple[list[dict[str, Any]
                 "latestNav": nav_value if nav_value is not None else old.get("latestNav", ""),
                 "navDate": fetched["navDate"] if fetched else old.get("navDate", "待核验"),
                 "refreshStatus": refresh_status,
+                "freshFetch": fresh,
             }
         )
     data["fundHoldings"] = updated
@@ -1463,7 +1507,7 @@ def build_source_status(
     fund_checks: list[str],
 ) -> dict[str, Any]:
     funds = data.get("fundHoldings", [])
-    real_fund_rows = sum(1 for item in funds if "数据源：天天基金/东方财富" in str(item.get("reason", "")))
+    real_fund_rows = sum(1 for item in funds if item.get("freshFetch") is True)
     news_status = data.get("financeNewsStatus", {"status": "待核验", "note": "新闻刷新状态待核验。"})
     experts = data.get("expertViews", [])
     industries = data.get("industryWatch", [])
@@ -1486,10 +1530,10 @@ def build_source_status(
             "note": "未发现可靠新增观点时，明确写无新增可靠观点，不编造新动向。",
         },
         "funds": {
-            "status": "真实抓取" if real_fund_rows else "待核验",
+            "status": "真实抓取" if real_fund_rows == len(funds) and funds else "部分沿用/待核验" if real_fund_rows else "待核验",
             "count": len(funds),
             "fresh": real_fund_rows,
-            "note": f"{real_fund_rows}/{len(funds)}只基金从天天基金/东方财富返回净值；QDII按真实滞后日期展示。",
+            "note": f"{real_fund_rows}/{len(funds)}只基金从东方财富基金历史净值API返回净值；QDII按真实滞后日期展示。",
             "sample": fund_checks[:4],
         },
         "news": news_status,
@@ -2443,7 +2487,11 @@ def sync_notion_v2(data: dict[str, Any], config: NotionConfig) -> dict[str, int]
         "数据契约版本": contract["contractVersion"],
         "规则版本": contract["ruleVersion"],
         "Git Commit": os.getenv("GITHUB_SHA", "local/manual")[:40],
-        "错误摘要": "；".join(contract["blockingModules"]) or "无阻断模块",
+        "错误摘要": (
+            f"阻断模块：{cn_blocking_modules(contract['blockingModules'])}"
+            if contract["blockingModules"]
+            else "无阻断模块"
+        ),
     }
     count(client.upsert(config.db_batch, batch_base, batch_key))
     current_batch_page = client.find_page(config.db_batch, batch_key)
@@ -2469,11 +2517,17 @@ def sync_notion_v2(data: dict[str, Any], config: NotionConfig) -> dict[str, int]
         ("5", "我的持仓跟踪", f"2只股票+{len(final_funds)}只基金；只输出研究方向", "持仓变动由用户主动提供，系统不推断数量", contract["moduleCoverage"]["5"], max((source_date_from_item(i, as_of) for i in final_funds), default=as_of)),
     ]
     module_failures = 0
+    module_successes = 0
+    degraded_modules: list[str] = []
     for seq, name, conclusion, action, coverage, source_date in module_rows:
         status = "成功" if coverage >= 0.8 else "降级"
         if coverage <= 0:
             status = "失败"
             module_failures += 1
+        elif status == "成功":
+            module_successes += 1
+        else:
+            degraded_modules.append(f"{seq}.{name}覆盖率{coverage:.1%}")
         research_light = "灰灯" if status == "失败" else ("黄灯" if status == "降级" else "绿灯")
         execution_light = "灰灯" if contract["marketGate"] == "数据不足" else normalize_light(contract["marketGate"])
         row = {
@@ -2585,9 +2639,21 @@ def sync_notion_v2(data: dict[str, Any], config: NotionConfig) -> dict[str, int]
         }
         count(client.upsert(config.db_holdings, row, {"持仓键": row["持仓键"]}))
 
-    successful = 6 - module_failures
-    final_status = "失败" if successful == 0 else "降级成功" if contract["dataHealth"] != "绿灯" else "成功"
-    batch_base.update({"批次状态": final_status, "成功模块数": successful, "失败模块数": module_failures, "发布时间": datetime.now(HKT)})
+    final_status = "失败" if module_successes == 0 else "降级成功" if degraded_modules or contract["dataHealth"] != "绿灯" else "成功"
+    error_summary = "；".join(degraded_modules)
+    if contract["blockingModules"]:
+        error_summary = "；".join(
+            part for part in [error_summary, f"阻断模块：{cn_blocking_modules(contract['blockingModules'])}"] if part
+        )
+    batch_base.update(
+        {
+            "批次状态": final_status,
+            "成功模块数": module_successes,
+            "失败模块数": module_failures,
+            "错误摘要": error_summary or "无阻断或降级模块",
+            "发布时间": datetime.now(HKT),
+        }
+    )
     count(client.upsert(config.db_batch, batch_base, batch_key))
     return stats
 
