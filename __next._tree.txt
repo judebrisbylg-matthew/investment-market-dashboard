@@ -1,2 +1,2 @@
-:HL["/investment-market-dashboard/_next/static/css/ac3aaa90b474c029.css","style"]
-0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}},"staleTime":300,"buildId":"oPySVXav9cRx091AuivtG"}
+:HL["/investment-market-dashboard/_next/static/css/827b143b785e771a.css","style"]
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}},"staleTime":300,"buildId":"M7xBoIG4TYIBsC0lGrKLH"}

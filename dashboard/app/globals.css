@@ -1990,3 +1990,183 @@ button {
 @media(max-width:1180px){.nx-rail{width:78px;padding-inline:10px}.nx-logo>span,.nx-rail nav a>span,.nx-rail-health>span,.nx-rail-health>small{display:none}.nx-logo{justify-content:center;padding-inline:0}.nx-rail nav a{justify-content:center;padding:0}.nx-workspace{margin-left:78px}.nx-command-grid{grid-template-columns:1fr}.nx-alert-column{grid-template-columns:repeat(2,1fr);grid-template-rows:none}.nx-risk-board{grid-template-columns:1fr}.nx-risk-radar{min-height:360px}.nx-risk-radar>strong{margin-top:230px}.nx-evidence-events{grid-template-columns:1fr}}
 @media(max-width:850px){.nx-kpi-ribbon,.nx-summary-grid{grid-template-columns:repeat(2,1fr)}.nx-summary-grid>article{min-height:300px}.nx-decision-strip{grid-template-columns:1fr}.nx-decision-strip>div{border-top:1px solid rgba(85,145,228,.17);border-left:0}.nx-decision-strip>div:first-child{border-top:0}.nx-risk-cells{grid-template-columns:repeat(2,1fr)}.nx-sector-matrix{overflow-x:auto}.nx-matrix-head,.nx-matrix-row{min-width:980px}.nx-holding-grid{grid-template-columns:1fr}.nx-fund-cloud{grid-template-columns:1fr}.nx-header-tools>small{display:none}}
 @media(max-width:620px){.nx-rail{inset:auto 0 0;width:100%;height:62px;flex-direction:row;padding:7px}.nx-logo,.nx-rail-health{display:none}.nx-rail nav{width:100%;grid-template-columns:repeat(6,1fr)}.nx-rail nav a{min-height:46px;flex-direction:column;gap:2px;font-size:6px}.nx-rail nav a>span{display:block}.nx-rail nav a i{width:auto;height:auto;background:transparent}.nx-workspace{margin-left:0;padding:0 12px 82px}.nx-header{min-height:80px}.nx-header h1{font-size:21px}.nx-header-tools>div,.nx-header-tools>small{display:none}.nx-kpi-ribbon,.nx-summary-grid{grid-template-columns:1fr}.nx-summary-gate-body{grid-template-columns:1fr}.nx-summary-ring{margin:0 auto}.nx-alert-column{grid-template-columns:1fr}.nx-network-stage{height:510px}.nx-node{width:150px}.nx-node-1{top:10px;left:0}.nx-node-2{top:105px;left:0}.nx-node-3{top:10px;right:0}.nx-node-4{top:105px;right:0}.nx-node-5{bottom:5px}.nx-core{top:60%}.nx-network-beam{display:none}.nx-risk-cells{grid-template-columns:1fr}.nx-section-head{align-items:flex-start;flex-direction:column}.nx-fund-cloud{grid-template-columns:1fr}.nx-footer{flex-direction:column;gap:7px}}
+
+/* B稿3.0：清晰度重构。
+ * 保留全部数据与科技视觉，通过空间重分配、分级字号和响应式重排提升可读性。
+ */
+.nexus-dashboard {
+  --nx-readable: #aebbd0;
+  --nx-readable-soft: #94a3bb;
+}
+
+.nx-rail {
+  width: 190px;
+  padding: 27px 17px 22px;
+}
+
+.nx-logo { gap: 12px; padding-bottom: 30px; }
+.nx-logo > b { width: 42px; height: 42px; font-size: 20px; }
+.nx-logo > span { font-size: 14px; line-height: 1.38; letter-spacing: .08em; }
+.nx-rail nav { gap: 9px; }
+.nx-rail nav a { min-height: 50px; padding-inline: 12px; font-size: 14px; }
+.nx-rail nav a i { width: 29px; height: 29px; font-size: 10px; }
+.nx-rail-health { font-size: 12px; }
+.nx-rail-health small { color: #8290a8; font-size: 10px; }
+.nx-mini-ring strong { font-size: 18px; }
+
+.nx-workspace { margin-left: 190px; padding: 0 32px 76px; }
+.nx-header { min-height: 106px; }
+.nx-overline { font-size: 11px; }
+.nx-header h1 { margin-top: 7px; font-size: 34px; }
+.nx-header p { margin-top: 8px; color: #91a0b8; font-size: 12px; }
+.nx-header-tools > div b { font-size: 29px; }
+.nx-header-tools > div span,
+.nx-header-tools > small { color: #9aa8be; font-size: 11px; }
+
+.nx-summary-grid {
+  grid-template-columns: 4.8fr 3.4fr 2.35fr 2.15fr;
+  gap: 14px;
+  margin-top: 25px;
+}
+
+.nx-summary-grid > article { min-height: 354px; padding: 22px; }
+.nx-summary-grid article > header > span,
+.nx-summary-grid article > header > b { font-size: 10px; }
+.nx-summary-gate-body { grid-template-columns: 178px 1fr; gap: 24px; margin-top: 18px; }
+.nx-summary-ring { width: 174px; height: 174px; }
+.nx-summary-ring strong { font-size: 43px; }
+.nx-summary-ring span { font-size: 12px; }
+.nx-summary-ring small { font-size: 11px; }
+.nx-summary-gate-body h2 { font-size: 25px; }
+.nx-summary-gate-body p { color: var(--nx-readable); font-size: 14px; line-height: 1.7; }
+.nx-summary-gate > footer { gap: 16px; margin-top: 18px; color: var(--nx-readable-soft); font-size: 11px; }
+.nx-summary-action h2 { margin-top: 30px; font-size: 29px; }
+.nx-summary-action > p { margin: 19px 0 23px; color: var(--nx-readable); font-size: 14px; line-height: 1.72; }
+.nx-summary-action > div { gap: 10px; }
+.nx-summary-action > div span { color: #b7c2d4; font-size: 12px; }
+.nx-summary-fresh > div { gap: 17px; margin-top: 28px; }
+.nx-summary-stream { grid-template-columns: 44px 1fr 39px; gap: 8px; color: #9aa8bf; font-size: 11px; }
+.nx-summary-stream > strong { font-size: 11px; }
+.nx-summary-fresh > small { margin-top: 25px; color: #909eb6; font-size: 11px; line-height: 1.65; }
+.nx-module-ring { width: 134px; height: 134px; margin-top: 21px; }
+.nx-module-ring strong { font-size: 32px; }
+.nx-module-ring span { font-size: 10px; }
+.nx-module-status { gap: 7px; }
+.nx-module-status > span,
+.nx-module-status b { color: #99a7bd; font-size: 11px; }
+
+.nx-decision-strip { margin-top: 14px; }
+.nx-decision-strip > div { min-height: 104px; padding: 19px 21px; }
+.nx-decision-strip span { font-size: 10px; }
+.nx-decision-strip p { margin-top: 10px; color: #9eacc1; font-size: 13px; line-height: 1.65; }
+.nx-decision-strip p b { margin-right: 4px; }
+
+.nx-section { margin-top: 48px; }
+.nx-section-head { margin-bottom: 18px; }
+.nx-section-head span { font-size: 10px; }
+.nx-section-head h2 { margin-top: 7px; font-size: 29px; }
+.nx-section-head p { color: #95a3ba; font-size: 11px; }
+.nx-lamp { min-height: 27px; padding-inline: 10px; font-size: 10px; }
+
+.nx-risk-board { grid-template-columns: 300px minmax(0, 1fr); gap: 14px; }
+.nx-risk-radar { min-height: 656px; }
+.nx-risk-radar > strong { font-size: 24px; }
+.nx-risk-radar > small { color: #93a1b8; font-size: 11px; }
+.nx-radar-label { color: #9aa8bf; font-size: 10px; }
+.nx-risk-cells { gap: 11px; }
+.nx-risk-cell { min-height: 156px; padding: 16px; }
+.nx-risk-cell header > span { font-size: 10px; }
+.nx-risk-cell h3 { margin: 13px 0 7px; font-size: 13px; }
+.nx-risk-cell > strong { font-size: 22px; line-height: 1.28; }
+.nx-risk-cell p { margin-top: 9px; color: #a3afc2; font-size: 10px; line-height: 1.45; }
+.nx-risk-cell footer { margin-top: 10px; color: #9ba8bc; font-size: 10px; line-height: 1.45; }
+.nx-risk-cell .nx-lamp { min-height: 26px; font-size: 10px; }
+
+.nx-sector-matrix { padding: 14px 18px; }
+.nx-matrix-head,
+.nx-matrix-row { grid-template-columns: minmax(275px, 1.65fr) repeat(5, minmax(78px, .52fr)) 62px 78px; gap: 13px; }
+.nx-matrix-head { min-height: 45px; color: #93a1b9; font-size: 10px; }
+.nx-matrix-row { min-height: 82px; }
+.nx-matrix-row > div:first-child > i { width: 34px; height: 34px; font-size: 10px; }
+.nx-matrix-row > div:first-child b { font-size: 13px; }
+.nx-matrix-row > div:first-child small { margin-top: 5px; color: #94a2b8; font-size: 10px; }
+.nx-meter { grid-template-columns: 1fr 24px; gap: 6px; }
+.nx-meter small { color: #a0adc0; font-size: 10px; }
+.nx-matrix-row > strong { font-size: 18px; }
+
+.nx-evidence-events { gap: 14px; }
+.nx-validation,
+.nx-event-radar { min-height: 550px; padding: 22px; }
+.nx-network header span,
+.nx-validation header span,
+.nx-event-radar header span,
+.nx-stock-bay header span,
+.nx-fund-bay header span { font-size: 10px; }
+.nx-network h2,
+.nx-validation h2,
+.nx-event-radar h2 { font-size: 21px; }
+.v-core span,
+.sat { font-size: 10px; }
+.nx-validation-copy { gap: 10px; }
+.nx-validation-copy p { padding: 12px; color: #a6b2c6; font-size: 12px; line-height: 1.55; }
+.nx-validation-copy small { color: #8e9cb3; font-size: 10px; line-height: 1.55; }
+.nx-event-list { margin-top: 16px; }
+.nx-event-list > div { min-height: 44px; grid-template-columns: 28px minmax(0, 1fr) 34px 72px; gap: 10px; }
+.nx-event-list > div > i { font-size: 10px; }
+.nx-event-list > div > span b { font-size: 11px; }
+.nx-event-list > div > span small { color: #8997ae; font-size: 9px; }
+.nx-event-list > div > strong { font-size: 11px; }
+
+.nx-holding-grid { gap: 14px; }
+.nx-stock-bay,
+.nx-fund-bay { padding: 21px; }
+.nx-stock-row { grid-template-columns: minmax(140px, 1fr) 62px 64px; gap: 12px; padding: 20px 0; }
+.nx-stock-row > div:first-child small,
+.nx-stock-row > div:first-child span { font-size: 10px; }
+.nx-stock-row > div:first-child b { font-size: 16px; }
+.nx-stock-row > p { color: #a5b1c4; font-size: 11px; line-height: 1.55; }
+.nx-fund-cloud { gap: 9px; margin-top: 16px; }
+.nx-fund-cloud > div { min-height: 94px; grid-template-columns: minmax(0, 1fr) 38px 60px; gap: 9px; padding: 12px; }
+.nx-fund-cloud > div > span i,
+.nx-fund-cloud > div > span small { font-size: 9px; }
+.nx-fund-cloud > div > span b { font-size: 12px; }
+.nx-fund-cloud > div > strong { font-size: 13px; }
+.nx-fund-cloud > div > p { color: #96a4ba; font-size: 10px; line-height: 1.45; }
+
+.nx-guide { padding: 24px; }
+.nx-guide > span { font-size: 10px; }
+.nx-guide h2 { font-size: 21px; }
+.nx-guide p { color: #a0adc1; font-size: 12px; }
+.nx-footer { color: #8492aa; font-size: 10px; }
+
+@media (max-width: 1500px) {
+  .nx-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .nx-summary-grid > article { min-height: 320px; }
+}
+
+@media (max-width: 1180px) {
+  .nx-rail { width: 78px; padding-inline: 10px; }
+  .nx-workspace { margin-left: 78px; padding-inline: 24px; }
+  .nx-risk-board { grid-template-columns: 1fr; }
+  .nx-risk-radar { min-height: 390px; }
+  .nx-risk-cells { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 850px) {
+  .nx-workspace { padding-inline: 18px; }
+  .nx-summary-grid { grid-template-columns: 1fr; }
+  .nx-summary-grid > article { min-height: 0; }
+  .nx-risk-cells { grid-template-columns: 1fr; }
+  .nx-validation,
+  .nx-event-radar { min-height: 0; }
+}
+
+@media (max-width: 620px) {
+  .nx-rail { width: 100%; }
+  .nx-workspace { margin-left: 0; padding: 0 13px 82px; }
+  .nx-header h1 { font-size: 25px; }
+  .nx-overline { font-size: 9px; }
+  .nx-header p { font-size: 10px; }
+  .nx-decision-strip p { font-size: 12px; }
+  .nx-section-head h2 { font-size: 25px; }
+}
