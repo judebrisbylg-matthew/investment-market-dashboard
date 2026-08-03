@@ -1,7 +1,7 @@
 // Generated from data/market-data.json. Do not edit by hand.
 export const snapshot = {
   "businessDate": "2026-08-03",
-  "generatedAt": "2026-08-03T11:05:34+08:00",
+  "generatedAt": "2026-08-03T11:11:31+08:00",
   "asOf": "2026/8/3 06:15 HKT",
   "marketGate": "风险偏高",
   "dataHealth": "绿灯",
@@ -157,7 +157,7 @@ export const risks = [
   ],
   [
     "A股成交额",
-    "沪深两市成交约1.25万亿元（东方财富指数口径，2026年7月31日）",
+    "沪深两市成交约1.28万亿元（东方财富指数口径，2026年7月31日）",
     "green",
     ">1.0万亿",
     "指标日期 2026-07-31，沿用最近可得数据（滞后3天）",
@@ -165,7 +165,7 @@ export const risks = [
   ],
   [
     "港股成交额",
-    "恒生指数成分成交约1206亿港元（非港股全市场口径，2026年7月31日）",
+    "恒生指数成分成交约1237亿港元（非港股全市场口径，2026年7月31日）",
     "yellow",
     ">1500亿港元",
     "指标日期 2026-07-31，沿用最近可得数据（滞后3天）",
@@ -303,31 +303,31 @@ export const sectors = [
     "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
   },
   {
-    "name": "光伏主材",
-    "score": 58,
-    "trend": 18,
-    "flow": 18,
+    "name": "有色金属/资源品",
+    "score": 69,
+    "trend": 16,
+    "flow": 20,
     "fundamental": 18,
-    "hf": 0,
-    "value": 4,
+    "hf": 10,
+    "value": 5,
     "research": "yellow",
     "execute": "yellow",
-    "risk": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
+    "risk": "铜价、金价、美元指数、实际利率、库存",
     "operation": "继续观察",
     "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
   },
   {
-    "name": "线缆部件及其他",
-    "score": 58,
-    "trend": 18,
-    "flow": 18,
+    "name": "券商/金融科技",
+    "score": 66,
+    "trend": 16,
+    "flow": 19,
     "fundamental": 18,
-    "hf": 0,
-    "value": 4,
+    "hf": 7,
+    "value": 6,
     "research": "yellow",
     "execute": "yellow",
-    "risk": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
-    "operation": "继续观察",
+    "risk": "A股成交额、两融余额、券商政策、指数放量",
+    "operation": "观察等待",
     "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
   }
 ] as const;
