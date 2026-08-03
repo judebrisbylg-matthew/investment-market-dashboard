@@ -2205,6 +2205,53 @@ class NotionClient:
         self.api("POST", "/pages", {"parent": {"database_id": db_id}, "properties": props})
         return "created"
 
+    @staticmethod
+    def plain_property_value(prop: dict[str, Any]) -> str:
+        prop_type = prop.get("type")
+        if prop_type in {"title", "rich_text"}:
+            return "".join(part.get("plain_text", "") for part in prop.get(prop_type, []))
+        if prop_type == "select":
+            return (prop.get("select") or {}).get("name", "")
+        if prop_type == "number":
+            value = prop.get("number")
+            return "" if value is None else str(value)
+        return ""
+
+    def archive_daily_duplicates(
+        self,
+        db_id: str,
+        *,
+        date_property: str,
+        business_date: date,
+        key_property: str,
+        expected_keys: set[str],
+    ) -> int:
+        """Archive obsolete same-day rows while keeping one stable key per entity.
+
+        Earlier 2.0 batches embedded a timestamped batch id in every record key,
+        so a same-day rerun created another full snapshot.  Daily history should
+        retain one row per business date and entity; reruns must update that row.
+        """
+        schema = self.schema(db_id)
+        if date_property not in schema or key_property not in schema:
+            return 0
+        payload: dict[str, Any] = {
+            "filter": {"property": date_property, "date": {"equals": business_date.isoformat()}},
+            "page_size": 100,
+        }
+        archived = 0
+        while True:
+            result = self.api("POST", f"/databases/{db_id}/query", payload)
+            for page in result.get("results", []):
+                key = self.plain_property_value(page.get("properties", {}).get(key_property, {}))
+                if key not in expected_keys:
+                    self.api("PATCH", f"/pages/{page['id']}", {"archived": True})
+                    archived += 1
+            if not result.get("has_more") or not result.get("next_cursor"):
+                break
+            payload["start_cursor"] = result["next_cursor"]
+        return archived
+
 
 def parse_date(value: str) -> date:
     text = str(value).strip()
@@ -2600,15 +2647,26 @@ def sync_notion_v2(data: dict[str, Any], config: NotionConfig) -> dict[str, int]
     data["v2"] = contract
     batch_id = contract["batchId"]
     generated = datetime.fromisoformat(contract["generatedAt"])
-    stats = {"created": 0, "updated": 0, "skipped": 0}
+    stats = {"created": 0, "updated": 0, "skipped": 0, "archived": 0}
+    day_key = as_of.isoformat()
+    stable_keys: dict[str, set[str]] = {
+        "batch": set(),
+        "modules": set(),
+        "metrics": set(),
+        "industry": set(),
+        "events": set(),
+        "holdings": set(),
+    }
 
     def count(status: str) -> None:
         key = "created" if status.startswith("created") else "updated" if status.startswith("updated") else "skipped"
         stats[key] += 1
 
-    batch_key = {"批次键": batch_id}
+    batch_row_key = f"HKT-{as_of:%Y%m%d}-dashboard-v2"
+    stable_keys["batch"].add(batch_row_key)
+    batch_key = {"批次键": batch_row_key}
     batch_base = {
-        "批次键": batch_id,
+        "批次键": batch_row_key,
         "Batch ID": batch_id,
         "业务日期": as_of,
         "计划运行时间": generated.replace(hour=6, minute=15, second=0, microsecond=0),
@@ -2667,19 +2725,20 @@ def sync_notion_v2(data: dict[str, Any], config: NotionConfig) -> dict[str, int]
         research_light = "灰灯" if status == "失败" else ("黄灯" if status == "降级" else "绿灯")
         execution_light = "灰灯" if contract["marketGate"] == "数据不足" else normalize_light(contract["marketGate"])
         row = {
-            "快照键": f"{batch_id}|{seq}", "Batch ID": batch_id, "模块序号": seq, "模块名称": name,
+            "快照键": f"{day_key}|{seq}", "Batch ID": batch_id, "模块序号": seq, "模块名称": name,
             "业务日期": as_of, "数据截至日": source_date, "滞后天数": lag_days(source_date, as_of),
             "模块状态": status, "字段覆盖率": coverage, "研究灯": research_light, "执行灯": execution_light,
             "核心结论": safe_text(conclusion), "今日动作": safe_text(action),
             "失效条件": "关键数据过期、覆盖率低于80%或风险/行业模块阻断时自动降级。",
             "下一触发": "下一批次重新抓取并按同一规则复核。", "规则版本": contract["ruleVersion"],
         }
+        stable_keys["modules"].add(row["快照键"])
         count(client.upsert(config.db_modules, row, {"快照键": row["快照键"]}))
 
     for idx, item in enumerate(data.get("riskDashboard", []), 1):
         source_date = source_date_from_item(item, as_of)
         row = {
-            "记录键": f"{batch_id}|risk|{idx:02d}", "Batch ID": batch_id, "记录ID": f"risk-{idx:02d}",
+            "记录键": f"{day_key}|risk|{idx:02d}", "Batch ID": batch_id, "记录ID": f"risk-{idx:02d}",
             "模块序号": "1", "业务日期": as_of, "数据截至日": source_date,
             "类别": "市场环境与风控", "指标名称": item.get("name"), "显示值": item.get("value"),
             "评分": item.get("score"), "排名": idx, "灯号": normalize_light(item.get("signal")),
@@ -2690,12 +2749,13 @@ def sync_notion_v2(data: dict[str, Any], config: NotionConfig) -> dict[str, int]
             "影响／动作": f"正常:{item.get('normal')}；预警:{item.get('warning')}；危险:{item.get('danger')}",
             "下一触发": item.get("warning"), "失效条件": "来源日期过期或字段无法验证。",
         }
+        stable_keys["metrics"].add(row["记录键"])
         count(client.upsert(config.db_metrics, row, {"记录键": row["记录键"]}))
 
     for idx, item in enumerate(data.get("expertViews", [])[:10], 1):
         strength = {"高": 85, "中高": 70, "中": 55, "低": 35}.get(str(item.get("strength")), 50)
         row = {
-            "记录键": f"{batch_id}|cross|{idx:02d}", "Batch ID": batch_id, "记录ID": f"cross-{idx:02d}",
+            "记录键": f"{day_key}|cross|{idx:02d}", "Batch ID": batch_id, "记录ID": f"cross-{idx:02d}",
             "模块序号": "3", "业务日期": as_of, "数据截至日": as_of, "类别": "机构/跨市场验证",
             "指标名称": item.get("name"), "显示值": item.get("stance"), "评分": strength, "排名": idx,
             "灯号": "黄灯" if "无新增" in safe_text(item.get("stance"), default="") else "绿灯",
@@ -2704,6 +2764,7 @@ def sync_notion_v2(data: dict[str, Any], config: NotionConfig) -> dict[str, int]
             "代理说明": "机构观点只作佐证，不能独立触发买入。", "影响／动作": item.get("view"),
             "下一触发": "公开信、13F、持仓披露或重大访谈出现新增信息。", "失效条件": "缺少原始披露或与价格/资金证据冲突。",
         }
+        stable_keys["metrics"].add(row["记录键"])
         count(client.upsert(config.db_metrics, row, {"记录键": row["记录键"]}))
 
     for idx, item in enumerate(industries, 1):
@@ -2719,7 +2780,7 @@ def sync_notion_v2(data: dict[str, Any], config: NotionConfig) -> dict[str, int]
         execution_light = "灰灯" if contract["marketGate"] == "数据不足" else ("红灯" if contract["marketGate"] == "停止新增" else research_light)
         source_date = source_date_from_item(item, as_of)
         row = {
-            "行业键": f"{batch_id}|industry|{idx:02d}", "Batch ID": batch_id, "赛道ID": f"sector-{idx:02d}",
+            "行业键": f"{day_key}|industry|{idx:02d}", "Batch ID": batch_id, "赛道ID": f"sector-{idx:02d}",
             "业务日期": as_of, "数据截至日": source_date, "排名": idx, "行业／赛道": item.get("name"),
             "代表ETF名称": item.get("etf"), "代表ETF代码": "待核验", "市场确认": item.get("news"),
             "趋势分": trend, "资金分": flow, "基本面分": fundamental, "高频分": high_frequency,
@@ -2729,6 +2790,7 @@ def sync_notion_v2(data: dict[str, Any], config: NotionConfig) -> dict[str, int]
             "执行动作": "仅研究" if execution_light == "灰灯" else safe_text(item.get("operation")),
             "下一触发": item.get("nextSignal"), "失效条件": safe_text(item.get("reason")), "规则版本": contract["ruleVersion"],
         }
+        stable_keys["industry"].add(row["行业键"])
         count(client.upsert(config.db_industry_top10, row, {"行业键": row["行业键"]}))
 
     for idx, item in enumerate(events, 1):
@@ -2737,7 +2799,7 @@ def sync_notion_v2(data: dict[str, Any], config: NotionConfig) -> dict[str, int]
         impact_score = {"高": 85, "中高": 72, "中": 55, "低": 35}.get(str(item.get("impact")), 50)
         direction = str(item.get("direction", "中性"))
         row = {
-            "事件键": f"{batch_id}|event|{idx:02d}", "Batch ID": batch_id, "事件ID": f"event-{idx:02d}",
+            "事件键": f"{day_key}|event|{idx:02d}", "Batch ID": batch_id, "事件ID": f"event-{idx:02d}",
             "事件簇ID": safe_text(item.get("category"), default="macro"), "业务日期": as_of, "数据截至日": source_date,
             "排名": idx, "类别": item.get("category"), "重大事件": item.get("title"), "30秒结论": item.get("meaning"),
             "A／H与持仓影响": item.get("assets"), "当前动作": item.get("action"), "触发条件": item.get("watch"),
@@ -2747,6 +2809,7 @@ def sync_notion_v2(data: dict[str, Any], config: NotionConfig) -> dict[str, int]
             "最终优先级": impact_score, "方向分": 0, "置信度": confidence, "独立来源数": 1,
             "已计价惩罚": 0, "主来源URL": item.get("url"), "确认来源URL": None,
         }
+        stable_keys["events"].add(row["事件键"])
         count(client.upsert(config.db_events_top10, row, {"事件键": row["事件键"]}))
 
     sector_map = {str(i.get("name")): i for i in industries}
@@ -2765,7 +2828,7 @@ def sync_notion_v2(data: dict[str, Any], config: NotionConfig) -> dict[str, int]
         research_light = light_from_score(item.get("score"))
         direction = "数据不足" if research_light == "灰灯" else "优先关注" if research_light == "绿灯" else "中性观察" if research_light == "黄灯" else "风险优先"
         row = {
-            "持仓键": f"{batch_id}|holding|{idx:02d}", "Batch ID": batch_id, "业务日期": as_of,
+            "持仓键": f"{day_key}|holding|{idx:02d}", "Batch ID": batch_id, "业务日期": as_of,
             "数据截至日": item.get("sourceDate"), "代码": item.get("code"), "持仓名称": item.get("name"),
             "资产类型": item.get("assetType"), "对应赛道": item.get("theme"), "主题分组": item.get("theme"),
             "赛道分": item.get("score"), "研究灯": research_light, "方向判断": direction,
@@ -2773,6 +2836,7 @@ def sync_notion_v2(data: dict[str, Any], config: NotionConfig) -> dict[str, int]
             "今日只看一个指标": item.get("watch"), "下一确认条件": item.get("watch"),
             "失效条件": item.get("invalid"), "清单版本": "final-2stocks-12funds",
         }
+        stable_keys["holdings"].add(row["持仓键"])
         count(client.upsert(config.db_holdings, row, {"持仓键": row["持仓键"]}))
 
     final_status = "失败" if module_successes == 0 else "降级成功" if degraded_modules or contract["dataHealth"] != "绿灯" else "成功"
@@ -2791,6 +2855,23 @@ def sync_notion_v2(data: dict[str, Any], config: NotionConfig) -> dict[str, int]
         }
     )
     count(client.upsert(config.db_batch, batch_base, batch_key))
+
+    cleanup_specs = [
+        (config.db_batch, "业务日期", "批次键", stable_keys["batch"]),
+        (config.db_modules, "业务日期", "快照键", stable_keys["modules"]),
+        (config.db_metrics, "业务日期", "记录键", stable_keys["metrics"]),
+        (config.db_industry_top10, "业务日期", "行业键", stable_keys["industry"]),
+        (config.db_events_top10, "业务日期", "事件键", stable_keys["events"]),
+        (config.db_holdings, "业务日期", "持仓键", stable_keys["holdings"]),
+    ]
+    for db_id, date_property, key_property, expected_keys in cleanup_specs:
+        stats["archived"] += client.archive_daily_duplicates(
+            db_id,
+            date_property=date_property,
+            business_date=as_of,
+            key_property=key_property,
+            expected_keys=expected_keys,
+        )
     return stats
 
 
