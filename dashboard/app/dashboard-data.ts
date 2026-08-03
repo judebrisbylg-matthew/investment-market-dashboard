@@ -1,15 +1,15 @@
 // Generated from data/market-data.json. Do not edit by hand.
 export const snapshot = {
   "businessDate": "2026-08-03",
-  "generatedAt": "2026-08-03T07:09:06+08:00",
+  "generatedAt": "2026-08-03T10:23:25+08:00",
   "asOf": "2026/8/3 06:15 HKT",
   "marketGate": "风险偏高",
   "dataHealth": "绿灯",
   "coverage": 96,
   "riskScore": 71,
   "lightCounts": {
-    "green": 7,
-    "yellow": 5,
+    "green": 6,
+    "yellow": 6,
     "red": 0,
     "gray": 0
   },
@@ -22,7 +22,7 @@ export const snapshot = {
     "needAction": "今日动作：盯AI芯片/半导体、存储/HBM成交/订单；基金看强项018125(先进制造)日涨8.01%，弱项013180(新能源车/电池)日涨0.62%。",
     "actionReason": "不操作原因：估值分位、北向资金（月度）未转绿，地缘看中东局势仍待确认。",
     "riskPoint": "主要风险：估值分位、北向资金（月度）；若成交不足或消息反复，成长资产易回撤。",
-    "nextReview": "下次复盘：看AI芯片/半导体、存储/HBM是否放量，AIGC概念、AI应用是否升温，新闻是否新增冲击。"
+    "nextReview": "下次复盘：看AI芯片/半导体、存储/HBM是否放量，消费电子/AI终端、光伏主材是否升温，新闻是否新增冲击。"
   },
   "freshness": [
     {
@@ -57,7 +57,7 @@ export const snapshot = {
       "name": "市场风控",
       "state": "风险偏高",
       "tone": "yellow",
-      "desc": "5项预警"
+      "desc": "6项预警"
     },
     {
       "code": "02",
@@ -117,7 +117,7 @@ export const risks = [
   ],
   [
     "美元指数",
-    "DXY约99.67（东方财富美元指数口径，2026年7月31日）",
+    "DXY约99.71（东方财富美元指数口径，2026年7月31日）",
     "green",
     "DXY < 103",
     "指标日期 2026-07-31，沿用最近可得数据（滞后3天）",
@@ -157,15 +157,15 @@ export const risks = [
   ],
   [
     "A股成交额",
-    "沪深两市成交约2.54万亿元（东方财富指数口径，2026年7月31日）",
-    "green",
+    "沪深两市成交约0.98万亿元（东方财富指数口径，2026年7月31日）",
+    "yellow",
     ">1.0万亿",
     "指标日期 2026-07-31，沿用最近可得数据（滞后3天）",
     "2026-07-31"
   ],
   [
     "港股成交额",
-    "恒生指数成分成交约3282亿港元（非港股全市场口径，2026年7月31日）",
+    "恒生指数成分成交约900亿港元（非港股全市场口径，2026年7月31日）",
     "yellow",
     ">1500亿港元",
     "指标日期 2026-07-31，沿用最近可得数据（滞后3天）",
@@ -261,11 +261,25 @@ export const sectors = [
     "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
   },
   {
-    "name": "AIGC概念",
-    "score": 64,
+    "name": "消费电子/AI终端",
+    "score": 80,
     "trend": 20,
-    "flow": 20,
-    "fundamental": 20,
+    "flow": 23,
+    "fundamental": 22,
+    "hf": 10,
+    "value": 5,
+    "research": "green",
+    "execute": "green",
+    "risk": "AI手机/眼镜销量、苹果链订单、端侧AI渗透率",
+    "operation": "继续观察",
+    "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
+  },
+  {
+    "name": "光伏主材",
+    "score": 58,
+    "trend": 18,
+    "flow": 18,
+    "fundamental": 18,
     "hf": 0,
     "value": 4,
     "research": "yellow",
@@ -275,11 +289,25 @@ export const sectors = [
     "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
   },
   {
-    "name": "AI应用",
-    "score": 64,
-    "trend": 20,
+    "name": "机器人/智能制造",
+    "score": 61,
+    "trend": 18,
     "flow": 20,
-    "fundamental": 20,
+    "fundamental": 18,
+    "hf": 0,
+    "value": 5,
+    "research": "yellow",
+    "execute": "yellow",
+    "risk": "机器人订单、量产进度、设备更新政策、工业自动化数据",
+    "operation": "继续观察",
+    "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
+  },
+  {
+    "name": "综合电力设备商",
+    "score": 58,
+    "trend": 18,
+    "flow": 18,
+    "fundamental": 18,
     "hf": 0,
     "value": 4,
     "research": "yellow",
@@ -289,44 +317,16 @@ export const sectors = [
     "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
   },
   {
-    "name": "AI智能体",
-    "score": 64,
-    "trend": 20,
+    "name": "低空经济/军工",
+    "score": 72,
+    "trend": 18,
     "flow": 20,
     "fundamental": 20,
-    "hf": 0,
+    "hf": 10,
     "value": 4,
-    "research": "yellow",
-    "execute": "yellow",
-    "risk": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
-    "operation": "继续观察",
-    "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
-  },
-  {
-    "name": "AI语料",
-    "score": 64,
-    "trend": 20,
-    "flow": 20,
-    "fundamental": 20,
-    "hf": 0,
-    "value": 4,
-    "research": "yellow",
-    "execute": "yellow",
-    "risk": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
-    "operation": "继续观察",
-    "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
-  },
-  {
-    "name": "ChatGPT概念",
-    "score": 64,
-    "trend": 20,
-    "flow": 20,
-    "fundamental": 20,
-    "hf": 0,
-    "value": 4,
-    "research": "yellow",
-    "execute": "yellow",
-    "risk": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
+    "research": "green",
+    "execute": "green",
+    "risk": "适航审批、军工订单、低空商业化、无人机交付",
     "operation": "继续观察",
     "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
   }
