@@ -1,10 +1,10 @@
 // Generated from data/market-data.json. Do not edit by hand.
 export const snapshot = {
   "businessDate": "2026-08-04",
-  "generatedAt": "2026-08-04T12:17:26+08:00",
+  "generatedAt": "2026-08-04T14:49:40+08:00",
   "asOf": "2026/8/4 06:15 HKT",
-  "marketGate": "数据不足",
-  "dataHealth": "灰灯",
+  "marketGate": "风险偏高",
+  "dataHealth": "绿灯",
   "coverage": 96,
   "riskScore": 71,
   "lightCounts": {
@@ -19,20 +19,20 @@ export const snapshot = {
     "action": "等待",
     "marketJudgement": "今天结论：黄灯偏防守，7/12只基金走弱，不是普通震荡；先控回撤，暂停加仓。",
     "positionAdvice": "仓位建议：高波动仓位先降速，AI/半导体、PCB、有色等只等放量修复，不补跌。",
-    "needAction": "今日动作：1）停止追高和补跌；2）盯AI芯片/半导体、存储/HBM、AI服务器/液冷能否放量收复；3）核对强弱分化：强项100055(全球科技互联网)日涨4.75%，弱项018896(消费电子)日跌3.71%。",
+    "needAction": "今日动作：1）停止追高和补跌；2）盯先进封装、AI芯片/半导体、存储/HBM能否放量收复；3）核对强弱分化：强项100055(全球科技互联网)日涨4.75%，弱项018896(消费电子)日跌3.71%。",
     "actionReason": "不操作原因：基金端普跌，估值分位、10年期美债收益...仍偏敏感，主线需成交和订单重新确认。",
-    "riskPoint": "主要风险：科技链和高波动资产同步补跌；若成交不足，消费电子/AI终端、机器人/智能制造可能继续拖累组合。",
-    "nextReview": "下次复盘：看AI芯片/半导体、存储/HBM、AI服务器/液冷是否放量止跌，消费电子/AI终端、机器人/智能制造是否继续转弱。"
+    "riskPoint": "主要风险：科技链和高波动资产同步补跌；若成交不足，OLED、东方财富热股可能继续拖累组合。",
+    "nextReview": "下次复盘：看先进封装、AI芯片/半导体、存储/HBM是否放量止跌，OLED、东方财富热股是否继续转弱。"
   },
   "freshness": [
     {
       "name": "风控",
-      "date": "08.03",
+      "date": "08.04",
       "width": 86
     },
     {
       "name": "赛道",
-      "date": "08.03",
+      "date": "08.04",
       "width": 100
     },
     {
@@ -55,8 +55,8 @@ export const snapshot = {
     {
       "code": "01",
       "name": "市场风控",
-      "state": "数据不足",
-      "tone": "green",
+      "state": "风险偏高",
+      "tone": "yellow",
       "desc": "6项预警"
     },
     {
@@ -117,7 +117,7 @@ export const risks = [
   ],
   [
     "美元指数",
-    "DXY约100.02（东方财富美元指数口径，2026年8月3日）",
+    "DXY约100.04（东方财富美元指数口径，2026年8月3日）",
     "green",
     "DXY < 103",
     "指标日期 2026-08-03，沿用最近可得数据（滞后1天）",
@@ -157,7 +157,7 @@ export const risks = [
   ],
   [
     "A股成交额",
-    "沪深两市成交约1.36万亿元（东方财富指数口径，2026年8月3日）",
+    "沪深两市成交约2.09万亿元（东方财富指数口径，2026年8月3日）",
     "green",
     ">1.0万亿",
     "指标日期 2026-08-03，沿用最近可得数据（滞后1天）",
@@ -165,7 +165,7 @@ export const risks = [
   ],
   [
     "港股成交额",
-    "恒生指数成分成交约1352亿港元（非港股全市场口径，2026年8月3日）",
+    "恒生指数成分成交约2056亿港元（非港股全市场口径，2026年8月3日）",
     "yellow",
     ">1500亿港元",
     "指标日期 2026-08-03，沿用最近可得数据（滞后1天）",
@@ -173,11 +173,11 @@ export const risks = [
   ],
   [
     "行业轮动强弱",
-    "A股前3赛道：AI芯片/半导体、存储/HBM、AI服务器/液冷；平均研究分92.0",
+    "A股前3赛道：先进封装、AI芯片/半导体、存储/HBM；平均研究分94.0",
     "green",
     "主线清晰且扩散",
-    "指标日期 2026-08-03，沿用最近可得数据（滞后1天）",
-    "2026-08-03"
+    "指标日期 2026-08-04，今日可用",
+    "2026-08-04"
   ],
   [
     "估值分位",
@@ -191,6 +191,20 @@ export const risks = [
 
 export const sectors = [
   {
+    "name": "先进封装",
+    "score": 85,
+    "trend": 24,
+    "flow": 24,
+    "fundamental": 24,
+    "hf": 9,
+    "value": 4,
+    "research": "green",
+    "execute": "green",
+    "risk": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
+    "operation": "继续观察",
+    "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
+  },
+  {
     "name": "AI芯片/半导体",
     "score": 84,
     "trend": 24,
@@ -199,7 +213,7 @@ export const sectors = [
     "hf": 10,
     "value": 2,
     "research": "green",
-    "execute": "gray",
+    "execute": "green",
     "risk": "美股芯片、费半、AI链成交额、云厂Capex、先进封装和HBM订单",
     "operation": "止盈跟踪",
     "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
@@ -213,121 +227,107 @@ export const sectors = [
     "hf": 3,
     "value": 3,
     "research": "green",
-    "execute": "gray",
+    "execute": "green",
     "risk": "美光指引、DRAM/NAND价格、HBM供需、国产存储成交额",
     "operation": "止盈跟踪",
     "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
   },
   {
-    "name": "AI服务器/液冷",
-    "score": 73,
-    "trend": 22,
-    "flow": 24,
-    "fundamental": 22,
-    "hf": 1,
-    "value": 4,
-    "research": "green",
-    "execute": "gray",
-    "risk": "服务器订单、液冷招标、云厂Capex、电力配套",
-    "operation": "继续观察",
-    "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
-  },
-  {
-    "name": "PCB/高速铜连接",
-    "score": 71,
-    "trend": 22,
-    "flow": 24,
-    "fundamental": 22,
-    "hf": 0,
-    "value": 3,
-    "research": "green",
-    "execute": "gray",
-    "risk": "交换机订单、PCB毛利率、高速铜连接订单、服务器出货",
-    "operation": "止盈跟踪",
-    "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
-  },
-  {
-    "name": "光模块/CPO",
-    "score": 71,
-    "trend": 21,
-    "flow": 23,
-    "fundamental": 22,
-    "hf": 1,
-    "value": 4,
-    "research": "green",
-    "execute": "gray",
-    "risk": "800G/1.6T订单、云厂资本开支、光模块毛利率",
-    "operation": "止盈跟踪",
-    "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
-  },
-  {
-    "name": "消费电子/AI终端",
+    "name": "英伟达概念",
     "score": 80,
-    "trend": 20,
-    "flow": 23,
-    "fundamental": 22,
-    "hf": 10,
-    "value": 5,
+    "trend": 23,
+    "flow": 24,
+    "fundamental": 24,
+    "hf": 5,
+    "value": 4,
     "research": "green",
-    "execute": "gray",
-    "risk": "AI手机/眼镜销量、苹果链订单、端侧AI渗透率",
+    "execute": "green",
+    "risk": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
     "operation": "继续观察",
     "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
   },
   {
-    "name": "机器人/智能制造",
-    "score": 61,
-    "trend": 18,
-    "flow": 20,
-    "fundamental": 18,
-    "hf": 0,
-    "value": 5,
-    "research": "yellow",
-    "execute": "gray",
-    "risk": "机器人订单、量产进度、设备更新政策、工业自动化数据",
-    "operation": "继续观察",
-    "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
-  },
-  {
-    "name": "低空经济/军工",
-    "score": 72,
-    "trend": 18,
+    "name": "CPO概念",
+    "score": 64,
+    "trend": 20,
     "flow": 20,
     "fundamental": 20,
-    "hf": 10,
+    "hf": 0,
     "value": 4,
-    "research": "green",
-    "execute": "gray",
-    "risk": "适航审批、军工订单、低空商业化、无人机交付",
+    "research": "yellow",
+    "execute": "yellow",
+    "risk": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
     "operation": "继续观察",
     "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
   },
   {
-    "name": "有色金属/资源品",
-    "score": 69,
-    "trend": 16,
+    "name": "OLED",
+    "score": 64,
+    "trend": 20,
     "flow": 20,
-    "fundamental": 18,
-    "hf": 10,
-    "value": 5,
+    "fundamental": 20,
+    "hf": 0,
+    "value": 4,
     "research": "yellow",
-    "execute": "gray",
-    "risk": "铜价、金价、美元指数、实际利率、库存",
+    "execute": "yellow",
+    "risk": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
     "operation": "继续观察",
     "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
   },
   {
-    "name": "券商/金融科技",
-    "score": 66,
-    "trend": 16,
-    "flow": 19,
-    "fundamental": 18,
-    "hf": 7,
-    "value": 6,
+    "name": "东方财富热股",
+    "score": 64,
+    "trend": 20,
+    "flow": 20,
+    "fundamental": 20,
+    "hf": 0,
+    "value": 4,
     "research": "yellow",
-    "execute": "gray",
-    "risk": "A股成交额、两融余额、券商政策、指数放量",
-    "operation": "观察等待",
+    "execute": "yellow",
+    "risk": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
+    "operation": "继续观察",
+    "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
+  },
+  {
+    "name": "光纤概念",
+    "score": 64,
+    "trend": 20,
+    "flow": 20,
+    "fundamental": 20,
+    "hf": 0,
+    "value": 4,
+    "research": "yellow",
+    "execute": "yellow",
+    "risk": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
+    "operation": "继续观察",
+    "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
+  },
+  {
+    "name": "玻璃基板",
+    "score": 64,
+    "trend": 20,
+    "flow": 20,
+    "fundamental": 20,
+    "hf": 0,
+    "value": 4,
+    "research": "yellow",
+    "execute": "yellow",
+    "risk": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
+    "operation": "继续观察",
+    "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
+  },
+  {
+    "name": "科技风格",
+    "score": 64,
+    "trend": 20,
+    "flow": 20,
+    "fundamental": 20,
+    "hf": 0,
+    "value": 4,
+    "research": "yellow",
+    "execute": "yellow",
+    "risk": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
+    "operation": "继续观察",
     "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
   }
 ] as const;
@@ -352,15 +352,6 @@ export const events = [
     "watch": "美联储官员讲话、10年期美债收益率、实际利率、美元指数、黄金和纳指表现"
   },
   {
-    "title": "中国资产仍受政策、盈利和资金流共同影响，科技制造方向更值得跟踪",
-    "priority": 6,
-    "direction": 0,
-    "confidence": "中高",
-    "source": "公开新闻聚合源",
-    "date": "2026/8/3",
-    "watch": "A股成交额、港股成交额、南向资金、人民币汇率、政策表态和科技制造板块"
-  },
-  {
     "title": "油价与能源供给变量继续影响通胀预期，资源品和风险偏好需同步观察",
     "priority": 6,
     "direction": 1,
@@ -368,6 +359,15 @@ export const events = [
     "source": "公开新闻聚合源",
     "date": "2026/8/3",
     "watch": "布伦特油价、美国原油库存、产油国政策、通胀预期、航空和化工板块"
+  },
+  {
+    "title": "中国资产仍受政策、盈利和资金流共同影响，科技制造方向更值得跟踪",
+    "priority": 5,
+    "direction": 0,
+    "confidence": "中高",
+    "source": "公开新闻聚合源",
+    "date": "2026/8/4",
+    "watch": "A股成交额、港股成交额、南向资金、人民币汇率、政策表态和科技制造板块"
   },
   {
     "title": "人工智能和半导体仍是市场主线，但高估值与拥挤交易需要财报验证",
@@ -441,28 +441,28 @@ export const stocks = [
   {
     "code": "002837",
     "name": "英维克",
-    "sector": "电力 / 数据中心能源",
-    "signal": "gray",
-    "direction": "数据不足",
+    "sector": "电力/数据中心能源",
+    "signal": "red",
+    "direction": "转弱",
     "watch": "能否放量站回20日线并连续2日强于沪深300",
-    "latestPrice": "待核验",
-    "day": "待核验",
-    "fiveDay": "待核验",
-    "marketDate": "待核验",
-    "risk": "待核验"
+    "latestPrice": 46.45,
+    "day": -2.11,
+    "fiveDay": -24.18,
+    "marketDate": "2026-08-03",
+    "risk": "高"
   },
   {
     "code": "002555",
     "name": "三七互娱",
-    "sector": "游戏传媒 / AI应用",
-    "signal": "gray",
-    "direction": "数据不足",
+    "sector": "游戏传媒/AI应用",
+    "signal": "green",
+    "direction": "偏强",
     "watch": "游戏ETF与个股是否同步放量、连续强于沪深300",
-    "latestPrice": "待核验",
-    "day": "待核验",
-    "fiveDay": "待核验",
-    "marketDate": "待核验",
-    "risk": "待核验"
+    "latestPrice": 19.99,
+    "day": 0.4,
+    "fiveDay": 8.29,
+    "marketDate": "2026-08-03",
+    "risk": "低"
   }
 ] as const;
 
