@@ -128,9 +128,20 @@ def main() -> None:
         "moduleStatus": module_status,
     }
 
+    stock_source = data.get("stockHoldings", []) or [
+        {"code": "002837", "name": "英维克", "theme": "电力 / 数据中心能源", "watch": "能否放量站回20日线并连续2日强于沪深300"},
+        {"code": "002555", "name": "三七互娱", "theme": "游戏传媒 / AI应用", "watch": "游戏ETF与个股是否同步放量、连续强于沪深300"},
+    ]
     stocks = [
-        {"code": "002837", "name": "英维克", "sector": "电力 / 数据中心能源", "signal": "gray", "direction": "未接入当日股票行情，不生成交易判断", "watch": "能否放量站回20日线并连续2日强于沪深300"},
-        {"code": "002555", "name": "三七互娱", "sector": "游戏传媒 / AI应用", "signal": "gray", "direction": "未接入当日股票行情，不生成交易判断", "watch": "游戏ETF与个股是否同步放量、连续强于沪深300"},
+        {
+            "code": item.get("code"), "name": item.get("name"), "sector": item.get("theme"),
+            "signal": {"绿灯": "green", "黄灯": "yellow", "红灯": "red"}.get(item.get("signal"), "gray"),
+            "direction": item.get("direction", "数据不足"), "watch": item.get("watch"),
+            "latestPrice": item.get("latestPrice", "待核验"), "day": item.get("day", "待核验"),
+            "fiveDay": item.get("fiveDay", "待核验"), "marketDate": item.get("marketDate", "待核验"),
+            "risk": item.get("risk", "待核验"),
+        }
+        for item in stock_source
     ]
 
     output = "// Generated from data/market-data.json. Do not edit by hand.\n"

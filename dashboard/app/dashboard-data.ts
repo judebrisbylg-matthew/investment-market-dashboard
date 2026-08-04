@@ -443,16 +443,26 @@ export const stocks = [
     "name": "英维克",
     "sector": "电力 / 数据中心能源",
     "signal": "gray",
-    "direction": "未接入当日股票行情，不生成交易判断",
-    "watch": "能否放量站回20日线并连续2日强于沪深300"
+    "direction": "数据不足",
+    "watch": "能否放量站回20日线并连续2日强于沪深300",
+    "latestPrice": "待核验",
+    "day": "待核验",
+    "fiveDay": "待核验",
+    "marketDate": "待核验",
+    "risk": "待核验"
   },
   {
     "code": "002555",
     "name": "三七互娱",
     "sector": "游戏传媒 / AI应用",
     "signal": "gray",
-    "direction": "未接入当日股票行情，不生成交易判断",
-    "watch": "游戏ETF与个股是否同步放量、连续强于沪深300"
+    "direction": "数据不足",
+    "watch": "游戏ETF与个股是否同步放量、连续强于沪深300",
+    "latestPrice": "待核验",
+    "day": "待核验",
+    "fiveDay": "待核验",
+    "marketDate": "待核验",
+    "risk": "待核验"
   }
 ] as const;
 

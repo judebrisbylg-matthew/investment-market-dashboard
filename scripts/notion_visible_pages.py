@@ -172,10 +172,17 @@ def _match_sector(data: dict[str, Any], theme: str) -> dict[str, Any] | None:
 
 def _holdings(data: dict[str, Any], stocks: list[dict[str, Any]], fund_order: list[str], *, compact: bool = False) -> list[dict[str, Any]]:
     business_date = data.get("v2", {}).get("businessDate", date.today().isoformat())
+    stock_map = {str(item.get("code")): item for item in data.get("stockHoldings", [])}
     stock_rows = []
     for idx, item in enumerate(stocks, 1):
+        quote = stock_map.get(str(item.get("code")), {})
         sector = _match_sector(data, item.get("theme", "")) or {}
-        stock_rows.append([idx, item.get("code"), item.get("name"), item.get("theme"), sector.get("score", "待核验"), sector.get("operation", "待核验"), item.get("watch"), item.get("invalid")])
+        stock_rows.append([
+            idx, item.get("code"), item.get("name"), item.get("theme"), quote.get("latestPrice", "待核验"),
+            f"{quote.get('day', '待核验')}%", f"{quote.get('fiveDay', '待核验')}%",
+            quote.get("marketDate", "待核验"), sector.get("score", "待核验"), quote.get("risk", "待核验"),
+            quote.get("signal", "灰灯"), quote.get("direction", "数据不足"), item.get("watch"), item.get("invalid"),
+        ])
     fund_map = {str(item.get("code")): item for item in data.get("fundHoldings", [])}
     fund_rows = []
     for idx, code in enumerate(fund_order, 1):
@@ -188,7 +195,10 @@ def _holdings(data: dict[str, Any], stocks: list[dict[str, Any]], fund_order: li
     blocks = [
         heading("05｜我的持仓跟踪"),
         heading("股票持仓（2只）", 3),
-        table(["序号", "代码", "名称", "对应赛道", "赛道分", "研究方向", "下一确认条件", "失效条件"], stock_rows),
+        table(
+            ["序号", "代码", "名称", "对应赛道", "最新价", "日涨跌", "近5日", "行情日期", "赛道分", "风险", "风险灯", "趋势判断", "下一确认条件", "失效条件"],
+            stock_rows,
+        ),
         heading("基金持仓（12只）", 3),
         table(["序号", "代码", "名称", "类型", "主题", "最新净值", "日涨跌", "近1周", "净值日期", "风险", "方向", "判断依据"], fund_rows),
     ]

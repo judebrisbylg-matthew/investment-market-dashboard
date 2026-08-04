@@ -857,6 +857,141 @@ def update_funds(data: dict[str, Any], as_of: date) -> tuple[list[dict[str, Any]
     return updated, check_lines
 
 
+def fetch_stock_history(code: str, limit: int = 35) -> list[dict[str, Any]]:
+    """Fetch adjusted daily bars from Eastmoney for a mainland stock or index."""
+    market = "1" if str(code).startswith(("5", "6", "9")) or code == "000300" else "0"
+    url = (
+        "https://push2his.eastmoney.com/api/qt/stock/kline/get?"
+        + urlencode(
+            {
+                "secid": f"{market}.{code}",
+                "klt": "101",
+                "fqt": "1",
+                "lmt": str(limit),
+                "end": "20500101",
+                "fields1": "f1,f2,f3,f4,f5,f6",
+                "fields2": "f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61",
+            }
+        )
+    )
+    payload: dict[str, Any] | None = None
+    last_error: Exception | None = None
+    for attempt in range(3):
+        try:
+            payload = request_json(url, timeout=20, headers={"Referer": "https://quote.eastmoney.com/"})
+            break
+        except (HTTPError, URLError, TimeoutError, RemoteDisconnected) as exc:
+            last_error = exc
+            if attempt < 2:
+                time.sleep(0.8 * (attempt + 1))
+    if payload is None:
+        raise ValueError(f"stock history request failed for {code}: {last_error}")
+    rows: list[dict[str, Any]] = []
+    for raw in (payload.get("data") or {}).get("klines") or []:
+        parts = str(raw).split(",")
+        if len(parts) < 3:
+            continue
+        try:
+            rows.append({"date": parts[0], "close": float(parts[2])})
+        except ValueError:
+            continue
+    if len(rows) < 6:
+        raise ValueError(f"insufficient stock history for {code}: {len(rows)} rows")
+    return rows
+
+
+def stock_return(rows: list[dict[str, Any]], sessions: int) -> float:
+    latest = float(rows[-1]["close"])
+    base_index = max(0, len(rows) - 1 - sessions)
+    base = float(rows[base_index]["close"])
+    return (latest / base - 1) * 100 if base else 0.0
+
+
+def update_stocks(data: dict[str, Any], as_of: date) -> tuple[list[dict[str, Any]], list[str]]:
+    """Refresh held-stock price signals without using account cost or position size."""
+    updated: list[dict[str, Any]] = []
+    checks: list[str] = []
+    completed_date = latest_completed_market_date(as_of)
+
+    def completed_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        return [row for row in rows if datetime.strptime(row["date"], "%Y-%m-%d").date() <= completed_date]
+
+    try:
+        benchmark_rows = completed_rows(fetch_stock_history("000300"))
+        if len(benchmark_rows) < 6:
+            raise ValueError("insufficient completed CSI300 sessions")
+        benchmark_5d = stock_return(benchmark_rows, 5)
+    except (HTTPError, URLError, TimeoutError, RemoteDisconnected, ValueError, KeyError, TypeError) as exc:
+        benchmark_rows = []
+        benchmark_5d = 0.0
+        log(f"CSI300 history refresh failed: {exc}")
+
+    for stock in STOCK_HOLDINGS:
+        code = str(stock["code"])
+        try:
+            rows = completed_rows(fetch_stock_history(code))
+            if len(rows) < 20:
+                raise ValueError(f"insufficient completed sessions for {code}")
+            latest = rows[-1]
+            day = stock_return(rows, 1)
+            five_day = stock_return(rows, 5)
+            ma20 = sum(float(row["close"]) for row in rows[-20:]) / min(20, len(rows))
+            relative_5d = five_day - benchmark_5d if benchmark_rows else None
+            above_ma20 = float(latest["close"]) >= ma20
+
+            if five_day <= -7 or (not above_ma20 and relative_5d is not None and relative_5d < -2):
+                risk, signal, direction = "高", "红灯", "转弱"
+            elif not above_ma20 or relative_5d is None or relative_5d < 0 or abs(day) >= 5:
+                risk, signal, direction = "中", "黄灯", "中性观察"
+            elif relative_5d >= 2:
+                risk, signal, direction = "低", "绿灯", "偏强"
+            else:
+                risk, signal, direction = "中低", "绿灯", "中性偏强"
+
+            updated.append(
+                {
+                    **stock,
+                    "latestPrice": round(float(latest["close"]), 2),
+                    "day": round(day, 2),
+                    "fiveDay": round(five_day, 2),
+                    "marketDate": latest["date"],
+                    "risk": risk,
+                    "signal": signal,
+                    "direction": direction,
+                    "relative5d": round(relative_5d, 2) if relative_5d is not None else None,
+                    "ma20": round(ma20, 2),
+                    "freshFetch": True,
+                    "refreshStatus": status_date_text(datetime.strptime(latest["date"], "%Y-%m-%d").date(), as_of, prefix="行情"),
+                }
+            )
+            checks.append(
+                f"{code}: close={latest['close']}, day={day:.2f}%, 5d={five_day:.2f}%, "
+                f"relative5d={relative_5d:.2f}%" if relative_5d is not None else
+                f"{code}: close={latest['close']}, day={day:.2f}%, 5d={five_day:.2f}%, benchmark unavailable"
+            )
+        except (HTTPError, URLError, TimeoutError, RemoteDisconnected, ValueError, KeyError, TypeError) as exc:
+            log(f"stock {code} refresh failed: {exc}")
+            updated.append(
+                {
+                    **stock,
+                    "latestPrice": "待核验",
+                    "day": "待核验",
+                    "fiveDay": "待核验",
+                    "marketDate": "待核验",
+                    "risk": "待核验",
+                    "signal": "灰灯",
+                    "direction": "数据不足",
+                    "relative5d": None,
+                    "ma20": None,
+                    "freshFetch": False,
+                    "refreshStatus": "股票行情抓取失败，本批次不生成趋势判断",
+                }
+            )
+            checks.append(f"{code}: fetch failed")
+    data["stockHoldings"] = updated
+    return updated, checks
+
+
 def operation_priority(operation: str) -> int:
     order = {
         "建议加仓": 0,
@@ -2072,6 +2207,8 @@ def build_dashboard() -> tuple[dict[str, Any], list[str]]:
     update_risk_market_data(data, as_of)
     update_finance_news(data, as_of)
     _, checks = update_funds(data, as_of)
+    _, stock_checks = update_stocks(data, as_of)
+    checks.extend(stock_checks)
     update_industry(data, as_of)
     update_derived_risk_data(data, as_of)
     risk_status = annotate_risk_status(data, as_of)
@@ -2970,8 +3107,8 @@ def main() -> int:
 
     data, checks = build_dashboard()
     data["v2"] = notion_v2_contract(data, today_hkt())
-    log("fund sample checks:")
-    for line in checks[:6]:
+    log("fund/stock sample checks:")
+    for line in checks[:6] + checks[-2:]:
         log(f"  {line}")
 
     require_notion = os.getenv("REQUIRE_NOTION", "false").lower() == "true"

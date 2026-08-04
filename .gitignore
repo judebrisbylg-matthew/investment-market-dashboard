@@ -3,6 +3,8 @@
 dist/
 public/
 node_modules/
+dashboard/.next/
+dashboard/out/
 __pycache__/
 *.pyc
 .env
