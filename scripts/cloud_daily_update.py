@@ -30,6 +30,8 @@ from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
 
+from notion_visible_pages import sync_visible_pages
+
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA_PATH = ROOT / "data" / "market-data.json"
@@ -2095,6 +2097,12 @@ class NotionConfig:
     db_industry_top10: str
     db_events_top10: str
     db_holdings: str
+    page_dashboard: str
+    page_risk: str
+    page_industry: str
+    page_cross_market: str
+    page_events: str
+    page_holdings: str
 
 
 class NotionClient:
@@ -2117,6 +2125,44 @@ class NotionClient:
         except HTTPError as exc:
             detail = exc.read().decode("utf-8", errors="ignore")
             raise RuntimeError(f"Notion {method} {path} failed: {exc.code} {detail}") from exc
+
+    def list_block_children(self, block_id: str) -> list[dict[str, Any]]:
+        rows: list[dict[str, Any]] = []
+        cursor = ""
+        while True:
+            query = "?page_size=100"
+            if cursor:
+                query += f"&start_cursor={cursor}"
+            result = self.api("GET", f"/blocks/{block_id}/children{query}")
+            rows.extend(result.get("results", []))
+            cursor = result.get("next_cursor") or ""
+            if not result.get("has_more") or not cursor:
+                break
+        return rows
+
+    def append_block_children(
+        self,
+        block_id: str,
+        children: list[dict[str, Any]],
+        *,
+        after: str | None = None,
+    ) -> dict[str, Any]:
+        """Append top-level blocks in API-safe chunks while preserving order."""
+        all_results: list[dict[str, Any]] = []
+        cursor = after
+        for offset in range(0, len(children), 100):
+            payload: dict[str, Any] = {"children": children[offset: offset + 100]}
+            if cursor:
+                payload["after"] = cursor
+            result = self.api("PATCH", f"/blocks/{block_id}/children", payload)
+            batch = result.get("results", [])
+            all_results.extend(batch)
+            if batch:
+                cursor = batch[-1].get("id")
+        return {"results": all_results}
+
+    def delete_block(self, block_id: str) -> None:
+        self.api("DELETE", f"/blocks/{block_id}")
 
     def schema(self, db_id: str) -> dict[str, Any]:
         if db_id not in self.schemas:
@@ -2275,6 +2321,14 @@ def notion_config(require: bool) -> NotionConfig | None:
         "db_industry_top10": os.getenv("NOTION_DB_INDUSTRY_TOP10", ""),
         "db_events_top10": os.getenv("NOTION_DB_EVENTS_TOP10", ""),
         "db_holdings": os.getenv("NOTION_DB_HOLDINGS", ""),
+        # Visible 0-5 pages are stable workspace resources rather than secrets.
+        # Environment overrides remain available if the pages are ever moved.
+        "page_dashboard": os.getenv("NOTION_PAGE_DASHBOARD", "3ad4b7e3bb70815daaf6c4c139417a82"),
+        "page_risk": os.getenv("NOTION_PAGE_RISK", "3ad4b7e3bb70812e842ce10df48e2e31"),
+        "page_industry": os.getenv("NOTION_PAGE_INDUSTRY", "3ad4b7e3bb708102bb1fdbfc01aa07ae"),
+        "page_cross_market": os.getenv("NOTION_PAGE_CROSS_MARKET", "3ad4b7e3bb7081fa963bcfdebf42333d"),
+        "page_events": os.getenv("NOTION_PAGE_EVENTS", "3ad4b7e3bb7081bd83e4c24582a9c253"),
+        "page_holdings": os.getenv("NOTION_PAGE_HOLDINGS", "3ad4b7e3bb7081e094c2d266a9669544"),
     }
     missing = [name for name, value in keys.items() if not value]
     if missing and require:
@@ -2647,7 +2701,7 @@ def sync_notion_v2(data: dict[str, Any], config: NotionConfig) -> dict[str, int]
     data["v2"] = contract
     batch_id = contract["batchId"]
     generated = datetime.fromisoformat(contract["generatedAt"])
-    stats = {"created": 0, "updated": 0, "skipped": 0, "archived": 0}
+    stats = {"created": 0, "updated": 0, "skipped": 0, "archived": 0, "visible_pages": 0}
     day_key = as_of.isoformat()
     stable_keys: dict[str, set[str]] = {
         "batch": set(),
@@ -2872,6 +2926,19 @@ def sync_notion_v2(data: dict[str, Any], config: NotionConfig) -> dict[str, int]
             key_property=key_property,
             expected_keys=expected_keys,
         )
+
+    visible_page_ids = {
+        "0": config.page_dashboard,
+        "1": config.page_risk,
+        "2": config.page_industry,
+        "3": config.page_cross_market,
+        "4": config.page_events,
+        "5": config.page_holdings,
+    }
+    visible_stats = sync_visible_pages(client, visible_page_ids, data, STOCK_HOLDINGS, FUND_ORDER)
+    stats["visible_pages"] = sum(visible_stats.values())
+    if stats["visible_pages"] != 6:
+        raise RuntimeError(f"visible Notion page reconciliation failed: {visible_stats}")
     return stats
 
 
