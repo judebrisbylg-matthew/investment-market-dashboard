@@ -13,6 +13,19 @@ function Lamp({ tone, text }: { tone: Tone; text: string }) {
   return <span className={`nx-lamp nx-${tone}`}><i />{text}</span>;
 }
 
+function InfoTip({ text, align = "center" }: { text: string; align?: "left" | "center" | "right" }) {
+  return (
+    <span className={`nx-info-tip nx-tip-${align}`}>
+      <button type="button" aria-label="查看指标说明">i</button>
+      <span role="tooltip">{text}</span>
+    </span>
+  );
+}
+
+function LabelTip({ label, text, align = "center" }: { label: string; text: string; align?: "left" | "center" | "right" }) {
+  return <span className="nx-label-tip"><span>{label}</span><InfoTip text={text} align={align} /></span>;
+}
+
 function lightText(value: string) {
   return value === "red" ? "红灯" : value === "yellow" ? "黄灯" : value === "gray" ? "灰灯" : "绿灯";
 }
@@ -53,7 +66,7 @@ export default function ConceptB() {
 
         <section className="nx-summary-grid">
           <article className="nx-glass nx-summary-gate">
-            <header><span>系统市场闸门 / RISK GATE</span><Lamp tone={healthTone} text={snapshot.dataHealth} /></header>
+            <header><LabelTip label="系统市场闸门 / RISK GATE" text="由12项风控指标、数据健康度与硬性门槛共同决定总风险上限。它管‘能承担多少风险’，不直接代表市场看空或看多。" align="left" /><Lamp tone={healthTone} text={snapshot.dataHealth} /></header>
             <div className="nx-summary-gate-body">
               <div className="nx-summary-ring" style={{ "--risk": snapshot.riskScore } as CSSProperties}><div><strong>{snapshot.riskScore}</strong><span>/ 100</span><small>{snapshot.marketGate}</small></div></div>
               <div><h2>{snapshot.daily.action}</h2><p>{snapshot.daily.positionAdvice}</p></div>
@@ -62,20 +75,20 @@ export default function ConceptB() {
           </article>
 
           <article className="nx-glass nx-summary-action">
-            <header><span>今日总动作 / ACTION</span><b>{snapshot.daily.action}</b></header>
+            <header><LabelTip label="今日总动作 / ACTION" text="综合风控闸门、赛道执行灯和持仓风险后的方向提示。它是研究约束，不是自动交易指令。" align="left" /><b>{snapshot.daily.action}</b></header>
             <h2>{marketGate === "风险允许" ? "研究优先，" : "控制节奏，"}<em>{snapshot.daily.action}</em></h2>
             <p>{snapshot.daily.needAction}</p>
             <div><span><b>01</b>不追高</span><span><b>02</b>看确认</span><span><b>03</b>守纪律</span></div>
           </article>
 
           <article className="nx-glass nx-summary-fresh">
-            <header><span>数据新鲜度 / FRESHNESS</span><Lamp tone={healthTone} text={snapshot.dataHealth} /></header>
+            <header><LabelTip label="数据新鲜度 / FRESHNESS" text="检查五大模块的业务日期是否同步。过期、待核验或缺失时自动降级，防止用旧数据做当日判断。" align="left" /><Lamp tone={healthTone} text={snapshot.dataHealth} /></header>
             <div>{snapshot.freshness.map(({name,date,width}) => <div className="nx-summary-stream" key={name}><span>{name}</span><i><b style={{ width: `${width}%` }} /></i><strong>{date}</strong></div>)}</div>
             <small>数据截至 {snapshot.asOf}；过期或待核验字段自动降级</small>
           </article>
 
           <article className="nx-glass nx-summary-modules">
-            <header><span>五模块脉冲 / MODULES</span><b>5 MODULES</b></header>
+            <header><LabelTip label="五模块脉冲 / MODULES" text="快速汇总风控、赛道、验证、事件和持仓的当前状态。任一核心模块降级，都会收紧今日执行边界。" align="right" /><b>5 MODULES</b></header>
             <div className="nx-module-ring"><div><strong>{snapshot.lightCounts.yellow + snapshot.lightCounts.red}</strong><span>项风险关注</span></div></div>
             <div className="nx-module-status">{moduleNodes.map(node => <span key={node.code}>{node.name}<b className={`nx-${node.tone}`}>{node.state}</b></span>)}</div>
           </article>
@@ -88,7 +101,7 @@ export default function ConceptB() {
         </section>
 
         <section className="nx-section" id="nx-risk">
-          <header className="nx-section-head"><div><span>01 / MARKET RISK MATRIX</span><h2>风险雷达阵列</h2></div><p>12项日常指标 · 2项硬闸门</p></header>
+          <header className="nx-section-head"><div><span>01 / MARKET RISK MATRIX</span><h2>风险雷达阵列</h2></div><p><LabelTip label="12项日常指标 · 2项硬闸门" text="绿灯=未限制风险暴露；黄灯=限制新增；红灯=停止新增或降风险；灰灯=数据不足。硬闸门可以覆盖普通指标的结论。" align="right" /></p></header>
           <div className="nx-risk-board">
             <article className="nx-glass nx-risk-radar"><div className="nx-radar-grid"><i /><i /><i /><i /></div><div className="nx-radar-shape" /><div className="nx-radar-label r1">流动性 74</div><div className="nx-radar-label r2">波动 54</div><div className="nx-radar-label r3">趋势 22</div><div className="nx-radar-label r4">宽度 9</div><div className="nx-radar-label r5">估值 75</div><strong>风险偏高</strong><small>趋势与宽度构成主要约束</small></article>
             <div className="nx-risk-cells">{risks.map(([name,value,signal,threshold,refresh,sourceDate],i) => <article className={`nx-risk-cell nx-edge-${signal}`} key={name}><header><span>{String(i+1).padStart(2,"0")}</span><Lamp tone={signal as Tone} text={lightText(String(signal))} /></header><h3>{name}</h3><strong>{value}</strong><p>{refresh}</p><footer>正常 {threshold} · 截至 {sourceDate}</footer></article>)}</div>
@@ -96,20 +109,29 @@ export default function ConceptB() {
         </section>
 
         <section className="nx-section" id="nx-sector">
-          <header className="nx-section-head"><div><span>02 / SECTOR SIGNAL MATRIX</span><h2>赛道动能矩阵 · 前10</h2></div><p>研究评分与执行许可分离</p></header>
+          <header className="nx-section-head"><div><span>02 / SECTOR SIGNAL MATRIX</span><h2>赛道动能矩阵 · 前10</h2></div><p><LabelTip label="研究评分与执行许可分离" text="高分只表示值得优先研究。若总市场闸门未放行，执行灯仍可以是黄灯、红灯或灰灯。" align="right" /></p></header>
           <div className="nx-sector-matrix nx-glass">
-            <div className="nx-matrix-head"><span>排名 / 赛道</span><span>趋势 25</span><span>资金 25</span><span>基本面 25</span><span>高频 10</span><span>估值 15</span><span>综合 100</span><span>执行灯</span></div>
+            <div className="nx-matrix-head">
+              <LabelTip label="排名 / 赛道" text="前10按上游赛道动态评分排序，综合当日板块强弱、市场广度、资金和催化。右侧‘综合100’是研究质量分，不直接决定名次。" align="left" />
+              <LabelTip label="趋势 25" text="衡量价格趋势、相对强弱与延续性。分数高表示趋势更强，但不代表不会回调。" />
+              <LabelTip label="资金 25" text="衡量资金参与、成交热度和市场广度。当前采用可观测市场数据作透明代理，不等同于机构真实持仓。" />
+              <LabelTip label="基本面 25" text="衡量景气、订单、盈利与产业验证。数据不完整时使用景气代理，不把叙事当成业绩。" />
+              <LabelTip label="高频 10" text="衡量新闻、产业数据、价格或订单催化的最新强度。当前以有效新闻命中数为透明代理。" />
+              <LabelTip label="估值 15" text="衡量安全边际、拥挤和赔率。当前为风险值反向代理，不等同于完整PE/PB历史分位。" />
+              <LabelTip label="综合 100" text="五因子研究质量分：趋势25+资金25+基本面25+高频10+估值15。用于判断是否值得深入研究，不是排名的唯一依据。" />
+              <LabelTip label="执行灯" text="结合研究分、数据健康度和系统市场闸门得出。绿灯仅允许进入研究，不等同于立即买入。" align="right" />
+            </div>
             {sectors.map((s,i) => <div className="nx-matrix-row" key={s.name} title={s.proxy}><div><i>{String(i+1).padStart(2,"0")}</i><span><b>{s.name}</b><small>{s.risk}</small></span></div><Meter value={s.trend} max={25} tone="cyan" /><Meter value={s.flow} max={25} tone="blue" /><Meter value={s.fundamental} max={25} tone="purple" /><Meter value={s.hf} max={10} tone="pink" /><Meter value={s.value} max={15} tone="yellow" /><strong>{s.score}</strong><Lamp tone={s.execute as Tone} text={executeText(String(s.execute))} /></div>)}
           </div>
         </section>
 
         <section className="nx-section nx-evidence-events" id="nx-evidence">
-          <article className="nx-glass nx-validation"><header><div><span>03 / CROSS-MARKET</span><h2>证据验证舱</h2></div><Lamp tone="gray" text="只作佐证" /></header><div className="nx-validation-orbits"><div className="orbit o1" /><div className="orbit o2" /><div className="orbit o3" /><div className="v-core"><strong>{evidence.newCount}</strong><span>新增观点</span></div><span className="sat s1">机构样本<br /><b>{evidence.count}</b></span><span className="sat s2">高强度<br /><b>{evidence.strongCount}</b></span><span className="sat s3">独立买入<br /><b>0</b></span></div><div className="nx-validation-copy"><p><b>重点框架</b> {evidence.leading.join("、") || "暂无新增可靠观点"}</p><p><b>使用边界</b> 无可靠新增时明确标注，不把旧观点包装成新资金流。</p><small>{evidence.note}</small></div></article>
-          <article className="nx-glass nx-event-radar" id="nx-events"><header><div><span>04 / EVENT IMPACT</span><h2>市场事件雷达 · 前10</h2></div><Lamp tone="green" text="已刷新" /></header><div className="nx-event-list">{events.map((event,i) => { const direction = Number(event.direction); return <div key={event.title} title={event.watch}><i>{String(i+1).padStart(2,"0")}</i><span><b>{event.title}</b><small>{event.source} · {event.confidence}置信度 · {event.date}</small></span><strong className={direction < 0 ? "negative" : direction > 0 ? "positive" : "neutral"}>{direction > 0 ? "利多" : direction < 0 ? "利空" : "观察"}</strong><em style={{ "--impact": event.priority * 10 } as CSSProperties}><u /></em></div> })}</div></article>
+          <article className="nx-glass nx-validation"><header><div><span>03 / CROSS-MARKET</span><h2><LabelTip label="证据验证舱" text="用机构公开观点、跨市场价格和多来源一致性对主判断做佐证或反证。它不独立生成买入信号。" align="left" /></h2></div><Lamp tone="gray" text="只作佐证" /></header><div className="nx-validation-orbits"><div className="orbit o1" /><div className="orbit o2" /><div className="orbit o3" /><div className="v-core"><strong>{evidence.newCount}</strong><span>新增观点</span></div><span className="sat s1">机构样本<br /><b>{evidence.count}</b></span><span className="sat s2">高强度<br /><b>{evidence.strongCount}</b></span><span className="sat s3">独立买入<br /><b>0</b></span></div><div className="nx-validation-copy"><p><b>重点框架</b> {evidence.leading.join("、") || "暂无新增可靠观点"}</p><p><b>使用边界</b> 无可靠新增时明确标注，不把旧观点包装成新资金流。</p><small>{evidence.note}</small></div></article>
+          <article className="nx-glass nx-event-radar" id="nx-events"><header><div><span>04 / EVENT IMPACT</span><h2><LabelTip label="市场事件雷达 · 前10" text="按对折现率、流动性、盈利预期和风险偏好的潜在影响排序。‘利多/利空’表示方向，不代表必然发生。" align="left" /></h2></div><Lamp tone="green" text="已刷新" /></header><div className="nx-event-list">{events.map((event,i) => { const direction = Number(event.direction); return <div key={event.title} title={event.watch}><i>{String(i+1).padStart(2,"0")}</i><span><b>{event.title}</b><small>{event.source} · {event.confidence}置信度 · {event.date}</small></span><strong className={direction < 0 ? "negative" : direction > 0 ? "positive" : "neutral"}>{direction > 0 ? "利多" : direction < 0 ? "利空" : "观察"}</strong><em style={{ "--impact": event.priority * 10 } as CSSProperties}><u /></em></div> })}</div></article>
         </section>
 
         <section className="nx-section" id="nx-holdings">
-          <header className="nx-section-head"><div><span>05 / PORTFOLIO RISK BAY</span><h2>持仓风险舱</h2></div><p>2只股票 · 12只基金 · 不推断真实交易</p></header>
+          <header className="nx-section-head"><div><span>05 / PORTFOLIO RISK BAY</span><h2>持仓风险舱</h2></div><p><LabelTip label="2只股票 · 12只基金 · 不推断真实交易" text="只根据用户已确认的持仓清单跟踪市场表现和风险。系统不知道未同步的加减仓，因此不推断仓位金额或自动下单。" align="right" /></p></header>
           <div className="nx-holding-grid">
             <article className="nx-glass nx-stock-bay"><header><span>股票持仓 / STOCKS</span><strong>02</strong></header>{stocks.map(stock => <div className="nx-stock-row" key={stock.code}><div><small>{stock.code} · 截至 {stock.marketDate}</small><b>{stock.name}</b><span>{stock.sector}</span></div><div className="nx-stock-move"><strong>{String(stock.day) === "待核验" ? "—" : `${Number(stock.day) > 0 ? "+" : ""}${stock.day}%`}</strong><small>5日 {stock.fiveDay}%</small></div><Lamp tone={stock.signal as Tone} text={stockLampText(String(stock.signal))} /><p>最新价 {stock.latestPrice} · {stock.direction}；{stock.watch}</p></div>)}</article>
             <article className="nx-glass nx-fund-bay"><header><span>基金持仓 / FUNDS</span><strong>{funds.length}</strong></header><div className="nx-fund-cloud">{funds.map(fund => <div className={fund.risk === "高" ? "risk" : ""} key={fund.code}><span><i>{fund.code}</i><b>{fund.name}</b><small>{fund.sector} · 截至 {fund.date}</small></span><strong>{fund.day > 0 ? "+" : ""}{fund.day}%</strong><Lamp tone={fund.risk === "高" ? "red" : "yellow"} text={fund.risk === "高" ? "高风险" : fund.decision} /><p>近1周 {fund.week}% · {fund.direction}</p></div>)}</div></article>
