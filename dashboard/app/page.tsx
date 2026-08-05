@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import { events, evidence, funds, risks, sectors, snapshot, stocks } from "./dashboard-data";
+import { InfoTip, LabelTip } from "./info-tip";
 
 export const metadata: Metadata = {
   title: "每日综合大看板｜投资研究中心 2.0",
@@ -13,19 +14,6 @@ function Lamp({ tone, text }: { tone: Tone; text: string }) {
   return <span className={`nx-lamp nx-${tone}`}><i />{text}</span>;
 }
 
-function InfoTip({ text, align = "center" }: { text: string; align?: "left" | "center" | "right" }) {
-  return (
-    <span className={`nx-info-tip nx-tip-${align}`}>
-      <button type="button" aria-label="查看指标说明">i</button>
-      <span role="tooltip">{text}</span>
-    </span>
-  );
-}
-
-function LabelTip({ label, text, align = "center" }: { label: string; text: string; align?: "left" | "center" | "right" }) {
-  return <span className="nx-label-tip"><span>{label}</span><InfoTip text={text} align={align} /></span>;
-}
-
 function lightText(value: string) {
   return value === "red" ? "红灯" : value === "yellow" ? "黄灯" : value === "gray" ? "灰灯" : "绿灯";
 }
@@ -36,6 +24,22 @@ function executeText(value: string) {
 
 function stockLampText(value: string) {
   return value === "red" ? "高风险" : value === "yellow" ? "观察" : value === "green" ? "偏强" : "数据不足";
+}
+
+function riskHelp(name: string) {
+  if (name.includes("美债收益率")) return "全球无风险利率与资产估值的折现锚。持续上升会压低成长股估值，并提高企业融资成本。";
+  if (name.includes("北向资金")) return "观察境外资金参与A股的方向与持续性。单日流入流出噪声较大，应结合月度口径和市场趋势判断。";
+  if (name.includes("美联储")) return "观察美联储政策、利率路径和资产负债表方向。偏鹰或流动性收缩通常压制高估值资产，偏鸽则有助于风险偏好修复。";
+  if (name.includes("美元指数")) return "衡量美元相对主要货币的强弱。美元快速走强通常压制非美资产、商品及新兴市场流动性。";
+  if (name.includes("实际利率")) return "名义利率扣除通胀后的真实资金成本。实际利率越高，黄金和高估值成长资产承压通常越明显。";
+  if (name.includes("信用利差")) return "衡量企业债相对国债的额外风险补偿。利差扩大说明信用压力升高，风险偏好可能恶化。";
+  if (name.includes("VIX")) return "美股隐含波动率指标，是全球避险情绪温度计。快速上升意味着市场对短期波动和尾部风险的定价增加。";
+  if (name.includes("全球流动性")) return "观察主要央行资产负债表与美元流动性的合成变化。改善通常利好风险资产，但不是独立买入信号。";
+  if (name.includes("A股成交") || name.includes("两市成交")) return "衡量A股交易活跃度与增量资金承接。成交放大需同时观察上涨家数和趋势，避免把放量下跌误判为资金进攻。";
+  if (name.includes("港股成交")) return "衡量港股市场的资金承接与交易活跃度。应与南向资金、外资行为和恒生指数趋势一起判断。";
+  if (name.includes("轮动")) return "衡量强势行业的数量、持续性和扩散程度。少数赛道独强代表结构性行情，不能等同于全面风险偏好改善。";
+  if (name.includes("估值")) return "判断核心资产的拥挤程度和安全边际。估值偏高会降低赔率，但不能脱离盈利趋势单独使用。";
+  return "用于判断市场风险承受能力的量化指标。需结合灯号阈值、数据日期及其他指标共同解读，不能单独触发交易。";
 }
 
 export default function ConceptB() {
@@ -104,7 +108,7 @@ export default function ConceptB() {
           <header className="nx-section-head"><div><span>01 / MARKET RISK MATRIX</span><h2>风险雷达阵列</h2></div><p><LabelTip label="12项日常指标 · 2项硬闸门" text="绿灯=未限制风险暴露；黄灯=限制新增；红灯=停止新增或降风险；灰灯=数据不足。硬闸门可以覆盖普通指标的结论。" align="right" /></p></header>
           <div className="nx-risk-board">
             <article className="nx-glass nx-risk-radar"><div className="nx-radar-grid"><i /><i /><i /><i /></div><div className="nx-radar-shape" /><div className="nx-radar-label r1">流动性 74</div><div className="nx-radar-label r2">波动 54</div><div className="nx-radar-label r3">趋势 22</div><div className="nx-radar-label r4">宽度 9</div><div className="nx-radar-label r5">估值 75</div><strong>风险偏高</strong><small>趋势与宽度构成主要约束</small></article>
-            <div className="nx-risk-cells">{risks.map(([name,value,signal,threshold,refresh,sourceDate],i) => <article className={`nx-risk-cell nx-edge-${signal}`} key={name}><header><span>{String(i+1).padStart(2,"0")}</span><Lamp tone={signal as Tone} text={lightText(String(signal))} /></header><h3>{name}</h3><strong>{value}</strong><p>{refresh}</p><footer>正常 {threshold} · 截至 {sourceDate}</footer></article>)}</div>
+            <div className="nx-risk-cells">{risks.map(([name,value,signal,threshold,refresh,sourceDate],i) => <article className={`nx-risk-cell nx-edge-${signal}`} key={name}><header><span>{String(i+1).padStart(2,"0")}</span><Lamp tone={signal as Tone} text={lightText(String(signal))} /></header><h3><LabelTip label={String(name)} text={riskHelp(String(name))} align="left" /></h3><strong>{value}</strong><p>{refresh}</p><footer>正常 {threshold} · 截至 {sourceDate}</footer></article>)}</div>
           </div>
         </section>
 
