@@ -143,7 +143,14 @@ export default function ConceptB() {
         </section>
 
         <section className="nx-guide"><span>SYSTEM DISCIPLINE</span><h2>灰灯不判断 · 红灯先控险 · 黄灯不追高 · 绿灯只进入研究</h2><p>只有执行灯持续为绿、数据日期同步且没有反证时，才允许小量验证。</p></section>
-        <footer className="nx-footer"><span>投资研究中心 2.0 · QUANT DASHBOARD</span><span>数据是证据，不是答案</span></footer>
+        <footer className="nx-footer">
+          <div className="nx-footer-rights">
+            <span>投资研究中心 2.0 · QUANT DASHBOARD</span>
+            <strong>© 2026 陈一铭 · 保留所有权利</strong>
+            <small>本看板的原创架构、分析逻辑及视觉设计著作权归陈一铭所有；第三方数据权利归原始来源方所有。未经授权，不得复制、转载或用于商业用途。</small>
+          </div>
+          <span>数据是证据，不是答案</span>
+        </footer>
       </section>
     </main>
   );
