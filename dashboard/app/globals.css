@@ -2084,7 +2084,7 @@ button {
 
 .nx-sector-matrix { padding: 8px 18px 10px; }
 .nx-matrix-head,
-.nx-matrix-row { grid-template-columns: minmax(360px, 1.85fr) repeat(5, minmax(70px, .43fr)) 66px 88px; gap: 9px; }
+.nx-matrix-row { grid-template-columns: minmax(300px, 1.34fr) repeat(5, minmax(82px, .5fr)) 68px 94px; gap: 9px; }
 .nx-matrix-head { min-height: 38px; color: #aeb9cb; font-size: 11px; font-weight: 680; letter-spacing: .045em; }
 .nx-matrix-row { min-height: 67px; }
 .nx-matrix-row > div:first-child { grid-template-columns: 36px minmax(0, 1fr); gap: 11px; }
@@ -2096,44 +2096,47 @@ button {
 .nx-matrix-row > strong { font-size: 20px; font-weight: 820; }
 .nx-sector-matrix .nx-lamp { min-height: 27px; padding-inline: 11px; font-size: 10px; }
 
-.nx-evidence-events { gap: 14px; }
+.nx-evidence-events { grid-template-columns: minmax(390px, .82fr) minmax(0, 1.18fr); gap: 16px; }
 .nx-validation,
-.nx-event-radar { min-height: 550px; padding: 22px; }
+.nx-event-radar { min-height: 620px; padding: 25px; }
 .nx-network header span,
 .nx-validation header span,
 .nx-event-radar header span,
 .nx-stock-bay header span,
-.nx-fund-bay header span { font-size: 10px; }
+.nx-fund-bay header span { font-size: 12px; }
 .nx-network h2,
 .nx-validation h2,
-.nx-event-radar h2 { font-size: 21px; }
+.nx-event-radar h2 { font-size: 24px; }
 .v-core span,
-.sat { font-size: 10px; }
+.sat { font-size: 12px; }
 .nx-validation-copy { gap: 10px; }
-.nx-validation-copy p { padding: 12px; color: #a6b2c6; font-size: 12px; line-height: 1.55; }
-.nx-validation-copy small { color: #8e9cb3; font-size: 10px; line-height: 1.55; }
+.nx-validation-copy p { padding: 14px; color: #b7c2d4; font-size: 14px; line-height: 1.6; }
+.nx-validation-copy small { color: #a1aec2; font-size: 12px; line-height: 1.6; }
 .nx-event-list { margin-top: 16px; }
-.nx-event-list > div { min-height: 44px; grid-template-columns: 28px minmax(0, 1fr) 34px 72px; gap: 10px; }
-.nx-event-list > div > i { font-size: 10px; }
-.nx-event-list > div > span b { font-size: 11px; }
-.nx-event-list > div > span small { color: #8997ae; font-size: 9px; }
-.nx-event-list > div > strong { font-size: 11px; }
+.nx-event-list > div { min-height: 52px; grid-template-columns: 30px minmax(0, 1fr) 42px 78px; gap: 11px; }
+.nx-event-list > div > i { font-size: 11px; }
+.nx-event-list > div > span b { font-size: 13px; }
+.nx-event-list > div > span small { color: #a1aec2; font-size: 11px; }
+.nx-event-list > div > strong { font-size: 13px; }
 
 .nx-holding-grid { gap: 14px; }
 .nx-stock-bay,
-.nx-fund-bay { padding: 21px; }
+.nx-fund-bay { padding: 24px; }
 .nx-stock-row { grid-template-columns: minmax(140px, 1fr) 62px 64px; gap: 12px; padding: 20px 0; }
 .nx-stock-row > div:first-child small,
-.nx-stock-row > div:first-child span { font-size: 10px; }
-.nx-stock-row > div:first-child b { font-size: 16px; }
-.nx-stock-row > p { color: #a5b1c4; font-size: 11px; line-height: 1.55; }
-.nx-fund-cloud { gap: 9px; margin-top: 16px; }
-.nx-fund-cloud > div { min-height: 94px; grid-template-columns: minmax(0, 1fr) 38px 60px; gap: 9px; padding: 12px; }
+.nx-stock-row > div:first-child span { font-size: 11px; }
+.nx-stock-row > div:first-child b { font-size: 17px; }
+.nx-stock-row > p { color: #b3bed0; font-size: 12px; line-height: 1.6; }
+.nx-stock-move strong { font-size: 14px; }
+.nx-stock-move small { font-size: 10px; }
+.nx-fund-cloud { gap: 11px; margin-top: 18px; }
+.nx-fund-cloud > div { min-height: 112px; grid-template-columns: minmax(0, 1fr) 72px 88px; gap: 12px; padding: 15px; }
 .nx-fund-cloud > div > span i,
-.nx-fund-cloud > div > span small { font-size: 9px; }
-.nx-fund-cloud > div > span b { font-size: 12px; }
-.nx-fund-cloud > div > strong { font-size: 13px; }
-.nx-fund-cloud > div > p { color: #96a4ba; font-size: 10px; line-height: 1.45; }
+.nx-fund-cloud > div > span small { font-size: 10px; }
+.nx-fund-cloud > div > span b { font-size: 13px; }
+.nx-fund-cloud > div > strong { justify-self: end; font-size: 14px; white-space: nowrap; }
+.nx-fund-cloud > div > .nx-lamp { justify-self: end; min-width: 78px; justify-content: center; }
+.nx-fund-cloud > div > p { color: #aeb9cb; font-size: 11px; line-height: 1.55; }
 
 .nx-guide { padding: 24px; }
 .nx-guide > span { font-size: 10px; }
