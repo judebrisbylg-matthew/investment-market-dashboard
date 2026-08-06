@@ -1,7 +1,8 @@
 import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import { events, evidence, funds, risks, sectors, snapshot, stocks } from "./dashboard-data";
-import { InfoTip, LabelTip } from "./info-tip";
+import { EvidenceTerminal } from "./evidence-terminal";
+import { LabelTip } from "./info-tip";
 
 export const metadata: Metadata = {
   title: "每日综合大看板｜投资研究中心 2.0",
@@ -130,7 +131,7 @@ export default function ConceptB() {
         </section>
 
         <section className="nx-section nx-evidence-events" id="nx-evidence">
-          <article className="nx-glass nx-validation"><header><div><span>03 / CROSS-MARKET</span><h2><LabelTip label="证据验证舱" text="用机构公开观点、跨市场价格和多来源一致性对主判断做佐证或反证。它不独立生成买入信号。" align="left" /></h2></div><Lamp tone="gray" text="只作佐证" /></header><div className="nx-validation-orbits"><div className="orbit o1" /><div className="orbit o2" /><div className="orbit o3" /><div className="v-core"><strong>{evidence.newCount}</strong><span>新增观点</span></div><span className="sat s1">机构样本<br /><b>{evidence.count}</b></span><span className="sat s2">高强度<br /><b>{evidence.strongCount}</b></span><span className="sat s3">独立买入<br /><b>0</b></span></div><div className="nx-validation-copy"><p><b>重点框架</b> {evidence.leading.join("、") || "暂无新增可靠观点"}</p><p><b>使用边界</b> 无可靠新增时明确标注，不把旧观点包装成新资金流。</p><small>{evidence.note}</small></div></article>
+          <article className="nx-glass nx-validation"><header><div><span>03 / CROSS-MARKET</span><h2><LabelTip label="证据验证舱" text="用机构公开观点、跨市场价格和多来源一致性对主判断做佐证或反证。它不独立生成买入信号。" align="left" /></h2></div><Lamp tone="gray" text="只作佐证" /></header><EvidenceTerminal /><div className="nx-validation-copy"><p><b>重点框架</b> {evidence.leading.join("、") || "暂无新增可靠观点"}</p><p><b>使用边界</b> 无可靠新增时明确标注，不把旧观点包装成新资金流。</p><small>{evidence.note}</small></div></article>
           <article className="nx-glass nx-event-radar" id="nx-events"><header><div><span>04 / EVENT IMPACT</span><h2><LabelTip label="市场事件雷达 · 前10" text="按对折现率、流动性、盈利预期和风险偏好的潜在影响排序。‘利多/利空’表示方向，不代表必然发生。" align="left" /></h2></div><Lamp tone="green" text="已刷新" /></header><div className="nx-event-list">{events.map((event,i) => { const direction = Number(event.direction); return <div key={event.title} title={event.watch}><i>{String(i+1).padStart(2,"0")}</i><span><b>{event.title}</b><small>{event.source} · {event.confidence}置信度 · {event.date}</small></span><strong className={direction < 0 ? "negative" : direction > 0 ? "positive" : "neutral"}>{direction > 0 ? "利多" : direction < 0 ? "利空" : "观察"}</strong><em style={{ "--impact": event.priority * 10 } as CSSProperties}><u /></em></div> })}</div></article>
         </section>
 

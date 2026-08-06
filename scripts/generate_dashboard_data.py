@@ -95,12 +95,49 @@ def main() -> None:
     ]
 
     experts = data.get("expertViews", [])
+    market_meaning = {
+        "巴菲特 / Berkshire Hathaway": "偏防守；高估值阶段不要追涨。",
+        "霍华德·马克斯 / Oaktree": "偏谨慎；检查AI与成长资产是否过热。",
+        "比尔·阿克曼 / Pershing Square": "选择性偏多，但估值必须合理。",
+        "克里斯·霍恩 / TCI": "长期偏多高壁垒企业，不支持无差别追涨。",
+        "雷·达里奥 / Bridgewater": "偏防守与分散，关注债务和货币周期。",
+        "大卫·泰珀 / Appaloosa": "偏进攻，但只适合观察高弹性资产的交易节奏。",
+        "斯坦利·德鲁肯米勒 / Duquesne": "长期认可AI，短期反对拥挤追高。",
+        "高瓴 / 张磊": "作为中国成长价值和产业研究坐标，重点看盈利兑现。",
+        "肯·格里芬 / Citadel": "用于观察流动性、波动率和市场结构，不作方向性跟单。",
+        "凯瑟琳·伍德 / ARK": "作为高波动成长和创新资产情绪指标，不作组合模板。",
+    }
+    expert_details = [
+        {
+            "name": x.get("name", "待核验机构"),
+            "strength": x.get("strength", "待核验"),
+            "stance": x.get("stance", "待核验"),
+            "style": x.get("style", "待核验"),
+            "focus": x.get("assets", "待核验"),
+            "meaning": market_meaning.get(x.get("name", ""), x.get("view", "待核验")),
+            "detail": x.get("view", "待核验"),
+            "sourceStatus": x.get("refreshStatus", "待核验"),
+        }
+        for x in experts
+    ]
+    tracking_experts = [x for x in expert_details if "跟踪" in str(x.get("stance", "")) or "待验证" in str(x.get("stance", ""))]
+    verified_new_experts = [
+        x for x in expert_details
+        if "无新增" not in str(x.get("stance", "")) and x not in tracking_experts
+    ]
+    strong_experts = [x for x in expert_details if x.get("strength") in {"高", "中高"}]
     evidence = {
         "count": len(experts),
-        "newCount": sum("无新增" not in x.get("stance", "") for x in experts),
-        "strongCount": sum(x.get("strength") in {"高", "中高"} for x in experts),
+        "newCount": len(verified_new_experts),
+        "trackingCount": len(tracking_experts),
+        "strongCount": len(strong_experts),
+        "independentBuyCount": 0,
         "leading": [x["name"] for x in experts if x.get("strength") == "高"][:3],
         "note": "机构观点只作佐证，不能独立触发买入。",
+        "details": expert_details,
+        "strongDetails": strong_experts,
+        "trackingDetails": tracking_experts,
+        "verifiedNewDetails": verified_new_experts,
     }
 
     freshest = {
@@ -113,7 +150,7 @@ def main() -> None:
     module_status = [
         {"code": "01", "name": "市场风控", "state": contract["marketGate"], "tone": "yellow" if contract["marketGate"] == "风险偏高" else "red" if contract["marketGate"] == "停止新增" else "green", "desc": f"{light_counts['yellow']}项预警"},
         {"code": "02", "name": "行业赛道", "state": "已刷新", "tone": "green", "desc": "20池 / 前10"},
-        {"code": "03", "name": "跨市验证", "state": "仅佐证", "tone": "gray", "desc": f"{evidence['newCount']}项新增"},
+        {"code": "03", "name": "跨市验证", "state": "仅佐证", "tone": "gray", "desc": f"{evidence['trackingCount']}项待验证"},
         {"code": "04", "name": "重大事件", "state": "已刷新", "tone": "green", "desc": "影响前10"},
         {"code": "05", "name": "持仓研究", "state": "已刷新", "tone": "green", "desc": "2股 / 12基"},
     ]

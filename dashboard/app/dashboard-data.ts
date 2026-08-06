@@ -71,7 +71,7 @@ export const snapshot = {
       "name": "跨市验证",
       "state": "仅佐证",
       "tone": "gray",
-      "desc": "1项新增"
+      "desc": "1项待验证"
     },
     {
       "code": "04",
@@ -427,14 +427,203 @@ export const events = [
 
 export const evidence = {
   "count": 10,
-  "newCount": 1,
+  "newCount": 0,
+  "trackingCount": 1,
   "strongCount": 7,
+  "independentBuyCount": 0,
   "leading": [
     "巴菲特 / Berkshire Hathaway",
     "霍华德·马克斯 / Oaktree",
     "比尔·阿克曼 / Pershing Square"
   ],
-  "note": "机构观点只作佐证，不能独立触发买入。"
+  "note": "机构观点只作佐证，不能独立触发买入。",
+  "details": [
+    {
+      "name": "巴菲特 / Berkshire Hathaway",
+      "strength": "高",
+      "stance": "无新增可靠观点",
+      "style": "价值投资/保险现金流/长期配置",
+      "focus": "现金和短债、Apple、American Express、Bank of America、Coca-Cola、Chevron、Alphabet、Delta",
+      "meaning": "偏防守；高估值阶段不要追涨。",
+      "detail": "复核至2026/8/5：未发现巴菲特发布改变框架的新公开观点；继续把高现金、少数确定性资产和安全边际作为估值纪律校验，不把它当作短线交易信号。",
+      "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
+    },
+    {
+      "name": "高瓴 / 张磊",
+      "strength": "中",
+      "stance": "无新增可靠观点",
+      "style": "中国/亚洲成长价值/产业研究",
+      "focus": "中国资产、创新药、消费、互联网平台、先进制造",
+      "meaning": "作为中国成长价值和产业研究坐标，重点看盈利兑现。",
+      "detail": "复核至2026/8/5：未发现张磊或高瓴新增可验证公开框架；继续作为中国成长价值和产业研究坐标，重点看创新药、先进制造和互联网平台盈利兑现。",
+      "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
+    },
+    {
+      "name": "霍华德·马克斯 / Oaktree",
+      "strength": "高",
+      "stance": "无新增可靠观点",
+      "style": "信用周期/风险控制/逆向投资",
+      "focus": "Oaktree 信用资产、困境/高收益债",
+      "meaning": "偏谨慎；检查AI与成长资产是否过热。",
+      "detail": "复核至2026/8/5：Oaktree官网近期有内容更新迹象，但未确认出现改变投资框架的新Marks观点；继续用风险补偿、信用周期和过热资产纪律校验AI与成长交易。",
+      "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
+    },
+    {
+      "name": "雷·达里奥 / Bridgewater",
+      "strength": "中高",
+      "stance": "无新增可靠观点",
+      "style": "全球宏观/债务周期/风险平价",
+      "focus": "黄金、全球分散配置、部分中国资产",
+      "meaning": "偏防守与分散，关注债务和货币周期。",
+      "detail": "复核至2026/8/5：未发现Dalio新增高可信公开观点改变配置框架；继续用债务周期、黄金、非美元资产和分散化原则校验宏观风险。",
+      "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
+    },
+    {
+      "name": "比尔·阿克曼 / Pershing Square",
+      "strength": "高",
+      "stance": "无新增可靠观点",
+      "style": "集中持仓/主动投资/优质公司",
+      "focus": "Microsoft、平台科技、消费服务龙头",
+      "meaning": "选择性偏多，但估值必须合理。",
+      "detail": "复核至2026/8/5：未确认Ackman新增改变框架的公开观点；继续偏向少数高质量现金流龙头和可解释的资本配置，回避无法由现金流支撑的高估资产。",
+      "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
+    },
+    {
+      "name": "大卫·泰珀 / Appaloosa",
+      "strength": "中高",
+      "stance": "无新增可靠观点",
+      "style": "宏观交易/机会主义/风险资产节奏",
+      "focus": "Amazon、Uber、Micron、TSMC、Sandisk",
+      "meaning": "偏进攻，但只适合观察高弹性资产的交易节奏。",
+      "detail": "复核至2026/8/5：未发现Tepper新增可靠公开观点；继续把他作为高弹性风险资产节奏参考，重点看AI硬件、平台消费和宏观风险偏好。",
+      "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
+    },
+    {
+      "name": "肯·格里芬 / Citadel",
+      "strength": "中",
+      "stance": "无新增可靠观点",
+      "style": "多策略/市场结构/流动性",
+      "focus": "多策略、股票/信用/利率/商品/量化交易",
+      "meaning": "用于观察流动性、波动率和市场结构，不作方向性跟单。",
+      "detail": "复核至2026/8/5：未发现Griffin新增高确信公开观点改变框架；继续把Citadel作为流动性、波动率和市场结构观察样本。",
+      "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
+    },
+    {
+      "name": "克里斯·霍恩 / TCI",
+      "strength": "高",
+      "stance": "无新增可靠观点",
+      "style": "长期集中持股/高壁垒公司/激进治理",
+      "focus": "Alphabet、Visa、S&P Global、Moody's、GE Aerospace、Airbus、Safran",
+      "meaning": "长期偏多高壁垒企业，不支持无差别追涨。",
+      "detail": "复核至2026/8/5：未发现Hohn新增公开框架变化；继续沿用高壁垒平台、支付网络、评级和航空航天资产也必须服从估值纪律的结论。",
+      "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
+    },
+    {
+      "name": "凯瑟琳·伍德 / ARK",
+      "strength": "中",
+      "stance": "跟踪验证",
+      "style": "颠覆式创新/高波动成长",
+      "focus": "SpaceX、Tesla、ARKK/ARKQ/ARKX、私募创新敞口",
+      "meaning": "作为高波动成长和创新资产情绪指标，不作组合模板。",
+      "detail": "复核至2026/8/5：ARK属于高频交易动作源，6/16之后仍需持续跟踪其每日交易披露；当前不能写成“无更新”，应把ARK作为高波动成长和创新资产情绪指标，而不是组合模板。",
+      "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
+    },
+    {
+      "name": "斯坦利·德鲁肯米勒 / Duquesne",
+      "strength": "中高",
+      "stance": "无新增可靠观点",
+      "style": "顶级宏观交易/集中押注/风险控制",
+      "focus": "Nuvation Bio、Caris Life Sciences、Olema Pharmaceuticals 等",
+      "meaning": "长期认可AI，短期反对拥挤追高。",
+      "detail": "复核至2026/8/5：未发现Druckenmiller新增高可信公开观点；继续沿用承认AI长期逻辑但不在短线拥挤时硬追、重视非共识机会和风险控制的框架。",
+      "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
+    }
+  ],
+  "strongDetails": [
+    {
+      "name": "巴菲特 / Berkshire Hathaway",
+      "strength": "高",
+      "stance": "无新增可靠观点",
+      "style": "价值投资/保险现金流/长期配置",
+      "focus": "现金和短债、Apple、American Express、Bank of America、Coca-Cola、Chevron、Alphabet、Delta",
+      "meaning": "偏防守；高估值阶段不要追涨。",
+      "detail": "复核至2026/8/5：未发现巴菲特发布改变框架的新公开观点；继续把高现金、少数确定性资产和安全边际作为估值纪律校验，不把它当作短线交易信号。",
+      "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
+    },
+    {
+      "name": "霍华德·马克斯 / Oaktree",
+      "strength": "高",
+      "stance": "无新增可靠观点",
+      "style": "信用周期/风险控制/逆向投资",
+      "focus": "Oaktree 信用资产、困境/高收益债",
+      "meaning": "偏谨慎；检查AI与成长资产是否过热。",
+      "detail": "复核至2026/8/5：Oaktree官网近期有内容更新迹象，但未确认出现改变投资框架的新Marks观点；继续用风险补偿、信用周期和过热资产纪律校验AI与成长交易。",
+      "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
+    },
+    {
+      "name": "雷·达里奥 / Bridgewater",
+      "strength": "中高",
+      "stance": "无新增可靠观点",
+      "style": "全球宏观/债务周期/风险平价",
+      "focus": "黄金、全球分散配置、部分中国资产",
+      "meaning": "偏防守与分散，关注债务和货币周期。",
+      "detail": "复核至2026/8/5：未发现Dalio新增高可信公开观点改变配置框架；继续用债务周期、黄金、非美元资产和分散化原则校验宏观风险。",
+      "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
+    },
+    {
+      "name": "比尔·阿克曼 / Pershing Square",
+      "strength": "高",
+      "stance": "无新增可靠观点",
+      "style": "集中持仓/主动投资/优质公司",
+      "focus": "Microsoft、平台科技、消费服务龙头",
+      "meaning": "选择性偏多，但估值必须合理。",
+      "detail": "复核至2026/8/5：未确认Ackman新增改变框架的公开观点；继续偏向少数高质量现金流龙头和可解释的资本配置，回避无法由现金流支撑的高估资产。",
+      "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
+    },
+    {
+      "name": "大卫·泰珀 / Appaloosa",
+      "strength": "中高",
+      "stance": "无新增可靠观点",
+      "style": "宏观交易/机会主义/风险资产节奏",
+      "focus": "Amazon、Uber、Micron、TSMC、Sandisk",
+      "meaning": "偏进攻，但只适合观察高弹性资产的交易节奏。",
+      "detail": "复核至2026/8/5：未发现Tepper新增可靠公开观点；继续把他作为高弹性风险资产节奏参考，重点看AI硬件、平台消费和宏观风险偏好。",
+      "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
+    },
+    {
+      "name": "克里斯·霍恩 / TCI",
+      "strength": "高",
+      "stance": "无新增可靠观点",
+      "style": "长期集中持股/高壁垒公司/激进治理",
+      "focus": "Alphabet、Visa、S&P Global、Moody's、GE Aerospace、Airbus、Safran",
+      "meaning": "长期偏多高壁垒企业，不支持无差别追涨。",
+      "detail": "复核至2026/8/5：未发现Hohn新增公开框架变化；继续沿用高壁垒平台、支付网络、评级和航空航天资产也必须服从估值纪律的结论。",
+      "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
+    },
+    {
+      "name": "斯坦利·德鲁肯米勒 / Duquesne",
+      "strength": "中高",
+      "stance": "无新增可靠观点",
+      "style": "顶级宏观交易/集中押注/风险控制",
+      "focus": "Nuvation Bio、Caris Life Sciences、Olema Pharmaceuticals 等",
+      "meaning": "长期认可AI，短期反对拥挤追高。",
+      "detail": "复核至2026/8/5：未发现Druckenmiller新增高可信公开观点；继续沿用承认AI长期逻辑但不在短线拥挤时硬追、重视非共识机会和风险控制的框架。",
+      "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
+    }
+  ],
+  "trackingDetails": [
+    {
+      "name": "凯瑟琳·伍德 / ARK",
+      "strength": "中",
+      "stance": "跟踪验证",
+      "style": "颠覆式创新/高波动成长",
+      "focus": "SpaceX、Tesla、ARKK/ARKQ/ARKX、私募创新敞口",
+      "meaning": "作为高波动成长和创新资产情绪指标，不作组合模板。",
+      "detail": "复核至2026/8/5：ARK属于高频交易动作源，6/16之后仍需持续跟踪其每日交易披露；当前不能写成“无更新”，应把ARK作为高波动成长和创新资产情绪指标，而不是组合模板。",
+      "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
+    }
+  ],
+  "verifiedNewDetails": []
 } as const;
 
 export const stocks = [
