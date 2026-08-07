@@ -14,6 +14,11 @@ from typing import Any
 
 START_PREFIX = "【系统每日数据区开始】"
 END_MARKER = "【系统每日数据区结束】"
+LEGACY_DASHBOARD_PREFIXES = (
+    "01｜市场环境与风控",
+    "01 | 市场环境与风控",
+)
+ATTACHMENT_HEADING = "原始终稿 Excel 附件"
 
 
 def _text(value: Any, limit: int = 1900) -> str:
@@ -244,6 +249,53 @@ def _managed_range(blocks: list[dict[str, Any]]) -> tuple[int, int] | None:
     return start, end
 
 
+def _remove_legacy_dashboard_snapshot(client: Any, page_id: str) -> int:
+    """Remove the obsolete pre-managed page-0 snapshot, if it still exists.
+
+    Older versions placed a full static dashboard after the managed end marker.
+    Once a managed region existed, the bootstrap-only cleanup no longer removed
+    that static copy, so users could see the current batch followed by stale
+    July data.  The exact legacy section is gated by its first dashboard heading
+    and ends before the Excel attachment heading.  Files and child pages are
+    always preserved.
+    """
+    blocks = client.list_block_children(page_id)
+    managed = _managed_range(blocks)
+    if managed is None:
+        return 0
+
+    footer = next(
+        (
+            idx
+            for idx in range(managed[1] + 1, len(blocks))
+            if ATTACHMENT_HEADING in block_plain_text(blocks[idx])
+        ),
+        None,
+    )
+    if footer is None:
+        return 0
+
+    legacy_heading = next(
+        (
+            idx
+            for idx in range(managed[1] + 1, footer)
+            if any(prefix in block_plain_text(blocks[idx]) for prefix in LEGACY_DASHBOARD_PREFIXES)
+        ),
+        None,
+    )
+    if legacy_heading is None:
+        return 0
+
+    preserve_types = {"child_page", "file", "bookmark", "link_preview", "pdf"}
+    removed = 0
+    for block in blocks[managed[1] + 1:footer]:
+        if block.get("type") in preserve_types:
+            continue
+        client.delete_block(block["id"])
+        removed += 1
+    return removed
+
+
 def publish_page(client: Any, page_id: str, page_no: str, blocks: list[dict[str, Any]], business_date: str, batch_id: str) -> None:
     existing = client.list_block_children(page_id)
     managed = _managed_range(existing)
@@ -267,6 +319,12 @@ def publish_page(client: Any, page_id: str, page_no: str, blocks: list[dict[str,
 
     for block_id in old_ids:
         client.delete_block(block_id)
+
+    # Page 0 used to contain a second, non-managed static dashboard below the
+    # latest snapshot. Remove that exact legacy copy on every run so only the
+    # newest valid batch remains visible. Historical rows stay in 6A-6F/0A.
+    if page_no == "0":
+        _remove_legacy_dashboard_snapshot(client, page_id)
 
     # Bootstrap cleanup: remove obsolete static table/text blocks only after the
     # managed snapshot is confirmed. Child pages and files are never touched.
