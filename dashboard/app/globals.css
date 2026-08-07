@@ -2203,7 +2203,7 @@ button {
 .nx-floating-tooltip {
   position: fixed;
   z-index: 10000;
-  width: min(320px, calc(100vw - 40px));
+  width: min(390px, calc(100vw - 40px));
   border: 1px solid rgba(90, 216, 255, .32);
   border-radius: 10px;
   padding: 11px 13px;
@@ -2216,7 +2216,7 @@ button {
   line-height: 1.68;
   letter-spacing: 0 !important;
   text-align: left;
-  white-space: normal;
+  white-space: pre-line;
   pointer-events: none;
   animation: nx-tip-in .15s ease both;
 }

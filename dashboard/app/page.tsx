@@ -118,13 +118,13 @@ export default function ConceptB() {
           <div className="nx-sector-matrix nx-glass">
             <div className="nx-matrix-head">
               <LabelTip label="排名 / 赛道" text="前10按上游赛道动态评分排序，综合当日板块强弱、市场广度、资金和催化。右侧‘综合100’是研究质量分，不直接决定名次。" align="left" />
-              <LabelTip label="趋势 25" text="衡量价格趋势、相对强弱与延续性。分数高表示趋势更强，但不代表不会回调。" />
-              <LabelTip label="资金 25" text="衡量资金参与、成交热度和市场广度。当前采用可观测市场数据作透明代理，不等同于机构真实持仓。" />
-              <LabelTip label="基本面 25" text="衡量景气、订单、盈利与产业验证。数据不完整时使用景气代理，不把叙事当成业绩。" />
-              <LabelTip label="高频 10" text="衡量新闻、产业数据、价格或订单催化的最新强度。当前以有效新闻命中数为透明代理。" />
-              <LabelTip label="估值 15" text="衡量安全边际、拥挤和赔率。当前为风险值反向代理，不等同于完整PE/PB历史分位。" />
-              <LabelTip label="综合 100" text="五因子研究质量分：趋势25+资金25+基本面25+高频10+估值15。用于判断是否值得深入研究，不是排名的唯一依据。" />
-              <LabelTip label="执行灯" text="结合研究分、数据健康度和系统市场闸门得出。绿灯仅允许进入研究，不等同于立即买入。" align="right" />
+              <LabelTip label="趋势 25" text={"作用：判断价格、市场广度和成交是否确认上涨方向。\n算法：赛道动态总分 × 25%。\n区间：19–25强；14–18观察；0–13弱。\n边界：行情过期时降级，不能用新闻替代价格确认。"} />
+              <LabelTip label="资金 25" text={"作用：判断上涨是否获得量价和参与热度支持。\n算法：热度分 × 25%。\n区间：19–25强；14–18观察；0–13弱。\n边界：目前是量价与热度代理，不等于真实ETF申赎。"} />
+              <LabelTip label="基本面 25" text={"作用：判断订单、盈利和产业景气能否支撑行情。\n算法：景气分 × 25%。\n区间：19–25强；14–18观察；0–13弱。\n边界：缺少一致预期数据时标记为代理，不伪造业绩证据。"} />
+              <LabelTip label="高频 10" text={"作用：捕捉订单、政策、产品及价格的最新边际变化。\n算法：有效新增证据命中数，最高10分。\n区间：8–10强；6–7观察；0–5弱。\n边界：旧新闻不重复计分；没有新增证据可以为0分。"} />
+              <LabelTip label="估值 15" text={"作用：判断安全边际、拥挤程度和当前赔率。\n算法：（100－风险分）× 15%。\n区间：12–15强；9–11观察；0–8弱。\n边界：目前是风险与价格分位代理，不等于完整PE/PB估值。"} />
+              <LabelTip label="综合 100" text={"作用：汇总五因子，用于赛道横向比较和研究排序。\n算法：趋势＋资金＋基本面＋高频＋估值。\n区间：≥75绿灯；55–74黄灯；＜55红灯。\n边界：分数高只代表研究优先，不等于可以买入。"} />
+              <LabelTip label="执行灯" text={"作用：把研究结果转换为最终行动约束。\n规则：综合研究灯＋市场闸门＋数据覆盖率共同决定。\n绿灯：条件较完整，可进入行动候选，仍需分批。\n灰灯：数据不足或过期，暂停判断，不执行操作。"} align="right" />
             </div>
             {sectors.map((s,i) => <div className="nx-matrix-row" key={s.name} title={s.proxy}><div><i>{String(i+1).padStart(2,"0")}</i><span><b>{s.name}</b><small>{s.risk}</small></span></div><Meter value={s.trend} max={25} tone="cyan" /><Meter value={s.flow} max={25} tone="blue" /><Meter value={s.fundamental} max={25} tone="purple" /><Meter value={s.hf} max={10} tone="pink" /><Meter value={s.value} max={15} tone="yellow" /><strong>{s.score}</strong><Lamp tone={s.execute as Tone} text={executeText(String(s.execute))} /></div>)}
           </div>

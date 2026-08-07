@@ -20,7 +20,7 @@ export function InfoTip({ text, align = "center" }: { text: string; align?: Alig
     const rect = button.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    const tooltipWidth = Math.min(340, viewportWidth - 32);
+    const tooltipWidth = Math.min(390, viewportWidth - 32);
     const tooltipHeight = tooltipRef.current?.offsetHeight ?? 126;
     const halfWidth = tooltipWidth / 2;
     const preferredLeft = align === "left" ? rect.left + halfWidth : align === "right" ? rect.right - halfWidth : rect.left + rect.width / 2;
