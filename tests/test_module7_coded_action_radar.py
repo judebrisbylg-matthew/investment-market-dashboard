@@ -53,6 +53,14 @@ class OpportunityRadarTests(unittest.TestCase):
         self.assertIsNone(radar["stocks"][0]["executionAction"])
         self.assertEqual(radar["executionEngineStatus"], "未启用")
 
+    def test_opportunity_page_has_three_coded_columns_and_engine_boundary(self) -> None:
+        page = (Path(__file__).resolve().parents[1] / "dashboard/app/page.tsx").read_text(encoding="utf-8")
+        self.assertIn("codedOpportunityRadar", page)
+        self.assertIn("7C｜半年潜力股TOP10", page)
+        self.assertIn("7E｜股票基金替代关系", page)
+        self.assertIn("7D｜潜力基金ETF TOP10", page)
+        self.assertIn("执行引擎未启用", page)
+
 
 if __name__ == "__main__":
     unittest.main()
