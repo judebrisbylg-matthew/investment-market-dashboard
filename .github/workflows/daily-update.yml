@@ -87,6 +87,21 @@ jobs:
           assert radar.get("executionStatus") == "灰灯", radar
           assert isinstance(radar.get("industries"), list), radar
           assert isinstance(radar.get("funds"), list), radar
+          coded_radar = data.get("codedOpportunityRadar", {})
+          assert coded_radar.get("businessDate") == contract.get("businessDate"), coded_radar
+          assert coded_radar.get("executionEngineStatus") in {"未启用", "已启用"}, coded_radar
+          coded_stocks = coded_radar.get("stocks", [])
+          coded_etfs = coded_radar.get("etfs", [])
+          assert len(coded_stocks) == 10 and len(coded_etfs) == 10, coded_radar
+          assert all(isinstance(item.get("code"), str) and len(item["code"]) == 6 and item["code"].isdigit() for item in coded_stocks + coded_etfs), coded_radar
+          stock_codes = {item["code"] for item in coded_stocks}
+          etf_codes = {item["code"] for item in coded_etfs}
+          assert len(stock_codes) == 10 and len(etf_codes) == 10, coded_radar
+          for relation in coded_radar.get("relationships", []):
+              assert set(relation.get("stockCodes", [])) <= stock_codes, relation
+              assert relation.get("etfCode") in etf_codes, relation
+          if coded_radar.get("executionEngineStatus") == "未启用":
+              assert all(item.get("executionEligible") is False and item.get("executionAction") is None for item in coded_stocks + coded_etfs), coded_radar
           final_fund_codes = {
               "012733", "100055", "006751", "014344", "007818", "013180",
               "004432", "519704", "018125", "011103", "025856", "018896",

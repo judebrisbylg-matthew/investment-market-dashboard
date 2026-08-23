@@ -10,9 +10,22 @@ SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 import cloud_daily_update as updater  # noqa: E402
 import generate_dashboard_data as generator  # noqa: E402
+import notion_visible_pages as visible  # noqa: E402
 
 
 class OpportunityRadarTests(unittest.TestCase):
+    @staticmethod
+    def block_text(block: dict) -> str:
+        kind = block.get("type", "")
+        payload = block.get(kind, {})
+        rich_text = payload.get("rich_text", [])
+        text = "".join(part.get("plain_text") or part.get("text", {}).get("content", "") for part in rich_text)
+        if kind == "table":
+            for row in payload.get("children", []):
+                for cell in row.get("table_row", {}).get("cells", []):
+                    text += "".join(part.get("plain_text") or part.get("text", {}).get("content", "") for part in cell)
+        return text
+
     def test_coded_radar_has_spec_codes_and_no_actions_without_model(self) -> None:
         radar = updater.build_coded_opportunity_radar({"v2": {}}, date(2026, 8, 21))
 
@@ -60,6 +73,22 @@ class OpportunityRadarTests(unittest.TestCase):
         self.assertIn("7E｜股票基金替代关系", page)
         self.assertIn("7D｜潜力基金ETF TOP10", page)
         self.assertIn("执行引擎未启用", page)
+
+    def test_module7_notion_blocks_show_code_pools_without_fake_actions(self) -> None:
+        data = {
+            "v2": {"businessDate": "2026-08-21", "batchId": "test"},
+            "opportunityRadar": {"businessDate": "2026-08-21"},
+        }
+        data["codedOpportunityRadar"] = updater.build_coded_opportunity_radar(data, date(2026, 8, 21))
+        text = " ".join(self.block_text(block) for block in visible.page_blocks("7", data, [], []))
+
+        self.assertIn("7C｜半年潜力股TOP10", text)
+        self.assertIn("002230", text)
+        self.assertIn("7E｜股票基金替代关系", text)
+        self.assertIn("512760", text)
+        self.assertIn("7D｜潜力基金ETF TOP10", text)
+        self.assertIn("执行引擎未启用", text)
+        self.assertNotIn("重仓", text)
 
 
 if __name__ == "__main__":
