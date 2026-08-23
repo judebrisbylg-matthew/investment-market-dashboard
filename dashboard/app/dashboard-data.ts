@@ -1,10 +1,10 @@
 // Generated from data/market-data.json. Do not edit by hand.
 export const snapshot = {
-  "businessDate": "2026-08-23",
-  "generatedAt": "2026-08-23T12:05:56+08:00",
+  "businessDate": "2026-08-21",
+  "generatedAt": "2026-08-23T13:06:17+08:00",
   "asOf": "2026/8/23 06:15 HKT",
-  "marketGate": "数据不足",
-  "dataHealth": "灰灯",
+  "marketGate": "风险偏高",
+  "dataHealth": "绿灯",
   "coverage": 96,
   "riskScore": 71,
   "lightCounts": {
@@ -17,27 +17,27 @@ export const snapshot = {
     "asOf": "2026/8/23 06:15 HKT",
     "signal": "黄灯",
     "action": "等待",
-    "marketJudgement": "今天结论：黄灯等待，贸易看费半指数待确认，先看AI芯片/半导体、医药生物能否放量。",
+    "marketJudgement": "今天结论：黄灯等待，科技看费半指数待确认，先看AI芯片/半导体、存储/HBM能否放量。",
     "positionAdvice": "仓位建议：维持中性偏谨慎，不追高，等主线确认。",
-    "needAction": "今日动作：盯AI芯片/半导体、医药生物成交/订单；基金看强项004432(有色金属)日涨2.90%，弱项014344(A股宽基)日涨0.22%。",
-    "actionReason": "不操作原因：估值分位、国际油价（美元/...未转绿，贸易看费半指数仍待确认。",
+    "needAction": "今日动作：盯AI芯片/半导体、存储/HBM成交/订单；基金看强项004432(有色金属)日涨2.90%，弱项014344(A股宽基)日涨0.22%。",
+    "actionReason": "不操作原因：估值分位、国际油价（美元/...未转绿，科技看费半指数仍待确认。",
     "riskPoint": "主要风险：估值分位、国际油价（美元/...；若成交不足或消息反复，成长资产易回撤。",
-    "nextReview": "下次复盘：看AI芯片/半导体、医药生物是否放量，CAR-T细胞疗法、肝炎概念是否升温，新闻是否新增冲击。"
+    "nextReview": "下次复盘：看AI芯片/半导体、存储/HBM是否放量，低空经济/军工、黄金概念是否升温，新闻是否新增冲击。"
   },
   "freshness": [
     {
       "name": "风控",
-      "date": "08.21",
+      "date": "08.23",
       "width": 86
     },
     {
       "name": "赛道",
-      "date": "08.20",
+      "date": "08.23",
       "width": 100
     },
     {
       "name": "跨市场",
-      "date": "08.23",
+      "date": "08.21",
       "width": 100
     },
     {
@@ -55,8 +55,8 @@ export const snapshot = {
     {
       "code": "01",
       "name": "市场风控",
-      "state": "数据不足",
-      "tone": "green",
+      "state": "风险偏高",
+      "tone": "yellow",
       "desc": "5项预警"
     },
     {
@@ -180,11 +180,11 @@ export const risks = [
   ],
   [
     "行业轮动强弱",
-    "A股前3赛道：AI芯片/半导体、医药生物、白银；平均研究分80.7",
+    "A股前3赛道：AI芯片/半导体、存储/HBM、AI服务器/液冷；平均研究分84.0",
     "green",
     "主线清晰且扩散",
-    "指标日期 2026-08-20，沿用最近可得数据（滞后3天）",
-    "2026-08-20"
+    "指标日期 2026-08-23，今日可用",
+    "2026-08-23"
   ],
   [
     "估值分位",
@@ -199,140 +199,140 @@ export const risks = [
 export const sectors = [
   {
     "name": "AI芯片/半导体",
-    "score": 77,
-    "trend": 20,
-    "flow": 23,
-    "fundamental": 22,
+    "score": 84,
+    "trend": 24,
+    "flow": 24,
+    "fundamental": 24,
     "hf": 10,
     "value": 2,
     "research": "green",
-    "execute": "gray",
+    "execute": "green",
     "risk": "美股芯片、费半、AI链成交额、云厂Capex、先进封装和HBM订单",
     "operation": "暂不追高",
     "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
   },
   {
-    "name": "医药生物",
-    "score": 64,
+    "name": "存储/HBM",
+    "score": 69,
     "trend": 20,
+    "flow": 22,
+    "fundamental": 21,
+    "hf": 3,
+    "value": 3,
+    "research": "yellow",
+    "execute": "yellow",
+    "risk": "美光指引、DRAM/NAND价格、HBM供需、国产存储成交额",
+    "operation": "暂不追高",
+    "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
+  },
+  {
+    "name": "AI服务器/液冷",
+    "score": 63,
+    "trend": 19,
+    "flow": 20,
+    "fundamental": 19,
+    "hf": 1,
+    "value": 4,
+    "research": "yellow",
+    "execute": "yellow",
+    "risk": "服务器订单、液冷招标、云厂Capex、电力配套",
+    "operation": "建议加仓",
+    "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
+  },
+  {
+    "name": "光模块/CPO",
+    "score": 63,
+    "trend": 19,
+    "flow": 20,
+    "fundamental": 19,
+    "hf": 1,
+    "value": 4,
+    "research": "yellow",
+    "execute": "yellow",
+    "risk": "800G/1.6T订单、云厂资本开支、光模块毛利率",
+    "operation": "继续观察",
+    "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
+  },
+  {
+    "name": "PCB/高速铜连接",
+    "score": 58,
+    "trend": 18,
+    "flow": 19,
+    "fundamental": 18,
+    "hf": 0,
+    "value": 3,
+    "research": "yellow",
+    "execute": "yellow",
+    "risk": "交换机订单、PCB毛利率、高速铜连接订单、服务器出货",
+    "operation": "继续观察",
+    "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
+  },
+  {
+    "name": "低空经济/军工",
+    "score": 72,
+    "trend": 18,
     "flow": 20,
     "fundamental": 20,
-    "hf": 0,
+    "hf": 10,
     "value": 4,
-    "research": "yellow",
-    "execute": "gray",
-    "risk": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
+    "research": "green",
+    "execute": "green",
+    "risk": "适航审批、军工订单、低空商业化、无人机交付",
     "operation": "继续观察",
     "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
   },
   {
-    "name": "白银",
-    "score": 67,
-    "trend": 20,
-    "flow": 21,
-    "fundamental": 20,
+    "name": "黄金概念",
+    "score": 62,
+    "trend": 18,
+    "flow": 18,
+    "fundamental": 18,
     "hf": 2,
-    "value": 4,
+    "value": 6,
     "research": "yellow",
-    "execute": "gray",
+    "execute": "yellow",
     "risk": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
     "operation": "继续观察",
     "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
   },
   {
-    "name": "CRO",
-    "score": 61,
-    "trend": 19,
-    "flow": 19,
+    "name": "有色金属/资源品",
+    "score": 71,
+    "trend": 17,
+    "flow": 20,
     "fundamental": 19,
-    "hf": 0,
-    "value": 4,
-    "research": "yellow",
-    "execute": "gray",
-    "risk": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
+    "hf": 10,
+    "value": 5,
+    "research": "green",
+    "execute": "green",
+    "risk": "铜价、金价、美元指数、实际利率、库存",
     "operation": "继续观察",
     "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
   },
   {
-    "name": "病原体防治",
-    "score": 61,
-    "trend": 19,
-    "flow": 19,
+    "name": "消费电子/AI终端",
+    "score": 71,
+    "trend": 17,
+    "flow": 20,
     "fundamental": 19,
-    "hf": 0,
-    "value": 4,
-    "research": "yellow",
-    "execute": "gray",
-    "risk": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
+    "hf": 10,
+    "value": 5,
+    "research": "green",
+    "execute": "green",
+    "risk": "AI手机/眼镜销量、苹果链订单、端侧AI渗透率",
     "operation": "继续观察",
     "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
   },
   {
-    "name": "CAR-T细胞疗法",
-    "score": 61,
-    "trend": 19,
-    "flow": 19,
-    "fundamental": 19,
+    "name": "锂矿概念",
+    "score": 58,
+    "trend": 17,
+    "flow": 18,
+    "fundamental": 17,
     "hf": 0,
-    "value": 4,
+    "value": 6,
     "research": "yellow",
-    "execute": "gray",
-    "risk": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
-    "operation": "继续观察",
-    "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
-  },
-  {
-    "name": "肝炎概念",
-    "score": 61,
-    "trend": 19,
-    "flow": 19,
-    "fundamental": 19,
-    "hf": 0,
-    "value": 4,
-    "research": "yellow",
-    "execute": "gray",
-    "risk": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
-    "operation": "继续观察",
-    "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
-  },
-  {
-    "name": "基因测序",
-    "score": 61,
-    "trend": 19,
-    "flow": 19,
-    "fundamental": 19,
-    "hf": 0,
-    "value": 4,
-    "research": "yellow",
-    "execute": "gray",
-    "risk": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
-    "operation": "继续观察",
-    "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
-  },
-  {
-    "name": "生物制品",
-    "score": 61,
-    "trend": 19,
-    "flow": 19,
-    "fundamental": 19,
-    "hf": 0,
-    "value": 4,
-    "research": "yellow",
-    "execute": "gray",
-    "risk": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
-    "operation": "继续观察",
-    "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
-  },
-  {
-    "name": "疫苗",
-    "score": 61,
-    "trend": 19,
-    "flow": 19,
-    "fundamental": 19,
-    "hf": 0,
-    "value": 4,
-    "research": "yellow",
-    "execute": "gray",
+    "execute": "yellow",
     "risk": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
     "operation": "继续观察",
     "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
@@ -342,10 +342,10 @@ export const sectors = [
 export const events = [
   {
     "title": "人工智能和半导体仍是市场主线，但高估值与拥挤交易需要财报验证",
-    "priority": 7,
-    "direction": 0,
+    "priority": 6,
+    "direction": 1,
     "confidence": "中高",
-    "source": "美国财经电视台",
+    "source": "公开新闻聚合源",
     "date": "2026/8/23",
     "watch": "费半指数、英伟达链条、云厂资本开支、芯片订单、毛利率和成交额"
   },
@@ -798,91 +798,91 @@ export const funds = [
 ] as const;
 
 export const opportunityRadar: { businessDate: string; marketGate: string; dataHealth: string; coverage: number; executionStatus: string; executionBoundary: string; industries: Array<{ name: string; score: number | string; tier: string; operation: string; marketDate: string; nextSignal: string }>; funds: Array<{ code: string; name: string; theme: string; latestNav: number | string; day: number | string; navDate: string; decision: string }> } = {
-  "businessDate": "2026-08-23",
-  "marketGate": "数据不足",
-  "dataHealth": "灰灯",
+  "businessDate": "2026-08-21",
+  "marketGate": "风险偏高",
+  "dataHealth": "绿灯",
   "coverage": 0.9643,
   "executionStatus": "灰灯",
   "executionBoundary": "仅作研究排序与跟踪；未接入验证完备的执行模型，不形成买卖指令。",
   "industries": [
     {
       "name": "AI芯片/半导体",
-      "score": 82,
+      "score": 95,
       "tier": "核心主线",
       "operation": "暂不追高",
-      "marketDate": "2026-08-20",
+      "marketDate": "2026-08-23",
       "nextSignal": "美股芯片、费半、AI链成交额、云厂Capex、先进封装和HBM订单"
     },
     {
-      "name": "医药生物",
-      "score": 80,
+      "name": "存储/HBM",
+      "score": 81,
       "tier": "核心主线",
-      "operation": "继续观察",
-      "marketDate": "2026-08-19",
-      "nextSignal": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化"
+      "operation": "暂不追高",
+      "marketDate": "2026-08-23",
+      "nextSignal": "美光指引、DRAM/NAND价格、HBM供需、国产存储成交额"
     },
     {
-      "name": "白银",
-      "score": 80,
-      "tier": "核心主线",
-      "operation": "继续观察",
-      "marketDate": "2026-08-19",
-      "nextSignal": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化"
-    },
-    {
-      "name": "CRO",
-      "score": 77,
-      "tier": "核心主线",
-      "operation": "继续观察",
-      "marketDate": "2026-08-19",
-      "nextSignal": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化"
-    },
-    {
-      "name": "病原体防治",
-      "score": 77,
-      "tier": "核心主线",
-      "operation": "继续观察",
-      "marketDate": "2026-08-19",
-      "nextSignal": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化"
-    },
-    {
-      "name": "CAR-T细胞疗法",
+      "name": "AI服务器/液冷",
       "score": 76,
-      "tier": "候补轮动",
-      "operation": "继续观察",
-      "marketDate": "2026-08-19",
-      "nextSignal": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化"
+      "tier": "核心主线",
+      "operation": "建议加仓",
+      "marketDate": "2026-08-23",
+      "nextSignal": "服务器订单、液冷招标、云厂Capex、电力配套"
     },
     {
-      "name": "肝炎概念",
-      "score": 76,
-      "tier": "候补轮动",
-      "operation": "继续观察",
-      "marketDate": "2026-08-19",
-      "nextSignal": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化"
-    },
-    {
-      "name": "基因测序",
+      "name": "光模块/CPO",
       "score": 75,
+      "tier": "核心主线",
+      "operation": "继续观察",
+      "marketDate": "2026-08-23",
+      "nextSignal": "800G/1.6T订单、云厂资本开支、光模块毛利率"
+    },
+    {
+      "name": "PCB/高速铜连接",
+      "score": 73,
+      "tier": "核心主线",
+      "operation": "继续观察",
+      "marketDate": "2026-08-23",
+      "nextSignal": "交换机订单、PCB毛利率、高速铜连接订单、服务器出货"
+    },
+    {
+      "name": "低空经济/军工",
+      "score": 70,
       "tier": "候补轮动",
       "operation": "继续观察",
-      "marketDate": "2026-08-19",
+      "marketDate": "2026-08-23",
+      "nextSignal": "适航审批、军工订单、低空商业化、无人机交付"
+    },
+    {
+      "name": "黄金概念",
+      "score": 70,
+      "tier": "候补轮动",
+      "operation": "继续观察",
+      "marketDate": "2026-08-21",
       "nextSignal": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化"
     },
     {
-      "name": "生物制品",
-      "score": 75,
+      "name": "有色金属/资源品",
+      "score": 68,
       "tier": "候补轮动",
       "operation": "继续观察",
-      "marketDate": "2026-08-19",
-      "nextSignal": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化"
+      "marketDate": "2026-08-23",
+      "nextSignal": "铜价、金价、美元指数、实际利率、库存"
     },
     {
-      "name": "疫苗",
-      "score": 75,
+      "name": "消费电子/AI终端",
+      "score": 68,
       "tier": "候补轮动",
       "operation": "继续观察",
-      "marketDate": "2026-08-19",
+      "marketDate": "2026-08-23",
+      "nextSignal": "AI手机/眼镜销量、苹果链订单、端侧AI渗透率"
+    },
+    {
+      "name": "锂矿概念",
+      "score": 68,
+      "tier": "候补轮动",
+      "operation": "继续观察",
+      "marketDate": "2026-08-21",
       "nextSignal": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化"
     }
   ],
