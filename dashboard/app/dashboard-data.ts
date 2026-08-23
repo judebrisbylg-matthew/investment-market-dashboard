@@ -1,7 +1,7 @@
 // Generated from data/market-data.json. Do not edit by hand.
 export const snapshot = {
   "businessDate": "2026-08-23",
-  "generatedAt": "2026-08-23T06:37:15+08:00",
+  "generatedAt": "2026-08-23T12:05:56+08:00",
   "asOf": "2026/8/23 06:15 HKT",
   "marketGate": "数据不足",
   "dataHealth": "灰灯",
@@ -350,20 +350,11 @@ export const events = [
     "watch": "费半指数、英伟达链条、云厂资本开支、芯片订单、毛利率和成交额"
   },
   {
-    "title": "油价与能源供给变量继续影响通胀预期，资源品和风险偏好需同步观察",
-    "priority": 6,
-    "direction": 1,
-    "confidence": "中高",
-    "source": "公开新闻聚合源",
-    "date": "2026/8/22",
-    "watch": "布伦特油价、美国原油库存、产油国政策、通胀预期、航空和化工板块"
-  },
-  {
     "title": "美联储政策与利率预期再受关注，市场等待官员表态和收益率确认",
     "priority": 6,
     "direction": 0,
     "confidence": "中高",
-    "source": "公开新闻聚合源",
+    "source": "美国财经电视台",
     "date": "2026/8/22",
     "watch": "美联储官员讲话、10年期美债收益率、实际利率、美元指数、黄金和纳指表现"
   },
@@ -384,6 +375,15 @@ export const events = [
     "source": "美国财经电视台",
     "date": "2026/8/22",
     "watch": "A股成交额、港股成交额、南向资金、人民币汇率、政策表态和科技制造板块"
+  },
+  {
+    "title": "油价与能源供给变量继续影响通胀预期，资源品和风险偏好需同步观察",
+    "priority": 5,
+    "direction": 1,
+    "confidence": "中高",
+    "source": "公开新闻聚合源",
+    "date": "2026/8/23",
+    "watch": "布伦特油价、美国原油库存、产油国政策、通胀预期、航空和化工板块"
   },
   {
     "title": "贸易和关税变量继续影响制造业利润，订单、成本和供应链风险需跟踪",
@@ -798,13 +798,203 @@ export const funds = [
 ] as const;
 
 export const opportunityRadar: { businessDate: string; marketGate: string; dataHealth: string; coverage: number; executionStatus: string; executionBoundary: string; industries: Array<{ name: string; score: number | string; tier: string; operation: string; marketDate: string; nextSignal: string }>; funds: Array<{ code: string; name: string; theme: string; latestNav: number | string; day: number | string; navDate: string; decision: string }> } = {
-  "businessDate": "待核验",
+  "businessDate": "2026-08-23",
   "marketGate": "数据不足",
   "dataHealth": "灰灯",
-  "coverage": 0,
+  "coverage": 0.9643,
   "executionStatus": "灰灯",
-  "executionBoundary": "不形成买卖指令。",
-  "industries": [],
-  "funds": []
+  "executionBoundary": "仅作研究排序与跟踪；未接入验证完备的执行模型，不形成买卖指令。",
+  "industries": [
+    {
+      "name": "AI芯片/半导体",
+      "score": 82,
+      "tier": "核心主线",
+      "operation": "暂不追高",
+      "marketDate": "2026-08-20",
+      "nextSignal": "美股芯片、费半、AI链成交额、云厂Capex、先进封装和HBM订单"
+    },
+    {
+      "name": "医药生物",
+      "score": 80,
+      "tier": "核心主线",
+      "operation": "继续观察",
+      "marketDate": "2026-08-19",
+      "nextSignal": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化"
+    },
+    {
+      "name": "白银",
+      "score": 80,
+      "tier": "核心主线",
+      "operation": "继续观察",
+      "marketDate": "2026-08-19",
+      "nextSignal": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化"
+    },
+    {
+      "name": "CRO",
+      "score": 77,
+      "tier": "核心主线",
+      "operation": "继续观察",
+      "marketDate": "2026-08-19",
+      "nextSignal": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化"
+    },
+    {
+      "name": "病原体防治",
+      "score": 77,
+      "tier": "核心主线",
+      "operation": "继续观察",
+      "marketDate": "2026-08-19",
+      "nextSignal": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化"
+    },
+    {
+      "name": "CAR-T细胞疗法",
+      "score": 76,
+      "tier": "候补轮动",
+      "operation": "继续观察",
+      "marketDate": "2026-08-19",
+      "nextSignal": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化"
+    },
+    {
+      "name": "肝炎概念",
+      "score": 76,
+      "tier": "候补轮动",
+      "operation": "继续观察",
+      "marketDate": "2026-08-19",
+      "nextSignal": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化"
+    },
+    {
+      "name": "基因测序",
+      "score": 75,
+      "tier": "候补轮动",
+      "operation": "继续观察",
+      "marketDate": "2026-08-19",
+      "nextSignal": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化"
+    },
+    {
+      "name": "生物制品",
+      "score": 75,
+      "tier": "候补轮动",
+      "operation": "继续观察",
+      "marketDate": "2026-08-19",
+      "nextSignal": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化"
+    },
+    {
+      "name": "疫苗",
+      "score": 75,
+      "tier": "候补轮动",
+      "operation": "继续观察",
+      "marketDate": "2026-08-19",
+      "nextSignal": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化"
+    }
+  ],
+  "funds": [
+    {
+      "code": "012733",
+      "name": "易方达中证人工智能主题ETF联接A",
+      "theme": "AI/半导体",
+      "latestNav": 2.0198,
+      "day": 1.22,
+      "navDate": "2026-08-21",
+      "decision": "观察等待"
+    },
+    {
+      "code": "100055",
+      "name": "富国全球科技互联网股票(QDII)A",
+      "theme": "全球科技互联网",
+      "latestNav": 5.2951,
+      "day": 1.87,
+      "navDate": "2026-08-20",
+      "decision": "观察等待"
+    },
+    {
+      "code": "006751",
+      "name": "富国互联科技股票A",
+      "theme": "AI/互联网",
+      "latestNav": 6.1647,
+      "day": 1.88,
+      "navDate": "2026-08-21",
+      "decision": "观察等待"
+    },
+    {
+      "code": "014344",
+      "name": "鹏华中证500指数增强A",
+      "theme": "A股宽基",
+      "latestNav": 1.5875,
+      "day": 0.22,
+      "navDate": "2026-08-21",
+      "decision": "观察等待"
+    },
+    {
+      "code": "007818",
+      "name": "国泰中证全指通信设备ETF联接C",
+      "theme": "通信/设备",
+      "latestNav": 3.7637,
+      "day": 1.95,
+      "navDate": "2026-08-21",
+      "decision": "观察等待"
+    },
+    {
+      "code": "013180",
+      "name": "广发国证新能源车电池ETF联接C",
+      "theme": "新能源车/电池",
+      "latestNav": 0.7676,
+      "day": 1.57,
+      "navDate": "2026-08-21",
+      "decision": "观察等待"
+    },
+    {
+      "code": "004432",
+      "name": "南方有色金属ETF联接A",
+      "theme": "有色金属",
+      "latestNav": 1.9216,
+      "day": 2.9,
+      "navDate": "2026-08-21",
+      "decision": "继续观察"
+    },
+    {
+      "code": "519704",
+      "name": "交银先进制造混合A",
+      "theme": "先进制造",
+      "latestNav": 6.569,
+      "day": 1.21,
+      "navDate": "2026-08-21",
+      "decision": "继续观察"
+    },
+    {
+      "code": "018125",
+      "name": "永赢先进制造智选混合发起C",
+      "theme": "先进制造",
+      "latestNav": 1.8529,
+      "day": 2.11,
+      "navDate": "2026-08-21",
+      "decision": "观察等待"
+    },
+    {
+      "code": "011103",
+      "name": "天弘中证光伏产业指数C",
+      "theme": "光伏产业",
+      "latestNav": 0.724,
+      "day": 0.37,
+      "navDate": "2026-08-21",
+      "decision": "观察等待"
+    },
+    {
+      "code": "025856",
+      "name": "华夏中证电网设备主题ETF发起式联接A",
+      "theme": "电网设备",
+      "latestNav": 1.1732,
+      "day": 0.83,
+      "navDate": "2026-08-21",
+      "decision": "观察等待"
+    },
+    {
+      "code": "018896",
+      "name": "易方达消费电子ETF联接A",
+      "theme": "消费电子",
+      "latestNav": 2.2967,
+      "day": 1.44,
+      "navDate": "2026-08-21",
+      "decision": "观察等待"
+    }
+  ]
 };
 
