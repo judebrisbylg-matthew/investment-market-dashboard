@@ -212,6 +212,7 @@ def _holdings(data: dict[str, Any], stocks: list[dict[str, Any]], fund_order: li
 
 def _opportunity_radar(data: dict[str, Any]) -> list[dict[str, Any]]:
     radar = data.get("opportunityRadar", {})
+    coded = data.get("codedOpportunityRadar", {})
     industry_rows = [
         [index, item.get("name"), item.get("score"), item.get("tier"), item.get("operation"), item.get("marketDate"), item.get("nextSignal")]
         for index, item in enumerate(radar.get("industries", [])[:10], 1)
@@ -220,7 +221,30 @@ def _opportunity_radar(data: dict[str, Any]) -> list[dict[str, Any]]:
         [item.get("code"), item.get("name"), item.get("theme"), item.get("latestNav"), f"{item.get('day', '待核验')}%", item.get("navDate"), item.get("decision")]
         for item in radar.get("funds", [])
     ]
-    return [
+    stock_rows = [
+        [
+            item.get("code"), item.get("name"), item.get("theme"), item.get("researchStatus"),
+            item.get("executionAction") or "执行引擎未启用", item.get("dataDate") or "待日更核验",
+            item.get("dataStatus"),
+        ]
+        for item in coded.get("stocks", [])
+    ]
+    relationship_rows = [
+        [
+            "、".join(item.get("stockCodes", [])), item.get("etfCode"), item.get("relationship"),
+            item.get("expressionStrategy") or item.get("relationshipStatus"),
+        ]
+        for item in coded.get("relationships", [])
+    ]
+    etf_rows = [
+        [
+            item.get("code"), item.get("name"), item.get("theme"), item.get("researchStatus"),
+            item.get("executionAction") or "执行引擎未启用", item.get("dataDate") or "待日更核验",
+            item.get("dataStatus"),
+        ]
+        for item in coded.get("etfs", [])
+    ]
+    blocks = [
         heading("06｜新机会雷达"),
         callout(
             f"业务日期 {radar.get('businessDate', '待核验')}｜市场闸门 {radar.get('marketGate', '数据不足')}｜"
@@ -233,6 +257,17 @@ def _opportunity_radar(data: dict[str, Any]) -> list[dict[str, Any]]:
         heading("基金替代观察池（仅跟踪）", 3),
         table(["代码", "名称", "主题", "最新净值", "日涨跌", "净值日期", "研究方向"], fund_rows),
     ]
+    if coded:
+        blocks += [
+            heading("7C｜半年潜力股TOP10", 3),
+            table(["代码", "名称", "主题", "研究状态", "执行动作", "数据日期", "数据状态"], stock_rows),
+            heading("7E｜股票基金替代关系", 3),
+            table(["股票代码", "ETF代码", "替代表达", "关系状态"], relationship_rows),
+            heading("7D｜潜力基金ETF TOP10", 3),
+            table(["代码", "名称", "主题", "研究状态", "执行动作", "数据日期", "数据状态"], etf_rows),
+            callout(coded.get("executionBoundary", "执行引擎未启用；不形成交易动作。"), "⚪", "gray_background"),
+        ]
+    return blocks
 
 
 def page_blocks(page_no: str, data: dict[str, Any], stocks: list[dict[str, Any]], fund_order: list[str]) -> list[dict[str, Any]]:
