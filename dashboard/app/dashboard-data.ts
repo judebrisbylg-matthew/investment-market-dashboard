@@ -1,7 +1,7 @@
 // Generated from data/market-data.json. Do not edit by hand.
 export const snapshot = {
   "businessDate": "2026-08-21",
-  "generatedAt": "2026-08-23T13:06:17+08:00",
+  "generatedAt": "2026-08-23T14:45:23+08:00",
   "asOf": "2026/8/23 06:15 HKT",
   "marketGate": "风险偏高",
   "dataHealth": "绿灯",
@@ -638,27 +638,27 @@ export const stocks = [
     "code": "002837",
     "name": "英维克",
     "sector": "电力/数据中心能源",
-    "signal": "gray",
-    "direction": "数据不足",
+    "signal": "yellow",
+    "direction": "中性观察",
     "watch": "能否放量站回20日线并连续2日强于沪深300",
-    "latestPrice": "待核验",
-    "day": "待核验",
-    "fiveDay": "待核验",
-    "marketDate": "待核验",
-    "risk": "待核验"
+    "latestPrice": 54.12,
+    "day": 2.25,
+    "fiveDay": -5.2,
+    "marketDate": "2026-08-21",
+    "risk": "中"
   },
   {
     "code": "002555",
     "name": "三七互娱",
     "sector": "游戏传媒/AI应用",
-    "signal": "gray",
-    "direction": "数据不足",
+    "signal": "red",
+    "direction": "转弱",
     "watch": "游戏ETF与个股是否同步放量、连续强于沪深300",
-    "latestPrice": "待核验",
-    "day": "待核验",
-    "fiveDay": "待核验",
-    "marketDate": "待核验",
-    "risk": "待核验"
+    "latestPrice": 18.59,
+    "day": 0.27,
+    "fiveDay": -6.11,
+    "marketDate": "2026-08-21",
+    "risk": "高"
   }
 ] as const;
 
@@ -1003,9 +1003,355 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
   "marketGate": "风险偏高",
   "dataHealth": "绿灯",
   "executionEngineStatus": "未启用",
-  "executionBoundary": "执行引擎未启用；不形成交易动作。",
-  "stocks": [],
-  "etfs": [],
-  "relationships": []
+  "executionBoundary": "执行引擎未启用；候选池仅作研究跟踪，不形成交易动作。",
+  "stocks": [
+    {
+      "code": "002230",
+      "name": "科大讯飞",
+      "assetType": "股票",
+      "theme": "AI应用/软件",
+      "researchStatus": "数据不足",
+      "executionEligible": false,
+      "executionAction": null,
+      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
+      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
+      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
+      "dataDate": null,
+      "dataStatus": "候选代码待日更核验"
+    },
+    {
+      "code": "601138",
+      "name": "工业富联",
+      "assetType": "股票",
+      "theme": "AI服务器/制造",
+      "researchStatus": "数据不足",
+      "executionEligible": false,
+      "executionAction": null,
+      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
+      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
+      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
+      "dataDate": null,
+      "dataStatus": "候选代码待日更核验"
+    },
+    {
+      "code": "300308",
+      "name": "中际旭创",
+      "assetType": "股票",
+      "theme": "光模块/CPO",
+      "researchStatus": "数据不足",
+      "executionEligible": false,
+      "executionAction": null,
+      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
+      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
+      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
+      "dataDate": null,
+      "dataStatus": "候选代码待日更核验"
+    },
+    {
+      "code": "300502",
+      "name": "新易盛",
+      "assetType": "股票",
+      "theme": "光模块/CPO",
+      "researchStatus": "数据不足",
+      "executionEligible": false,
+      "executionAction": null,
+      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
+      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
+      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
+      "dataDate": null,
+      "dataStatus": "候选代码待日更核验"
+    },
+    {
+      "code": "600584",
+      "name": "长电科技",
+      "assetType": "股票",
+      "theme": "先进封装",
+      "researchStatus": "数据不足",
+      "executionEligible": false,
+      "executionAction": null,
+      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
+      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
+      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
+      "dataDate": null,
+      "dataStatus": "候选代码待日更核验"
+    },
+    {
+      "code": "000977",
+      "name": "浪潮信息",
+      "assetType": "股票",
+      "theme": "AI服务器/液冷",
+      "researchStatus": "数据不足",
+      "executionEligible": false,
+      "executionAction": null,
+      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
+      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
+      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
+      "dataDate": null,
+      "dataStatus": "候选代码待日更核验"
+    },
+    {
+      "code": "002463",
+      "name": "沪电股份",
+      "assetType": "股票",
+      "theme": "PCB/高速铜连接",
+      "researchStatus": "数据不足",
+      "executionEligible": false,
+      "executionAction": null,
+      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
+      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
+      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
+      "dataDate": null,
+      "dataStatus": "候选代码待日更核验"
+    },
+    {
+      "code": "002475",
+      "name": "立讯精密",
+      "assetType": "股票",
+      "theme": "消费电子/连接器",
+      "researchStatus": "数据不足",
+      "executionEligible": false,
+      "executionAction": null,
+      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
+      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
+      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
+      "dataDate": null,
+      "dataStatus": "候选代码待日更核验"
+    },
+    {
+      "code": "603986",
+      "name": "兆易创新",
+      "assetType": "股票",
+      "theme": "存储/半导体",
+      "researchStatus": "数据不足",
+      "executionEligible": false,
+      "executionAction": null,
+      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
+      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
+      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
+      "dataDate": null,
+      "dataStatus": "候选代码待日更核验"
+    },
+    {
+      "code": "688041",
+      "name": "海光信息",
+      "assetType": "股票",
+      "theme": "AI芯片/国产算力",
+      "researchStatus": "数据不足",
+      "executionEligible": false,
+      "executionAction": null,
+      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
+      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
+      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
+      "dataDate": null,
+      "dataStatus": "候选代码待日更核验"
+    }
+  ],
+  "etfs": [
+    {
+      "code": "512720",
+      "name": "计算机ETF",
+      "assetType": "ETF",
+      "theme": "计算机/软件",
+      "researchStatus": "数据不足",
+      "executionEligible": false,
+      "executionAction": null,
+      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
+      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
+      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
+      "dataDate": null,
+      "dataStatus": "候选代码待日更核验"
+    },
+    {
+      "code": "516010",
+      "name": "游戏ETF",
+      "assetType": "ETF",
+      "theme": "游戏传媒",
+      "researchStatus": "数据不足",
+      "executionEligible": false,
+      "executionAction": null,
+      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
+      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
+      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
+      "dataDate": null,
+      "dataStatus": "候选代码待日更核验"
+    },
+    {
+      "code": "512880",
+      "name": "证券ETF",
+      "assetType": "ETF",
+      "theme": "证券",
+      "researchStatus": "数据不足",
+      "executionEligible": false,
+      "executionAction": null,
+      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
+      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
+      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
+      "dataDate": null,
+      "dataStatus": "候选代码待日更核验"
+    },
+    {
+      "code": "515220",
+      "name": "煤炭ETF",
+      "assetType": "ETF",
+      "theme": "煤炭",
+      "researchStatus": "数据不足",
+      "executionEligible": false,
+      "executionAction": null,
+      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
+      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
+      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
+      "dataDate": null,
+      "dataStatus": "候选代码待日更核验"
+    },
+    {
+      "code": "515880",
+      "name": "通信ETF",
+      "assetType": "ETF",
+      "theme": "通信/设备",
+      "researchStatus": "数据不足",
+      "executionEligible": false,
+      "executionAction": null,
+      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
+      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
+      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
+      "dataDate": null,
+      "dataStatus": "候选代码待日更核验"
+    },
+    {
+      "code": "562500",
+      "name": "机器人ETF",
+      "assetType": "ETF",
+      "theme": "机器人/智能制造",
+      "researchStatus": "数据不足",
+      "executionEligible": false,
+      "executionAction": null,
+      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
+      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
+      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
+      "dataDate": null,
+      "dataStatus": "候选代码待日更核验"
+    },
+    {
+      "code": "588000",
+      "name": "科创50ETF",
+      "assetType": "ETF",
+      "theme": "AI/半导体",
+      "researchStatus": "数据不足",
+      "executionEligible": false,
+      "executionAction": null,
+      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
+      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
+      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
+      "dataDate": null,
+      "dataStatus": "候选代码待日更核验"
+    },
+    {
+      "code": "516960",
+      "name": "机械ETF",
+      "assetType": "ETF",
+      "theme": "机械设备",
+      "researchStatus": "数据不足",
+      "executionEligible": false,
+      "executionAction": null,
+      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
+      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
+      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
+      "dataDate": null,
+      "dataStatus": "候选代码待日更核验"
+    },
+    {
+      "code": "512760",
+      "name": "芯片ETF",
+      "assetType": "ETF",
+      "theme": "半导体",
+      "researchStatus": "数据不足",
+      "executionEligible": false,
+      "executionAction": null,
+      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
+      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
+      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
+      "dataDate": null,
+      "dataStatus": "候选代码待日更核验"
+    },
+    {
+      "code": "159819",
+      "name": "人工智能ETF",
+      "assetType": "ETF",
+      "theme": "AI/应用",
+      "researchStatus": "数据不足",
+      "executionEligible": false,
+      "executionAction": null,
+      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
+      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
+      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
+      "dataDate": null,
+      "dataStatus": "候选代码待日更核验"
+    }
+  ],
+  "relationships": [
+    {
+      "stockCodes": [
+        "688041",
+        "603986",
+        "600584"
+      ],
+      "etfCode": "512760",
+      "relationship": "半导体/封测表达",
+      "expressionStrategy": null,
+      "relationshipStatus": "关系待验证"
+    },
+    {
+      "stockCodes": [
+        "688041",
+        "603986",
+        "600584"
+      ],
+      "etfCode": "588000",
+      "relationship": "科创硬科技宽表达",
+      "expressionStrategy": null,
+      "relationshipStatus": "关系待验证"
+    },
+    {
+      "stockCodes": [
+        "300308",
+        "300502",
+        "002463"
+      ],
+      "etfCode": "515880",
+      "relationship": "通信、光模块、CPO 表达",
+      "expressionStrategy": null,
+      "relationshipStatus": "关系待验证"
+    },
+    {
+      "stockCodes": [
+        "000977",
+        "601138"
+      ],
+      "etfCode": "512720",
+      "relationship": "计算机、服务器表达",
+      "expressionStrategy": null,
+      "relationshipStatus": "关系待验证"
+    },
+    {
+      "stockCodes": [
+        "000977",
+        "601138",
+        "002230"
+      ],
+      "etfCode": "159819",
+      "relationship": "AI 产业链宽表达",
+      "expressionStrategy": null,
+      "relationshipStatus": "关系待验证"
+    },
+    {
+      "stockCodes": [
+        "002230"
+      ],
+      "etfCode": "512720",
+      "relationship": "软件与 AI 应用表达",
+      "expressionStrategy": null,
+      "relationshipStatus": "关系待验证"
+    }
+  ]
 };
 
