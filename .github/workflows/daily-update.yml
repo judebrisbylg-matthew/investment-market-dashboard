@@ -81,7 +81,12 @@ jobs:
           assert contract.get("contractVersion") == "dashboard-v2.0", contract
           assert contract.get("marketGate") in {"风险允许", "风险偏高", "停止新增", "数据不足"}, contract
           assert contract.get("dataHealth") in {"绿灯", "黄灯", "红灯", "灰灯"}, contract
-          assert set(contract.get("moduleCoverage", {})) == {"0", "1", "2", "3", "4", "5"}, contract
+          assert set(contract.get("moduleCoverage", {})) == {"0", "1", "2", "3", "4", "5", "7"}, contract
+          radar = data.get("opportunityRadar", {})
+          assert radar.get("businessDate") == contract.get("businessDate"), radar
+          assert radar.get("executionStatus") == "灰灯", radar
+          assert isinstance(radar.get("industries"), list), radar
+          assert isinstance(radar.get("funds"), list), radar
           final_fund_codes = {
               "012733", "100055", "006751", "014344", "007818", "013180",
               "004432", "519704", "018125", "011103", "025856", "018896",

@@ -33,10 +33,26 @@ def date_short(value: str) -> str:
     return f"{int(match.group(2)):02d}.{int(match.group(3)):02d}" if match else value
 
 
+def dashboard_opportunity_radar(data: dict) -> dict:
+    """Return the safe, display-ready subset of the Module 7 daily snapshot."""
+    radar = data.get("opportunityRadar", {})
+    return {
+        "businessDate": radar.get("businessDate", "待核验"),
+        "marketGate": radar.get("marketGate", "数据不足"),
+        "dataHealth": radar.get("dataHealth", "灰灯"),
+        "coverage": radar.get("coverage", 0),
+        "executionStatus": radar.get("executionStatus", "灰灯"),
+        "executionBoundary": radar.get("executionBoundary", "不形成买卖指令。"),
+        "industries": radar.get("industries", [])[:10],
+        "funds": radar.get("funds", []),
+    }
+
+
 def main() -> None:
     data = json.loads(SOURCE.read_text(encoding="utf-8"))
     contract = data["v2"]
     daily = data["daily"]
+    opportunity_radar = dashboard_opportunity_radar(data)
 
     excluded = {"国际油价（美元/桶）", "AI巨头营收增速"}
     selected_risks = [r for r in data["riskDashboard"] if r["name"] not in excluded]
@@ -153,6 +169,7 @@ def main() -> None:
         {"code": "03", "name": "跨市验证", "state": "仅佐证", "tone": "gray", "desc": f"{evidence['trackingCount']}项待验证"},
         {"code": "04", "name": "重大事件", "state": "已刷新", "tone": "green", "desc": "影响前10"},
         {"code": "05", "name": "持仓研究", "state": "已刷新", "tone": "green", "desc": "2股 / 12基"},
+        {"code": "06", "name": "新机会雷达", "state": opportunity_radar["executionStatus"], "tone": "gray", "desc": "仅研究 / 不执行"},
     ]
     risk_score = max(int(r.get("score") or 0) for r in data["riskDashboard"])
     snapshot = {
@@ -184,6 +201,8 @@ def main() -> None:
     output = "// Generated from data/market-data.json. Do not edit by hand.\n"
     for name, value in (("snapshot", snapshot), ("risks", risks), ("sectors", industries), ("events", events), ("evidence", evidence), ("stocks", stocks), ("funds", funds)):
         output += f"export const {name} = {dump(value)} as const;\n\n"
+    output += "export const opportunityRadar: { businessDate: string; marketGate: string; dataHealth: string; coverage: number; executionStatus: string; executionBoundary: string; industries: Array<{ name: string; score: number | string; tier: string; operation: string; marketDate: string; nextSignal: string }>; funds: Array<{ code: string; name: string; theme: string; latestNav: number | string; day: number | string; navDate: string; decision: string }> } = "
+    output += f"{dump(opportunity_radar)};\n\n"
     TARGET.write_text(output, encoding="utf-8")
     print(f"Generated {TARGET.relative_to(ROOT)} from {SOURCE.relative_to(ROOT)}")
 

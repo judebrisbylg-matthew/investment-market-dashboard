@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import type { Metadata } from "next";
-import { events, evidence, funds, risks, sectors, snapshot, stocks } from "./dashboard-data";
+import { events, evidence, funds, opportunityRadar, risks, sectors, snapshot, stocks } from "./dashboard-data";
 import { EvidenceTerminal } from "./evidence-terminal";
 import { LabelTip } from "./info-tip";
 
@@ -59,6 +59,7 @@ export default function ConceptB() {
           <a href="#nx-evidence"><i>03</i><span>验证</span></a>
           <a href="#nx-events"><i>04</i><span>事件</span></a>
           <a href="#nx-holdings"><i>05</i><span>持仓</span></a>
+          <a href="#nx-opportunity"><i>06</i><span>机会</span></a>
         </nav>
         <div className="nx-rail-health"><div className="nx-mini-ring"><strong>{snapshot.coverage}%</strong></div><span>数据健康</span><small>{snapshot.dataHealth} · {snapshot.businessDate}</small></div>
       </aside>
@@ -140,6 +141,14 @@ export default function ConceptB() {
           <div className="nx-holding-grid">
             <article className="nx-glass nx-stock-bay"><header><span>股票持仓 / STOCKS</span><strong>02</strong></header>{stocks.map(stock => <div className="nx-stock-row" key={stock.code}><div><small>{stock.code} · 截至 {stock.marketDate}</small><b>{stock.name}</b><span>{stock.sector}</span></div><div className="nx-stock-move"><strong>{String(stock.day) === "待核验" ? "—" : `${Number(stock.day) > 0 ? "+" : ""}${stock.day}%`}</strong><small>5日 {stock.fiveDay}%</small></div><Lamp tone={stock.signal as Tone} text={stockLampText(String(stock.signal))} /><p>最新价 {stock.latestPrice} · {stock.direction}；{stock.watch}</p></div>)}</article>
             <article className="nx-glass nx-fund-bay"><header><span>基金持仓 / FUNDS</span><strong>{funds.length}</strong></header><div className="nx-fund-cloud">{funds.map(fund => <div className={fund.risk === "高" ? "risk" : ""} key={fund.code}><span><i>{fund.code}</i><b>{fund.name}</b><small>{fund.sector} · 截至 {fund.date}</small></span><strong>{fund.day > 0 ? "+" : ""}{fund.day}%</strong><Lamp tone={fund.risk === "高" ? "red" : "yellow"} text={fund.risk === "高" ? "高风险" : fund.decision} /><p>近1周 {fund.week}% · {fund.direction}</p></div>)}</div></article>
+          </div>
+        </section>
+
+        <section className="nx-section" id="nx-opportunity">
+          <header className="nx-section-head"><div><span>06 / OPPORTUNITY RADAR</span><h2>新机会雷达</h2></div><p><LabelTip label="仅研究，不构成买卖指令" text="此处使用已刷新的赛道和基金数据做研究入口展示。执行状态固定为灰灯，直到出现独立验证完成的执行模型。" align="right" /></p></header>
+          <div className="nx-holding-grid">
+            <article className="nx-glass nx-stock-bay"><header><span>上游赛道前10 / RESEARCH ENTRY</span><Lamp tone="gray" text={`执行${opportunityRadar.executionStatus}`} /></header>{opportunityRadar.industries.slice(0, 5).map((industry, index) => <div className="nx-stock-row" key={industry.name}><div><small>排名 {String(index + 1).padStart(2, "0")} · 截至 {industry.marketDate}</small><b>{industry.name}</b><span>{industry.tier} · 研究分 {industry.score}</span></div><Lamp tone="gray" text={industry.operation} /><p>{industry.nextSignal}</p></div>)}</article>
+            <article className="nx-glass nx-fund-bay"><header><span>基金替代观察 / FUND WATCH</span><strong>灰灯</strong></header><div className="nx-fund-cloud">{opportunityRadar.funds.slice(0, 6).map(fund => <div key={fund.code}><span><i>{fund.code}</i><b>{fund.name}</b><small>{fund.theme} · 截至 {fund.navDate}</small></span><strong>{Number(fund.day) > 0 ? "+" : ""}{fund.day}%</strong><Lamp tone="gray" text={fund.decision} /></div>)}</div><p>{opportunityRadar.executionBoundary}</p></article>
           </div>
         </section>
 

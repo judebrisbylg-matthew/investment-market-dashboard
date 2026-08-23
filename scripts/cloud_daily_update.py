@@ -2240,6 +2240,7 @@ class NotionConfig:
     page_cross_market: str
     page_events: str
     page_holdings: str
+    page_opportunity_radar: str
 
 
 class NotionClient:
@@ -2466,6 +2467,7 @@ def notion_config(require: bool) -> NotionConfig | None:
         "page_cross_market": os.getenv("NOTION_PAGE_CROSS_MARKET", "3ad4b7e3bb7081fa963bcfdebf42333d"),
         "page_events": os.getenv("NOTION_PAGE_EVENTS", "3ad4b7e3bb7081bd83e4c24582a9c253"),
         "page_holdings": os.getenv("NOTION_PAGE_HOLDINGS", "3ad4b7e3bb7081e094c2d266a9669544"),
+        "page_opportunity_radar": os.getenv("NOTION_PAGE_OPPORTUNITY_RADAR", "3c44b7e3bb7081f9be70c52f4b8a9a5f"),
     }
     missing = [name for name, value in keys.items() if not value]
     if missing and require:
@@ -2807,6 +2809,7 @@ def notion_v2_contract(data: dict[str, Any], as_of: date) -> dict[str, Any]:
     funds = [i for i in data.get("fundHoldings", []) if str(i.get("code")) in FUND_ORDER]
     holding_coverage = pct_coverage(sum(bool(i.get("navDate") or extract_nav_date(str(i.get("reason", "")))) for i in funds), len(FUND_ORDER))
     overall_coverage = round((risk_coverage + industry_coverage + event_coverage + holding_coverage) / 4, 4)
+    opportunity_coverage = overall_coverage
     health = "灰灯" if market_gate == "数据不足" else ("黄灯" if overall_coverage < 0.9 else "绿灯")
 
     return {
@@ -2827,7 +2830,52 @@ def notion_v2_contract(data: dict[str, Any], as_of: date) -> dict[str, Any]:
             "3": pct_coverage(len(data.get("expertViews", [])), 10),
             "4": event_coverage,
             "5": holding_coverage,
+            "7": opportunity_coverage,
         },
+    }
+
+
+def build_opportunity_radar(data: dict[str, Any], as_of: date) -> dict[str, Any]:
+    """Build the current Module 7 snapshot from the daily audited payload.
+
+    This deliberately exposes source dates separately from the run date and
+    preserves a grey execution status until a validated execution model exists.
+    """
+    contract = data.get("v2", {})
+    industries = [
+        {
+            "name": item.get("name", "待核验"),
+            "score": item.get("score", "待核验"),
+            "tier": item.get("tier", "待核验"),
+            "operation": item.get("operation", "继续观察"),
+            "marketDate": item.get("marketDate", "待核验"),
+            "nextSignal": item.get("nextSignal", "待核验"),
+        }
+        for item in data.get("industryWatch", [])[:10]
+    ]
+    fund_map = {str(item.get("code")): item for item in data.get("fundHoldings", [])}
+    funds = [
+        {
+            "code": code,
+            "name": item.get("name", "待核验"),
+            "theme": item.get("theme", "待核验"),
+            "latestNav": item.get("latestNav", "待核验"),
+            "day": item.get("day", "待核验"),
+            "navDate": item.get("navDate", "待核验"),
+            "decision": item.get("decision", "观察等待"),
+        }
+        for code in FUND_ORDER
+        if (item := fund_map.get(code)) is not None
+    ]
+    return {
+        "businessDate": as_of.isoformat(),
+        "marketGate": contract.get("marketGate", "数据不足"),
+        "dataHealth": contract.get("dataHealth", "灰灯"),
+        "coverage": contract.get("moduleCoverage", {}).get("7", 0),
+        "executionStatus": "灰灯",
+        "executionBoundary": "仅作研究排序与跟踪；未接入验证完备的执行模型，不形成买卖指令。",
+        "industries": industries,
+        "funds": funds,
     }
 
 
@@ -2836,6 +2884,7 @@ def sync_notion_v2(data: dict[str, Any], config: NotionConfig) -> dict[str, int]
     as_of = today_hkt()
     contract = notion_v2_contract(data, as_of)
     data["v2"] = contract
+    data["opportunityRadar"] = build_opportunity_radar(data, as_of)
     batch_id = contract["batchId"]
     generated = datetime.fromisoformat(contract["generatedAt"])
     stats = {"created": 0, "updated": 0, "skipped": 0, "archived": 0, "visible_pages": 0}
@@ -3071,10 +3120,11 @@ def sync_notion_v2(data: dict[str, Any], config: NotionConfig) -> dict[str, int]
         "3": config.page_cross_market,
         "4": config.page_events,
         "5": config.page_holdings,
+        "7": config.page_opportunity_radar,
     }
     visible_stats = sync_visible_pages(client, visible_page_ids, data, STOCK_HOLDINGS, FUND_ORDER)
     stats["visible_pages"] = sum(visible_stats.values())
-    if stats["visible_pages"] != 6:
+    if stats["visible_pages"] != 7:
         raise RuntimeError(f"visible Notion page reconciliation failed: {visible_stats}")
     return stats
 
@@ -3107,6 +3157,7 @@ def main() -> int:
 
     data, checks = build_dashboard()
     data["v2"] = notion_v2_contract(data, today_hkt())
+    data["opportunityRadar"] = build_opportunity_radar(data, today_hkt())
     log("fund/stock sample checks:")
     for line in checks[:6] + checks[-2:]:
         log(f"  {line}")

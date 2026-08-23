@@ -210,6 +210,31 @@ def _holdings(data: dict[str, Any], stocks: list[dict[str, Any]], fund_order: li
     return blocks
 
 
+def _opportunity_radar(data: dict[str, Any]) -> list[dict[str, Any]]:
+    radar = data.get("opportunityRadar", {})
+    industry_rows = [
+        [index, item.get("name"), item.get("score"), item.get("tier"), item.get("operation"), item.get("marketDate"), item.get("nextSignal")]
+        for index, item in enumerate(radar.get("industries", [])[:10], 1)
+    ]
+    fund_rows = [
+        [item.get("code"), item.get("name"), item.get("theme"), item.get("latestNav"), f"{item.get('day', '待核验')}%", item.get("navDate"), item.get("decision")]
+        for item in radar.get("funds", [])
+    ]
+    return [
+        heading("06｜新机会雷达"),
+        callout(
+            f"业务日期 {radar.get('businessDate', '待核验')}｜市场闸门 {radar.get('marketGate', '数据不足')}｜"
+            f"数据健康 {radar.get('dataHealth', '灰灯')}｜执行灰灯。{radar.get('executionBoundary', '不形成买卖指令。')}",
+            "📡",
+            "yellow_background",
+        ),
+        heading("上游赛道前10（研究入口）", 3),
+        table(["排名", "行业/赛道", "综合分", "层级", "研究动作", "行情日期", "下一确认条件"], industry_rows),
+        heading("基金替代观察池（仅跟踪）", 3),
+        table(["代码", "名称", "主题", "最新净值", "日涨跌", "净值日期", "研究方向"], fund_rows),
+    ]
+
+
 def page_blocks(page_no: str, data: dict[str, Any], stocks: list[dict[str, Any]], fund_order: list[str]) -> list[dict[str, Any]]:
     contract = data.get("v2", {})
     business_date = _text(contract.get("businessDate"))
@@ -227,6 +252,8 @@ def page_blocks(page_no: str, data: dict[str, Any], stocks: list[dict[str, Any]]
         body += _summary(data) + _events(data)
     elif page_no == "5":
         body += _summary(data) + _holdings(data, stocks, fund_order)
+    elif page_no == "7":
+        body += _opportunity_radar(data)
     else:
         raise ValueError(f"unknown visible page number: {page_no}")
     body.append(_end_block())
@@ -348,7 +375,7 @@ def sync_visible_pages(client: Any, page_ids: dict[str, str], data: dict[str, An
     updated: dict[str, int] = {}
     # Detail pages first; dashboard last so it never advertises a batch whose
     # underlying visible pages were not published.
-    for page_no in ("1", "2", "3", "4", "5", "0"):
+    for page_no in ("1", "2", "3", "4", "5", "7", "0"):
         page_id = page_ids.get(page_no, "")
         if not page_id:
             raise RuntimeError(f"missing visible Notion page id for page {page_no}")
