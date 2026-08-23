@@ -9,6 +9,7 @@ from pathlib import Path
 SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 import cloud_daily_update as updater  # noqa: E402
+import generate_dashboard_data as generator  # noqa: E402
 
 
 class OpportunityRadarTests(unittest.TestCase):
@@ -38,6 +39,19 @@ class OpportunityRadarTests(unittest.TestCase):
             self.assertIn(relation["etfCode"], etf_codes)
             self.assertIsNone(relation["expressionStrategy"])
             self.assertEqual(relation["relationshipStatus"], "关系待验证")
+
+    def test_dashboard_export_preserves_codes_and_null_actions(self) -> None:
+        raw = {
+            "codedOpportunityRadar": updater.build_coded_opportunity_radar(
+                {"v2": {}}, date(2026, 8, 21)
+            )
+        }
+        radar = generator.dashboard_coded_opportunity_radar(raw)
+
+        self.assertEqual(radar["stocks"][0]["code"], "002230")
+        self.assertEqual(radar["etfs"][-1]["code"], "159819")
+        self.assertIsNone(radar["stocks"][0]["executionAction"])
+        self.assertEqual(radar["executionEngineStatus"], "未启用")
 
 
 if __name__ == "__main__":

@@ -48,11 +48,38 @@ def dashboard_opportunity_radar(data: dict) -> dict:
     }
 
 
+def dashboard_coded_opportunity_radar(data: dict) -> dict:
+    """Return only the display-safe coded Module 7 research contract."""
+    radar = data.get("codedOpportunityRadar", {})
+    fields = (
+        "code", "name", "assetType", "theme", "researchStatus", "executionEligible",
+        "executionAction", "actionRationale", "nextTrigger", "invalidCondition",
+        "dataDate", "dataStatus",
+    )
+    relationship_fields = (
+        "stockCodes", "etfCode", "relationship", "expressionStrategy", "relationshipStatus",
+    )
+    return {
+        "businessDate": radar.get("businessDate", data.get("v2", {}).get("businessDate", "待核验")),
+        "marketGate": radar.get("marketGate", data.get("v2", {}).get("marketGate", "数据不足")),
+        "dataHealth": radar.get("dataHealth", data.get("v2", {}).get("dataHealth", "灰灯")),
+        "executionEngineStatus": radar.get("executionEngineStatus", "未启用"),
+        "executionBoundary": radar.get("executionBoundary", "执行引擎未启用；不形成交易动作。"),
+        "stocks": [{key: item.get(key) for key in fields} for item in radar.get("stocks", [])],
+        "etfs": [{key: item.get(key) for key in fields} for item in radar.get("etfs", [])],
+        "relationships": [
+            {key: item.get(key) for key in relationship_fields}
+            for item in radar.get("relationships", [])
+        ],
+    }
+
+
 def main() -> None:
     data = json.loads(SOURCE.read_text(encoding="utf-8"))
     contract = data["v2"]
     daily = data["daily"]
     opportunity_radar = dashboard_opportunity_radar(data)
+    coded_opportunity_radar = dashboard_coded_opportunity_radar(data)
 
     excluded = {"国际油价（美元/桶）", "AI巨头营收增速"}
     selected_risks = [r for r in data["riskDashboard"] if r["name"] not in excluded]
@@ -203,6 +230,8 @@ def main() -> None:
         output += f"export const {name} = {dump(value)} as const;\n\n"
     output += "export const opportunityRadar: { businessDate: string; marketGate: string; dataHealth: string; coverage: number; executionStatus: string; executionBoundary: string; industries: Array<{ name: string; score: number | string; tier: string; operation: string; marketDate: string; nextSignal: string }>; funds: Array<{ code: string; name: string; theme: string; latestNav: number | string; day: number | string; navDate: string; decision: string }> } = "
     output += f"{dump(opportunity_radar)};\n\n"
+    output += "export const codedOpportunityRadar: { businessDate: string; marketGate: string; dataHealth: string; executionEngineStatus: string; executionBoundary: string; stocks: Array<{ code: string; name: string; assetType: string; theme: string; researchStatus: string; executionEligible: boolean; executionAction: string | null; actionRationale: string; nextTrigger: string; invalidCondition: string; dataDate: string | null; dataStatus: string }>; etfs: Array<{ code: string; name: string; assetType: string; theme: string; researchStatus: string; executionEligible: boolean; executionAction: string | null; actionRationale: string; nextTrigger: string; invalidCondition: string; dataDate: string | null; dataStatus: string }>; relationships: Array<{ stockCodes: string[]; etfCode: string; relationship: string; expressionStrategy: string | null; relationshipStatus: string }> } = "
+    output += f"{dump(coded_opportunity_radar)};\n\n"
     TARGET.write_text(output, encoding="utf-8")
     print(f"Generated {TARGET.relative_to(ROOT)} from {SOURCE.relative_to(ROOT)}")
 

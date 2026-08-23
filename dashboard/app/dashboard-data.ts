@@ -998,3 +998,14 @@ export const opportunityRadar: { businessDate: string; marketGate: string; dataH
   ]
 };
 
+export const codedOpportunityRadar: { businessDate: string; marketGate: string; dataHealth: string; executionEngineStatus: string; executionBoundary: string; stocks: Array<{ code: string; name: string; assetType: string; theme: string; researchStatus: string; executionEligible: boolean; executionAction: string | null; actionRationale: string; nextTrigger: string; invalidCondition: string; dataDate: string | null; dataStatus: string }>; etfs: Array<{ code: string; name: string; assetType: string; theme: string; researchStatus: string; executionEligible: boolean; executionAction: string | null; actionRationale: string; nextTrigger: string; invalidCondition: string; dataDate: string | null; dataStatus: string }>; relationships: Array<{ stockCodes: string[]; etfCode: string; relationship: string; expressionStrategy: string | null; relationshipStatus: string }> } = {
+  "businessDate": "2026-08-21",
+  "marketGate": "风险偏高",
+  "dataHealth": "绿灯",
+  "executionEngineStatus": "未启用",
+  "executionBoundary": "执行引擎未启用；不形成交易动作。",
+  "stocks": [],
+  "etfs": [],
+  "relationships": []
+};
+
