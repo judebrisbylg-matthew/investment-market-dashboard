@@ -3,7 +3,7 @@ name: Daily Investment Center Update
 on:
   schedule:
     # 06:15 Asia/Hong_Kong = 22:15 UTC on the previous calendar day.
-    - cron: "15 22 * * *"
+    - cron: "15 22 * * 1-5"
   workflow_dispatch:
 
 permissions:
