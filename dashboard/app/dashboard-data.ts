@@ -86,6 +86,13 @@ export const snapshot = {
       "state": "已刷新",
       "tone": "green",
       "desc": "2股 / 12基"
+    },
+    {
+      "code": "06",
+      "name": "新机会雷达",
+      "state": "灰灯",
+      "tone": "gray",
+      "desc": "仅研究 / 不执行"
     }
   ]
 } as const;
@@ -789,4 +796,15 @@ export const funds = [
     "date": "2026-08-06"
   }
 ] as const;
+
+export const opportunityRadar: { businessDate: string; marketGate: string; dataHealth: string; coverage: number; executionStatus: string; executionBoundary: string; industries: Array<{ name: string; score: number | string; tier: string; operation: string; marketDate: string; nextSignal: string }>; funds: Array<{ code: string; name: string; theme: string; latestNav: number | string; day: number | string; navDate: string; decision: string }> } = {
+  "businessDate": "待核验",
+  "marketGate": "数据不足",
+  "dataHealth": "灰灯",
+  "coverage": 0,
+  "executionStatus": "灰灯",
+  "executionBoundary": "不形成买卖指令。",
+  "industries": [],
+  "funds": []
+};
 
