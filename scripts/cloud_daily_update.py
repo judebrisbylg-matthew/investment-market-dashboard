@@ -83,6 +83,45 @@ FUND_ORDER = [
     "018896",
 ]
 
+# Module 7's candidate universe is intentionally static.  These identifiers
+# come from the approved 7C/7D catalog, while all time-sensitive fields remain
+# unavailable until a separately validated equity/ETF data and execution model
+# is connected.
+STOCK_CANDIDATES = [
+    ("002230", "科大讯飞", "AI应用/软件"),
+    ("601138", "工业富联", "AI服务器/制造"),
+    ("300308", "中际旭创", "光模块/CPO"),
+    ("300502", "新易盛", "光模块/CPO"),
+    ("600584", "长电科技", "先进封装"),
+    ("000977", "浪潮信息", "AI服务器/液冷"),
+    ("002463", "沪电股份", "PCB/高速铜连接"),
+    ("002475", "立讯精密", "消费电子/连接器"),
+    ("603986", "兆易创新", "存储/半导体"),
+    ("688041", "海光信息", "AI芯片/国产算力"),
+]
+
+ETF_CANDIDATES = [
+    ("512720", "计算机ETF", "计算机/软件"),
+    ("516010", "游戏ETF", "游戏传媒"),
+    ("512880", "证券ETF", "证券"),
+    ("515220", "煤炭ETF", "煤炭"),
+    ("515880", "通信ETF", "通信/设备"),
+    ("562500", "机器人ETF", "机器人/智能制造"),
+    ("588000", "科创50ETF", "AI/半导体"),
+    ("516960", "机械ETF", "机械设备"),
+    ("512760", "芯片ETF", "半导体"),
+    ("159819", "人工智能ETF", "AI/应用"),
+]
+
+CODED_RELATIONSHIPS = [
+    (["688041", "603986", "600584"], "512760", "半导体/封测表达"),
+    (["688041", "603986", "600584"], "588000", "科创硬科技宽表达"),
+    (["300308", "300502", "002463"], "515880", "通信、光模块、CPO 表达"),
+    (["000977", "601138"], "512720", "计算机、服务器表达"),
+    (["000977", "601138", "002230"], "159819", "AI 产业链宽表达"),
+    (["002230"], "512720", "软件与 AI 应用表达"),
+]
+
 STOCK_HOLDINGS = [
     {
         "code": "002837",
@@ -2889,12 +2928,54 @@ def build_opportunity_radar(data: dict[str, Any], as_of: date) -> dict[str, Any]
     }
 
 
+def build_coded_opportunity_radar(data: dict[str, Any], as_of: date) -> dict[str, Any]:
+    """Build Module 7's code-backed research universe without trading calls."""
+    contract = data.get("v2", {})
+
+    def candidate(code: str, name: str, theme: str, asset_type: str) -> dict[str, Any]:
+        return {
+            "code": code,
+            "name": name,
+            "assetType": asset_type,
+            "theme": theme,
+            "researchStatus": "数据不足",
+            "executionEligible": False,
+            "executionAction": None,
+            "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
+            "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
+            "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
+            "dataDate": None,
+            "dataStatus": "候选代码待日更核验",
+        }
+
+    return {
+        "businessDate": as_of.isoformat(),
+        "marketGate": contract.get("marketGate", "数据不足"),
+        "dataHealth": contract.get("dataHealth", "灰灯"),
+        "executionEngineStatus": "未启用",
+        "executionBoundary": "执行引擎未启用；候选池仅作研究跟踪，不形成交易动作。",
+        "stocks": [candidate(code, name, theme, "股票") for code, name, theme in STOCK_CANDIDATES],
+        "etfs": [candidate(code, name, theme, "ETF") for code, name, theme in ETF_CANDIDATES],
+        "relationships": [
+            {
+                "stockCodes": stock_codes,
+                "etfCode": etf_code,
+                "relationship": relationship,
+                "expressionStrategy": None,
+                "relationshipStatus": "关系待验证",
+            }
+            for stock_codes, etf_code, relationship in CODED_RELATIONSHIPS
+        ],
+    }
+
+
 def sync_notion_v2(data: dict[str, Any], config: NotionConfig, *, as_of: date | None = None) -> dict[str, int]:
     client = NotionClient(config.token)
     as_of = effective_business_date(as_of or today_hkt())
     contract = notion_v2_contract(data, as_of)
     data["v2"] = contract
     data["opportunityRadar"] = build_opportunity_radar(data, as_of)
+    data["codedOpportunityRadar"] = build_coded_opportunity_radar(data, as_of)
     batch_id = contract["batchId"]
     generated = datetime.fromisoformat(contract["generatedAt"])
     stats = {"created": 0, "updated": 0, "skipped": 0, "archived": 0, "visible_pages": 0}
@@ -3169,6 +3250,7 @@ def main() -> int:
     data, checks = build_dashboard()
     data["v2"] = notion_v2_contract(data, as_of)
     data["opportunityRadar"] = build_opportunity_radar(data, as_of)
+    data["codedOpportunityRadar"] = build_coded_opportunity_radar(data, as_of)
     log("fund/stock sample checks:")
     for line in checks[:6] + checks[-2:]:
         log(f"  {line}")
