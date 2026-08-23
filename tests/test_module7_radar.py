@@ -41,6 +41,12 @@ class OpportunityRadarTests(unittest.TestCase):
             },
         }
 
+    def test_effective_business_date_rolls_sunday_back_to_friday(self) -> None:
+        self.assertEqual(
+            updater.effective_business_date(date(2026, 8, 23)),
+            date(2026, 8, 21),
+        )
+
     def test_radar_uses_run_date_but_retains_market_dates(self) -> None:
         data = {
             "industryWatch": [

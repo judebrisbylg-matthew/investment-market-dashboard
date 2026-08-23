@@ -190,6 +190,14 @@ def today_hkt() -> date:
     return datetime.now(HKT).date()
 
 
+def effective_business_date(run_date: date) -> date:
+    """Return the report date, never labeling a weekend as a trading day."""
+    candidate = run_date
+    while candidate.weekday() >= 5:
+        candidate -= timedelta(days=1)
+    return candidate
+
+
 def fmt_cn(d: date) -> str:
     return f"{d.year}年{d.month}月{d.day}日"
 
@@ -463,7 +471,9 @@ def fetch_fred_series(series_id: str) -> list[tuple[date, float]]:
 def latest_completed_market_date(as_of: date) -> date:
     """Return the latest weekday whose regular session has completed in HKT."""
     now = datetime.now(HKT)
-    candidate = as_of if now.date() == as_of and now.hour >= 16 else as_of - timedelta(days=1)
+    candidate = min(as_of, now.date())
+    if candidate == now.date() and now.hour < 16:
+        candidate -= timedelta(days=1)
     while candidate.weekday() >= 5:
         candidate -= timedelta(days=1)
     return candidate
@@ -2879,9 +2889,9 @@ def build_opportunity_radar(data: dict[str, Any], as_of: date) -> dict[str, Any]
     }
 
 
-def sync_notion_v2(data: dict[str, Any], config: NotionConfig) -> dict[str, int]:
+def sync_notion_v2(data: dict[str, Any], config: NotionConfig, *, as_of: date | None = None) -> dict[str, int]:
     client = NotionClient(config.token)
-    as_of = today_hkt()
+    as_of = effective_business_date(as_of or today_hkt())
     contract = notion_v2_contract(data, as_of)
     data["v2"] = contract
     data["opportunityRadar"] = build_opportunity_radar(data, as_of)
@@ -3155,9 +3165,10 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true", help="validate without writing files or Notion")
     args = parser.parse_args()
 
+    as_of = effective_business_date(today_hkt())
     data, checks = build_dashboard()
-    data["v2"] = notion_v2_contract(data, today_hkt())
-    data["opportunityRadar"] = build_opportunity_radar(data, today_hkt())
+    data["v2"] = notion_v2_contract(data, as_of)
+    data["opportunityRadar"] = build_opportunity_radar(data, as_of)
     log("fund/stock sample checks:")
     for line in checks[:6] + checks[-2:]:
         log(f"  {line}")
@@ -3165,7 +3176,7 @@ def main() -> int:
     require_notion = os.getenv("REQUIRE_NOTION", "false").lower() == "true"
     config = notion_config(require_notion)
     if config and not args.dry_run:
-        stats = sync_notion_v2(data, config)
+        stats = sync_notion_v2(data, config, as_of=as_of)
         log(f"Notion upsert stats: {stats}")
     elif args.dry_run:
         log("dry run: Notion sync and file write skipped")
