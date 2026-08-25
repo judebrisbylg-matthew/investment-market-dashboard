@@ -158,6 +158,34 @@ class OpportunityRadarTests(unittest.TestCase):
         self.assertEqual(radar["industries"][0]["marketDate"], "2026-08-21")
         self.assertIn("接口异常", radar["industries"][0]["sourceStatus"])
 
+    def test_dashboard_radar_exports_completeness_and_decision_state_separately(self) -> None:
+        data = self.sample_data_with_radar()
+        data["opportunityRadar"].update({
+            "fieldCompleteness": 0.9643,
+            "dataQuality": {
+                "decisionStatus": "不可用",
+                "decisionReason": "行业观察数据待核验",
+            },
+        })
+
+        radar = generator.dashboard_opportunity_radar(data)
+
+        self.assertEqual(radar.get("fieldCompleteness"), 0.9643)
+        self.assertEqual(radar.get("decisionStatus"), "不可用")
+        self.assertEqual(radar.get("decisionReason"), "行业观察数据待核验")
+
+    def test_coded_dashboard_export_labels_unrefreshed_candidates_as_a_catalog(self) -> None:
+        data = {
+            "v2": {"businessDate": "2026-08-25"},
+            "codedOpportunityRadar": updater.build_coded_opportunity_radar({"v2": {}}, date(2026, 8, 25)),
+        }
+
+        radar = generator.dashboard_coded_opportunity_radar(data)
+
+        self.assertEqual(radar.get("catalogLabel"), "候选名册｜20/20 未接入日更数据")
+        self.assertNotIn("actionRationale", radar["stocks"][0])
+        self.assertNotIn("nextTrigger", radar["etfs"][0])
+
 
 if __name__ == "__main__":
     unittest.main()
