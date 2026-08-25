@@ -37,5 +37,32 @@ class SourceConfigTests(unittest.TestCase):
         self.assertTrue(all(row["url"].startswith("https://") for row in rows))
 
 
+class P0ValidationTests(unittest.TestCase):
+    def test_quote_pair_rejects_disagreed_close(self) -> None:
+        primary = {"source": "东方财富", "code": "002837", "date": "2026-08-24", "close": 42.00, "prevClose": 41.00, "day": 2.44}
+        secondary = {"source": "腾讯财经", "code": "002837", "date": "2026-08-24", "close": 43.00, "prevClose": 41.00, "day": 4.88}
+
+        issues = validation.validate_quote_pair(primary, secondary, date(2026, 8, 24))
+
+        self.assertEqual(issues[0].field, "close")
+
+    def test_qdii_allows_configured_lag_but_domestic_fund_does_not(self) -> None:
+        qdii_issues = validation.validate_fund_pair(
+            {"source": "基金管理人官网", "code": "100055", "date": "2026-08-18", "nav": 1.2345},
+            {"source": "东方财富", "code": "100055", "date": "2026-08-18", "nav": 1.2345},
+            date(2026, 8, 25),
+            5,
+        )
+        domestic_issues = validation.validate_fund_pair(
+            {"source": "基金管理人官网", "code": "012733", "date": "2026-08-18", "nav": 1.2345},
+            {"source": "东方财富", "code": "012733", "date": "2026-08-18", "nav": 1.2345},
+            date(2026, 8, 25),
+            0,
+        )
+
+        self.assertEqual(qdii_issues, [])
+        self.assertEqual(domestic_issues[0].field, "navDate")
+
+
 if __name__ == "__main__":
     unittest.main()

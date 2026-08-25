@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -14,6 +15,14 @@ from zoneinfo import ZoneInfo
 
 ROOT = Path(__file__).resolve().parents[1]
 HKT = ZoneInfo("Asia/Hong_Kong")
+
+
+@dataclass(frozen=True)
+class ValidationIssue:
+    module: str
+    field: str
+    detail: str
+    source: str = ""
 
 
 def load_source_config(path: Path) -> list[dict[str, Any]]:
@@ -52,6 +61,54 @@ def business_date_for(run_at: datetime, open_days: set[date]) -> date:
             return candidate
         candidate -= timedelta(days=1)
     raise ValueError("no completed A-share open day within 10 calendar days")
+
+
+def validate_quote_pair(primary: dict[str, Any], secondary: dict[str, Any], business_date: date) -> list[ValidationIssue]:
+    issues: list[ValidationIssue] = []
+    if primary.get("source") == secondary.get("source"):
+        issues.append(ValidationIssue("stocks", "source", "two records use the same source"))
+    expected = business_date.isoformat()
+    for record in (primary, secondary):
+        if record.get("date") != expected:
+            issues.append(ValidationIssue("stocks", "date", f"expected {expected}", str(record.get("source", ""))))
+    try:
+        limit = max(0.01, abs(float(primary["close"])) * 0.0015)
+        if abs(float(primary["close"]) - float(secondary["close"])) > limit:
+            issues.append(ValidationIssue("stocks", "close", "two sources disagree", str(secondary.get("source", ""))))
+        if abs(float(primary["day"]) - float(secondary["day"])) > 0.10:
+            issues.append(ValidationIssue("stocks", "day", "two sources disagree", str(secondary.get("source", ""))))
+    except (KeyError, TypeError, ValueError):
+        issues.append(ValidationIssue("stocks", "quote", "missing numeric quote field"))
+    return issues
+
+
+def _weekday_lag(older: date, newer: date) -> int:
+    lag = 0
+    cursor = older
+    while cursor < newer:
+        cursor += timedelta(days=1)
+        if cursor.weekday() < 5:
+            lag += 1
+    return lag
+
+
+def validate_fund_pair(primary: dict[str, Any], secondary: dict[str, Any], business_date: date, allowed_lag: int) -> list[ValidationIssue]:
+    issues: list[ValidationIssue] = []
+    if primary.get("source") == secondary.get("source"):
+        issues.append(ValidationIssue("funds", "source", "two records use the same source"))
+    try:
+        primary_date = date.fromisoformat(str(primary["date"]))
+        secondary_date = date.fromisoformat(str(secondary["date"]))
+    except (KeyError, TypeError, ValueError):
+        return [ValidationIssue("funds", "navDate", "missing NAV date")]
+    if primary_date != secondary_date or _weekday_lag(primary_date, business_date) > allowed_lag:
+        issues.append(ValidationIssue("funds", "navDate", "NAV date is not within configured lag"))
+    try:
+        if abs(float(primary["nav"]) - float(secondary["nav"])) > 0.0001:
+            issues.append(ValidationIssue("funds", "nav", "two sources disagree", str(secondary.get("source", ""))))
+    except (KeyError, TypeError, ValueError):
+        issues.append(ValidationIssue("funds", "nav", "missing NAV"))
+    return issues
 
 
 def check_config(*, live: bool) -> int:
