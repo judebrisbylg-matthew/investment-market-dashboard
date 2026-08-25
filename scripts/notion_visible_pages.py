@@ -97,21 +97,23 @@ def _summary(data: dict[str, Any]) -> list[dict[str, Any]]:
     contract = data.get("v2", {})
     daily = data.get("daily", {})
     counts = contract.get("riskLightCounts", {})
+    data_quality = contract.get("dataQuality", {})
+    field_completeness = round(float(contract.get("fieldCompleteness", contract.get("coverage", 0))) * 100)
     return [
         callout(
-            "量化纪律：数据健康优先；市场闸门决定风险上限；行业只展示前10；机构与事件只做验证；持仓只给研究方向。",
+            "量化纪律：决策数据可用性优先；市场闸门决定风险上限；行业只展示前10；机构与事件只做验证；持仓只给研究方向。",
             "📊",
         ),
         table(
-            ["生成日期", "数据健康", "系统市场闸门", "风控绿/黄/红/灰", "机会执行状态", "今日总动作"],
+            ["生成日期", "字段完整度", "决策数据", "系统市场闸门", "风控绿/黄/红/灰", "今日总动作"],
             [[
-                contract.get("businessDate"), contract.get("dataHealth"), contract.get("marketGate"),
+                contract.get("businessDate"), f"{field_completeness}%", data_quality.get("decisionStatus", "不可用"), contract.get("marketGate"),
                 f"{counts.get('绿灯', 0)}/{counts.get('黄灯', 0)}/{counts.get('红灯', 0)}/{counts.get('灰灯', 0)}",
-                daily.get("action"), daily.get("needAction"),
+                daily.get("action"),
             ]],
         ),
         paragraph(
-            f"市场判断：{_text(daily.get('marketJudgement'))}｜仓位方向：{_text(daily.get('positionAdvice'))}｜"
+            f"决策数据说明：{_text(data_quality.get('decisionReason'))}｜市场判断：{_text(daily.get('marketJudgement'))}｜仓位方向：{_text(daily.get('positionAdvice'))}｜"
             f"主要风险：{_text(daily.get('riskPoint'))}"
         ),
     ]
@@ -213,12 +215,26 @@ def _holdings(data: dict[str, Any], stocks: list[dict[str, Any]], fund_order: li
 def _opportunity_radar(data: dict[str, Any]) -> list[dict[str, Any]]:
     radar = data.get("opportunityRadar", {})
     coded = data.get("codedOpportunityRadar", {})
+    contract = data.get("v2", {})
+    data_quality = radar.get("dataQuality") or contract.get("dataQuality", {})
+    decision_status = data_quality.get("decisionStatus", "不可用")
+    decision_reason = data_quality.get("decisionReason", "数据状态待核验")
+    field_completeness = round(float(radar.get("fieldCompleteness", contract.get("fieldCompleteness", radar.get("coverage", 0)))) * 100)
+    research_only = decision_status != "可用"
     industry_rows = [
-        [index, item.get("name"), item.get("score"), item.get("tier"), item.get("operation"), item.get("marketDate"), item.get("nextSignal")]
+        [
+            index, item.get("name"), item.get("score"), item.get("tier"),
+            "仅研究快照，待核验" if research_only else item.get("operation"),
+            item.get("marketDate"), item.get("nextSignal"),
+        ]
         for index, item in enumerate(radar.get("industries", [])[:10], 1)
     ]
     fund_rows = [
-        [item.get("code"), item.get("name"), item.get("theme"), item.get("latestNav"), f"{item.get('day', '待核验')}%", item.get("navDate"), item.get("decision")]
+        [
+            item.get("code"), item.get("name"), item.get("theme"), item.get("latestNav"),
+            f"{item.get('day', '待核验')}%", item.get("navDate"),
+            "仅研究快照，待核验" if research_only else item.get("decision"),
+        ]
         for item in radar.get("funds", [])
     ]
     stock_rows = [
@@ -244,11 +260,15 @@ def _opportunity_radar(data: dict[str, Any]) -> list[dict[str, Any]]:
         ]
         for item in coded.get("etfs", [])
     ]
+    coded_candidates = coded.get("stocks", []) + coded.get("etfs", [])
+    pending_count = sum(item.get("dataStatus") == "候选代码待日更核验" for item in coded_candidates)
+    catalog_label = f"候选名册｜{pending_count}/{len(coded_candidates)} 未接入日更数据"
     blocks = [
         heading("06｜新机会雷达"),
         callout(
             f"业务日期 {radar.get('businessDate', '待核验')}｜市场闸门 {radar.get('marketGate', '数据不足')}｜"
-            f"数据健康 {radar.get('dataHealth', '灰灯')}｜执行灰灯。{radar.get('executionBoundary', '不形成买卖指令。')}",
+            f"字段完整度 {field_completeness}%｜决策数据 {decision_status}｜{decision_reason}｜"
+            f"执行灰灯。{radar.get('executionBoundary', '不形成买卖指令。')}",
             "📡",
             "yellow_background",
         ),
@@ -259,11 +279,12 @@ def _opportunity_radar(data: dict[str, Any]) -> list[dict[str, Any]]:
     ]
     if coded:
         blocks += [
-            heading("7C｜半年潜力股TOP10", 3),
+            callout(catalog_label, "📋", "gray_background"),
+            heading("7C｜候选股票代码名册", 3),
             table(["代码", "名称", "主题", "研究状态", "执行动作", "数据日期", "数据状态"], stock_rows),
             heading("7E｜股票基金替代关系", 3),
             table(["股票代码", "ETF代码", "替代表达", "关系状态"], relationship_rows),
-            heading("7D｜潜力基金ETF TOP10", 3),
+            heading("7D｜候选基金ETF代码名册", 3),
             table(["代码", "名称", "主题", "研究状态", "执行动作", "数据日期", "数据状态"], etf_rows),
             callout(coded.get("executionBoundary", "执行引擎未启用；不形成交易动作。"), "⚪", "gray_background"),
         ]

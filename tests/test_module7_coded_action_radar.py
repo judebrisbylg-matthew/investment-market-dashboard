@@ -69,9 +69,10 @@ class OpportunityRadarTests(unittest.TestCase):
     def test_opportunity_page_has_three_coded_columns_and_engine_boundary(self) -> None:
         page = (Path(__file__).resolve().parents[1] / "dashboard/app/page.tsx").read_text(encoding="utf-8")
         self.assertIn("codedOpportunityRadar", page)
-        self.assertIn("7C｜半年潜力股TOP10", page)
+        self.assertIn("7C｜候选股票代码名册", page)
         self.assertIn("7E｜股票基金替代关系", page)
-        self.assertIn("7D｜潜力基金ETF TOP10", page)
+        self.assertIn("7D｜候选基金 ETF 代码名册", page)
+        self.assertIn("catalogLabel", page)
         self.assertIn("执行引擎未启用", page)
 
     def test_module7_notion_blocks_show_code_pools_without_fake_actions(self) -> None:
@@ -82,13 +83,55 @@ class OpportunityRadarTests(unittest.TestCase):
         data["codedOpportunityRadar"] = updater.build_coded_opportunity_radar(data, date(2026, 8, 21))
         text = " ".join(self.block_text(block) for block in visible.page_blocks("7", data, [], []))
 
-        self.assertIn("7C｜半年潜力股TOP10", text)
+        self.assertIn("候选名册｜20/20 未接入日更数据", text)
+        self.assertIn("7C｜候选股票代码名册", text)
         self.assertIn("002230", text)
         self.assertIn("7E｜股票基金替代关系", text)
         self.assertIn("512760", text)
-        self.assertIn("7D｜潜力基金ETF TOP10", text)
+        self.assertIn("7D｜候选基金ETF代码名册", text)
         self.assertIn("执行引擎未启用", text)
         self.assertNotIn("重仓", text)
+
+    def test_notion_radar_mirrors_unavailable_decision_data_without_legacy_actions(self) -> None:
+        data = {
+            "v2": {
+                "businessDate": "2026-08-25",
+                "batchId": "test",
+                "fieldCompleteness": 0.9643,
+                "dataQuality": {
+                    "decisionStatus": "不可用",
+                    "decisionReason": "行业观察数据待核验",
+                },
+            },
+            "opportunityRadar": {
+                "businessDate": "2026-08-25",
+                "marketGate": "数据不足",
+                "fieldCompleteness": 0.9643,
+                "dataQuality": {
+                    "decisionStatus": "不可用",
+                    "decisionReason": "行业观察数据待核验",
+                },
+                "industries": [{
+                    "name": "AI芯片/半导体",
+                    "score": 84,
+                    "tier": "核心主线",
+                    "operation": "仅研究快照，待核验",
+                    "marketDate": "2026-08-21",
+                    "nextSignal": "成交确认",
+                }],
+            },
+        }
+        data["codedOpportunityRadar"] = updater.build_coded_opportunity_radar(data, date(2026, 8, 25))
+
+        text = " ".join(self.block_text(block) for block in visible.page_blocks("7", data, [], []))
+
+        self.assertIn("字段完整度 96%", text)
+        self.assertIn("决策数据 不可用", text)
+        self.assertIn("行业观察数据待核验", text)
+        self.assertIn("候选名册｜20/20 未接入日更数据", text)
+        self.assertIn("002230", text)
+        self.assertNotIn("建议加仓", text)
+        self.assertNotIn("暂不追高", text)
 
 
 if __name__ == "__main__":
