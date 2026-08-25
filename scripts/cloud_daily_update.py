@@ -1721,16 +1721,14 @@ def update_industry(data: dict[str, Any], as_of: date) -> None:
         ]
         latest_source = max(source_dates) if source_dates else "待核验"
         completed_date = latest_completed_market_date(as_of)
-        if re.fullmatch(r"20\d{2}-\d{2}-\d{2}", latest_source) and parse_date(latest_source) > completed_date:
-            latest_source = completed_date.isoformat()
+        latest_source = normalize_industry_fallback_date(latest_source, completed_date)
         for item in previous:
-            market_date = safe_text(item.get("marketDate"), latest_source)
-            if re.fullmatch(r"20\d{2}-\d{2}-\d{2}", market_date) and parse_date(market_date) > completed_date:
-                market_date = completed_date.isoformat()
+            original_market_date = safe_text(item.get("marketDate"), latest_source)
+            market_date = normalize_industry_fallback_date(original_market_date, completed_date)
             item["marketDate"] = market_date
             item["refreshStatus"] = (
                 f"{fmt_cn(as_of)}休市或板块接口异常，沿用最近可得交易日排名；"
-                f"原行情日期{market_date}。"
+                f"原行情日期{original_market_date}。"
             )
             item["reason"] = (
                 f"今日全市场扫描待核验；{safe_text(item.get('reason'), '保留最近有效评分。')}"
@@ -2156,6 +2154,38 @@ def cn_blocking_modules(modules: list[str]) -> str:
     return "、".join(names.get(item, item) for item in modules) or "无"
 
 
+def normalize_industry_fallback_date(value: str, completed_date: date) -> str:
+    """Keep only completed weekday dates when an industry snapshot is carried forward."""
+    value = safe_text(value, "待核验")
+    if not re.fullmatch(r"20\d{2}-\d{2}-\d{2}", value):
+        return "待核验"
+    source_date = parse_date(value)
+    if source_date > completed_date or source_date.weekday() >= 5:
+        return "待核验"
+    return value
+
+
+def decision_data_quality(source_status: dict[str, Any], field_completeness: float = 0.0) -> dict[str, Any]:
+    blocking = sorted(set(source_status.get("blockingModules", [])))
+    degraded = sorted(set(source_status.get("degradedModules", [])) - set(blocking))
+    if blocking:
+        status = "不可用"
+        reason = f"{cn_blocking_modules(blocking)}数据待核验"
+    elif degraded:
+        status = "受限"
+        reason = f"{cn_blocking_modules(degraded)}存在回退或滞后数据"
+    else:
+        status = "可用"
+        reason = "核心数据已完成本批次核验"
+    return {
+        "fieldCompleteness": field_completeness,
+        "blockingModules": blocking,
+        "degradedModules": degraded,
+        "decisionStatus": status,
+        "decisionReason": reason,
+    }
+
+
 def top_fund_moves(funds: list[dict[str, Any]]) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
     if not funds:
         return None, None
@@ -2207,6 +2237,21 @@ def update_daily(data: dict[str, Any], as_of: date) -> None:
     signal = "红灯" if red else ("黄灯" if yellow else "绿灯")
     action = "防守" if red else ("等待" if yellow else "进攻")
     source_status = data.get("sourceStatus", {})
+    data_quality = decision_data_quality(source_status)
+    if data_quality["decisionStatus"] != "可用":
+        reason = data_quality["decisionReason"]
+        data["daily"] = {
+            "asOf": f"{fmt_slash(as_of)} 06:15 HKT",
+            "signal": "灰灯",
+            "action": "数据核验",
+            "marketJudgement": f"今日结论：决策数据{data_quality['decisionStatus']}，{reason}。",
+            "positionAdvice": "数据未完成核验，暂不输出仓位结论。",
+            "needAction": "今日任务：核验阻断模块的最新有效日期与来源状态。",
+            "actionReason": f"限制原因：{reason}。",
+            "riskPoint": "主要风险：将回退或待核验数据误作当日有效信息。",
+            "nextReview": "下次复盘：待阻断模块恢复有效数据后再生成研究结论。",
+        }
+        return
     quality = source_status.get("overall", "数据状态待核验")
     stale_modules = cn_blocking_modules(source_status.get("blockingModules", []))
     risks = important_risk_items(risk_items)
@@ -2837,7 +2882,8 @@ def notion_v2_contract(data: dict[str, Any], as_of: date) -> dict[str, Any]:
     risks = data.get("riskDashboard", [])
     risk_lights = [normalize_light(item.get("signal")) for item in risks]
     light_counts = {light: risk_lights.count(light) for light in ("绿灯", "黄灯", "红灯", "灰灯")}
-    blocking = set(data.get("sourceStatus", {}).get("blockingModules", []))
+    source_status = data.get("sourceStatus", {})
+    blocking = set(source_status.get("blockingModules", []))
     if {"risk", "industry"} & blocking:
         market_gate = "数据不足"
     elif light_counts["红灯"] >= 3:
@@ -2847,7 +2893,6 @@ def notion_v2_contract(data: dict[str, Any], as_of: date) -> dict[str, Any]:
     else:
         market_gate = "风险允许"
 
-    source_status = data.get("sourceStatus", {})
     risk_status = source_status.get("risk", {})
     risk_known = int(risk_status.get("fresh", 0)) + int(risk_status.get("stale", 0))
     risk_coverage = pct_coverage(risk_known, len(risks))
@@ -2859,7 +2904,8 @@ def notion_v2_contract(data: dict[str, Any], as_of: date) -> dict[str, Any]:
     holding_coverage = pct_coverage(sum(bool(i.get("navDate") or extract_nav_date(str(i.get("reason", "")))) for i in funds), len(FUND_ORDER))
     overall_coverage = round((risk_coverage + industry_coverage + event_coverage + holding_coverage) / 4, 4)
     opportunity_coverage = overall_coverage
-    health = "灰灯" if market_gate == "数据不足" else ("黄灯" if overall_coverage < 0.9 else "绿灯")
+    data_quality = decision_data_quality(source_status, overall_coverage)
+    health = "灰灯" if data_quality["decisionStatus"] == "不可用" else ("黄灯" if data_quality["decisionStatus"] == "受限" or overall_coverage < 0.9 else "绿灯")
 
     return {
         "contractVersion": "dashboard-v2.0",
@@ -2870,6 +2916,8 @@ def notion_v2_contract(data: dict[str, Any], as_of: date) -> dict[str, Any]:
         "marketGate": market_gate,
         "dataHealth": health,
         "coverage": overall_coverage,
+        "fieldCompleteness": overall_coverage,
+        "dataQuality": data_quality,
         "riskLightCounts": light_counts,
         "blockingModules": sorted(blocking),
         "moduleCoverage": {
@@ -2891,14 +2939,20 @@ def build_opportunity_radar(data: dict[str, Any], as_of: date) -> dict[str, Any]
     preserves a grey execution status until a validated execution model exists.
     """
     contract = data.get("v2", {})
+    data_quality = contract.get("dataQuality") or decision_data_quality(
+        data.get("sourceStatus", {}),
+        float(contract.get("moduleCoverage", {}).get("7", 0)),
+    )
+    research_only = data_quality.get("decisionStatus") != "可用"
     industries = [
         {
             "name": item.get("name", "待核验"),
             "score": item.get("score", "待核验"),
             "tier": item.get("tier", "待核验"),
-            "operation": item.get("operation", "继续观察"),
+            "operation": "仅研究快照，待核验" if research_only else item.get("operation", "继续观察"),
             "marketDate": item.get("marketDate", "待核验"),
             "nextSignal": item.get("nextSignal", "待核验"),
+            "sourceStatus": safe_text(item.get("refreshStatus"), item.get("reason"), default="待核验"),
         }
         for item in data.get("industryWatch", [])[:10]
     ]
@@ -2921,6 +2975,8 @@ def build_opportunity_radar(data: dict[str, Any], as_of: date) -> dict[str, Any]
         "marketGate": contract.get("marketGate", "数据不足"),
         "dataHealth": contract.get("dataHealth", "灰灯"),
         "coverage": contract.get("moduleCoverage", {}).get("7", 0),
+        "fieldCompleteness": contract.get("fieldCompleteness", contract.get("moduleCoverage", {}).get("7", 0)),
+        "dataQuality": data_quality,
         "executionStatus": "灰灯",
         "executionBoundary": "仅作研究排序与跟踪；未接入验证完备的执行模型，不形成买卖指令。",
         "industries": industries,
