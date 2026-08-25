@@ -31,6 +31,7 @@ from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
 
 from notion_visible_pages import sync_visible_pages
+from source_validation import business_date_for, load_trading_calendar
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -230,9 +231,10 @@ def today_hkt() -> date:
 
 
 def effective_business_date(run_date: date) -> date:
-    """Return the report date, never labeling a weekend as a trading day."""
+    """Return the most recent configured A-share open day for a report date."""
+    calendar = load_trading_calendar(ROOT / "data" / f"a-share-trading-calendar-{run_date.year}.json")
     candidate = run_date
-    while candidate.weekday() >= 5:
+    while candidate not in calendar:
         candidate -= timedelta(days=1)
     return candidate
 
