@@ -7,6 +7,9 @@ export const snapshot = {
   "dataHealth": "绿灯",
   "coverage": 96,
   "riskScore": 71,
+  "fieldCompleteness": 96,
+  "decisionStatus": "不可用",
+  "decisionReason": "数据状态待核验",
   "lightCounts": {
     "green": 7,
     "yellow": 5,
@@ -64,7 +67,7 @@ export const snapshot = {
       "name": "行业赛道",
       "state": "已刷新",
       "tone": "green",
-      "desc": "20池 / 前10"
+      "desc": "全市场扫描完成"
     },
     {
       "code": "03",
@@ -797,11 +800,14 @@ export const funds = [
   }
 ] as const;
 
-export const opportunityRadar: { businessDate: string; marketGate: string; dataHealth: string; coverage: number; executionStatus: string; executionBoundary: string; industries: Array<{ name: string; score: number | string; tier: string; operation: string; marketDate: string; nextSignal: string }>; funds: Array<{ code: string; name: string; theme: string; latestNav: number | string; day: number | string; navDate: string; decision: string }> } = {
+export const opportunityRadar: { businessDate: string; marketGate: string; dataHealth: string; coverage: number; fieldCompleteness: number; decisionStatus: string; decisionReason: string; executionStatus: string; executionBoundary: string; industries: Array<{ name: string; score: number | string; tier: string; operation: string; marketDate: string; nextSignal: string; sourceStatus?: string }>; funds: Array<{ code: string; name: string; theme: string; latestNav: number | string; day: number | string; navDate: string; decision: string }> } = {
   "businessDate": "2026-08-27",
   "marketGate": "风险偏高",
   "dataHealth": "绿灯",
   "coverage": 0.9643,
+  "fieldCompleteness": 0.9643,
+  "decisionStatus": "不可用",
+  "decisionReason": "数据状态待核验",
   "executionStatus": "灰灯",
   "executionBoundary": "仅作研究排序与跟踪；未接入验证完备的执行模型，不形成买卖指令。",
   "industries": [
@@ -998,12 +1004,13 @@ export const opportunityRadar: { businessDate: string; marketGate: string; dataH
   ]
 };
 
-export const codedOpportunityRadar: { businessDate: string; marketGate: string; dataHealth: string; executionEngineStatus: string; executionBoundary: string; stocks: Array<{ code: string; name: string; assetType: string; theme: string; researchStatus: string; executionEligible: boolean; executionAction: string | null; actionRationale: string; nextTrigger: string; invalidCondition: string; dataDate: string | null; dataStatus: string }>; etfs: Array<{ code: string; name: string; assetType: string; theme: string; researchStatus: string; executionEligible: boolean; executionAction: string | null; actionRationale: string; nextTrigger: string; invalidCondition: string; dataDate: string | null; dataStatus: string }>; relationships: Array<{ stockCodes: string[]; etfCode: string; relationship: string; expressionStrategy: string | null; relationshipStatus: string }> } = {
+export const codedOpportunityRadar: { businessDate: string; marketGate: string; dataHealth: string; executionEngineStatus: string; executionBoundary: string; catalogLabel: string; stocks: Array<{ code: string; name: string; assetType: string; theme: string; researchStatus: string; researchScore: number | null; executionEligible: boolean; executionAction: string | null; dataDate: string | null; dataStatus: string }>; etfs: Array<{ code: string; name: string; assetType: string; theme: string; researchStatus: string; researchScore: number | null; executionEligible: boolean; executionAction: string | null; dataDate: string | null; dataStatus: string }>; relationships: Array<{ stockCodes: string[]; etfCode: string; relationship: string; expressionStrategy: string | null; relationshipStatus: string }> } = {
   "businessDate": "2026-08-27",
   "marketGate": "风险偏高",
   "dataHealth": "绿灯",
   "executionEngineStatus": "未启用",
   "executionBoundary": "执行引擎未启用；候选池仅作研究跟踪，不形成交易动作。",
+  "catalogLabel": "研究排名｜0/20 已验证",
   "stocks": [
     {
       "code": "002230",
@@ -1013,11 +1020,9 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "数据不足",
       "executionEligible": false,
       "executionAction": null,
-      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
-      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
-      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
       "dataDate": null,
-      "dataStatus": "候选代码待日更核验"
+      "dataStatus": "候选代码待日更核验",
+      "researchScore": null
     },
     {
       "code": "601138",
@@ -1027,11 +1032,9 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "数据不足",
       "executionEligible": false,
       "executionAction": null,
-      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
-      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
-      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
       "dataDate": null,
-      "dataStatus": "候选代码待日更核验"
+      "dataStatus": "候选代码待日更核验",
+      "researchScore": null
     },
     {
       "code": "300308",
@@ -1041,11 +1044,9 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "数据不足",
       "executionEligible": false,
       "executionAction": null,
-      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
-      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
-      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
       "dataDate": null,
-      "dataStatus": "候选代码待日更核验"
+      "dataStatus": "候选代码待日更核验",
+      "researchScore": null
     },
     {
       "code": "300502",
@@ -1055,11 +1056,9 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "数据不足",
       "executionEligible": false,
       "executionAction": null,
-      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
-      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
-      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
       "dataDate": null,
-      "dataStatus": "候选代码待日更核验"
+      "dataStatus": "候选代码待日更核验",
+      "researchScore": null
     },
     {
       "code": "600584",
@@ -1069,11 +1068,9 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "数据不足",
       "executionEligible": false,
       "executionAction": null,
-      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
-      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
-      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
       "dataDate": null,
-      "dataStatus": "候选代码待日更核验"
+      "dataStatus": "候选代码待日更核验",
+      "researchScore": null
     },
     {
       "code": "000977",
@@ -1083,11 +1080,9 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "数据不足",
       "executionEligible": false,
       "executionAction": null,
-      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
-      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
-      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
       "dataDate": null,
-      "dataStatus": "候选代码待日更核验"
+      "dataStatus": "候选代码待日更核验",
+      "researchScore": null
     },
     {
       "code": "002463",
@@ -1097,11 +1092,9 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "数据不足",
       "executionEligible": false,
       "executionAction": null,
-      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
-      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
-      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
       "dataDate": null,
-      "dataStatus": "候选代码待日更核验"
+      "dataStatus": "候选代码待日更核验",
+      "researchScore": null
     },
     {
       "code": "002475",
@@ -1111,11 +1104,9 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "数据不足",
       "executionEligible": false,
       "executionAction": null,
-      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
-      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
-      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
       "dataDate": null,
-      "dataStatus": "候选代码待日更核验"
+      "dataStatus": "候选代码待日更核验",
+      "researchScore": null
     },
     {
       "code": "603986",
@@ -1125,11 +1116,9 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "数据不足",
       "executionEligible": false,
       "executionAction": null,
-      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
-      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
-      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
       "dataDate": null,
-      "dataStatus": "候选代码待日更核验"
+      "dataStatus": "候选代码待日更核验",
+      "researchScore": null
     },
     {
       "code": "688041",
@@ -1139,11 +1128,9 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "数据不足",
       "executionEligible": false,
       "executionAction": null,
-      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
-      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
-      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
       "dataDate": null,
-      "dataStatus": "候选代码待日更核验"
+      "dataStatus": "候选代码待日更核验",
+      "researchScore": null
     }
   ],
   "etfs": [
@@ -1155,11 +1142,9 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "数据不足",
       "executionEligible": false,
       "executionAction": null,
-      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
-      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
-      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
       "dataDate": null,
-      "dataStatus": "候选代码待日更核验"
+      "dataStatus": "候选代码待日更核验",
+      "researchScore": null
     },
     {
       "code": "516010",
@@ -1169,11 +1154,9 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "数据不足",
       "executionEligible": false,
       "executionAction": null,
-      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
-      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
-      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
       "dataDate": null,
-      "dataStatus": "候选代码待日更核验"
+      "dataStatus": "候选代码待日更核验",
+      "researchScore": null
     },
     {
       "code": "512880",
@@ -1183,11 +1166,9 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "数据不足",
       "executionEligible": false,
       "executionAction": null,
-      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
-      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
-      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
       "dataDate": null,
-      "dataStatus": "候选代码待日更核验"
+      "dataStatus": "候选代码待日更核验",
+      "researchScore": null
     },
     {
       "code": "515220",
@@ -1197,11 +1178,9 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "数据不足",
       "executionEligible": false,
       "executionAction": null,
-      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
-      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
-      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
       "dataDate": null,
-      "dataStatus": "候选代码待日更核验"
+      "dataStatus": "候选代码待日更核验",
+      "researchScore": null
     },
     {
       "code": "515880",
@@ -1211,11 +1190,9 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "数据不足",
       "executionEligible": false,
       "executionAction": null,
-      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
-      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
-      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
       "dataDate": null,
-      "dataStatus": "候选代码待日更核验"
+      "dataStatus": "候选代码待日更核验",
+      "researchScore": null
     },
     {
       "code": "562500",
@@ -1225,11 +1202,9 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "数据不足",
       "executionEligible": false,
       "executionAction": null,
-      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
-      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
-      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
       "dataDate": null,
-      "dataStatus": "候选代码待日更核验"
+      "dataStatus": "候选代码待日更核验",
+      "researchScore": null
     },
     {
       "code": "588000",
@@ -1239,11 +1214,9 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "数据不足",
       "executionEligible": false,
       "executionAction": null,
-      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
-      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
-      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
       "dataDate": null,
-      "dataStatus": "候选代码待日更核验"
+      "dataStatus": "候选代码待日更核验",
+      "researchScore": null
     },
     {
       "code": "516960",
@@ -1253,11 +1226,9 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "数据不足",
       "executionEligible": false,
       "executionAction": null,
-      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
-      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
-      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
       "dataDate": null,
-      "dataStatus": "候选代码待日更核验"
+      "dataStatus": "候选代码待日更核验",
+      "researchScore": null
     },
     {
       "code": "512760",
@@ -1267,11 +1238,9 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "数据不足",
       "executionEligible": false,
       "executionAction": null,
-      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
-      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
-      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
       "dataDate": null,
-      "dataStatus": "候选代码待日更核验"
+      "dataStatus": "候选代码待日更核验",
+      "researchScore": null
     },
     {
       "code": "159819",
@@ -1281,11 +1250,9 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "数据不足",
       "executionEligible": false,
       "executionAction": null,
-      "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
-      "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
-      "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
       "dataDate": null,
-      "dataStatus": "候选代码待日更核验"
+      "dataStatus": "候选代码待日更核验",
+      "researchScore": null
     }
   ],
   "relationships": [

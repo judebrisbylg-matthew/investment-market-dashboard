@@ -61,7 +61,7 @@ export default function ConceptB() {
           <a href="#nx-holdings"><i>05</i><span>持仓</span></a>
           <a href="#nx-opportunity"><i>06</i><span>机会</span></a>
         </nav>
-        <div className="nx-rail-health"><div className="nx-mini-ring"><strong>{snapshot.coverage}%</strong></div><span>数据健康</span><small>{snapshot.dataHealth} · {snapshot.businessDate}</small></div>
+        <div className="nx-rail-health"><div className="nx-mini-ring"><strong>{snapshot.fieldCompleteness}%</strong></div><span>字段完整度</span><small>决策数据{snapshot.decisionStatus} · {snapshot.businessDate}</small></div>
       </aside>
 
       <section className="nx-workspace" id="nx-top">
@@ -72,10 +72,10 @@ export default function ConceptB() {
 
         <section className="nx-summary-grid">
           <article className="nx-glass nx-summary-gate">
-            <header><LabelTip label="系统市场闸门 / RISK GATE" text="由12项风控指标、数据健康度与硬性门槛共同决定总风险上限。它管‘能承担多少风险’，不直接代表市场看空或看多。" align="left" /><Lamp tone={healthTone} text={snapshot.dataHealth} /></header>
+            <header><LabelTip label="系统市场闸门 / RISK GATE" text="由12项风控指标、数据可用性与硬性门槛共同决定总风险上限。它管‘能承担多少风险’，不直接代表市场看空或看多。" align="left" /><Lamp tone={healthTone} text={`决策数据${snapshot.decisionStatus}`} /></header>
             <div className="nx-summary-gate-body">
               <div className="nx-summary-ring" style={{ "--risk": snapshot.riskScore } as CSSProperties}><div><strong>{snapshot.riskScore}</strong><span>/ 100</span><small>{snapshot.marketGate}</small></div></div>
-              <div><h2>{snapshot.daily.action}</h2><p>{snapshot.daily.positionAdvice}</p></div>
+              <div><h2>{snapshot.daily.action}</h2><p>{snapshot.daily.positionAdvice}</p><small className="nx-decision-reason">决策数据{snapshot.decisionStatus}：{snapshot.decisionReason}</small></div>
             </div>
             <footer><span><i className="nx-dot nx-green" />{snapshot.lightCounts.green} 绿</span><span><i className="nx-dot nx-yellow" />{snapshot.lightCounts.yellow} 黄</span><span><i className="nx-dot nx-red" />{snapshot.lightCounts.red} 红</span><span><i className="nx-dot nx-gray" />{snapshot.lightCounts.gray} 灰</span></footer>
           </article>
@@ -146,11 +146,11 @@ export default function ConceptB() {
 
         <section className="nx-section" id="nx-opportunity">
           <header className="nx-section-head"><div><span>06 / OPPORTUNITY RADAR</span><h2>新机会雷达</h2></div><p><LabelTip label="代码候选池与行动边界" text="候选代码和替代表达用于研究追踪。没有独立验证的执行模型时，卡片只显示系统未启用，绝不把研究状态伪装成买卖动作。" align="right" /></p></header>
-          <div className="nx-opportunity-strip nx-glass"><span>业务日期 {codedOpportunityRadar.businessDate}</span><span>市场闸门 {codedOpportunityRadar.marketGate}</span><span>数据健康 {codedOpportunityRadar.dataHealth}</span><Lamp tone="gray" text="执行引擎未启用" /></div>
+          <div className="nx-opportunity-strip nx-glass"><span>业务日期 {codedOpportunityRadar.businessDate}</span><span>{codedOpportunityRadar.catalogLabel}</span><span>决策数据 {snapshot.decisionStatus}</span><Lamp tone="gray" text="执行引擎未启用" /></div>
           <div className="nx-coded-radar-grid">
-            <article className="nx-glass nx-coded-column"><header><span>7C｜半年潜力股TOP10</span><strong>{codedOpportunityRadar.stocks.length}</strong></header><div className="nx-coded-cards">{codedOpportunityRadar.stocks.map(candidate => <article className="nx-coded-card" key={candidate.code}><small>{candidate.code} · {candidate.assetType}</small><b>{candidate.name}</b><span>{candidate.theme}</span><div><Lamp tone="gray" text={candidate.researchStatus} /><Lamp tone="gray" text={candidate.executionAction ?? "执行引擎未启用"} /></div><p><b>依据</b>{candidate.actionRationale}</p><p><b>下一触发</b>{candidate.nextTrigger}</p><p><b>失效条件</b>{candidate.invalidCondition}</p><footer>数据日期 {candidate.dataDate ?? "待日更核验"} · {candidate.dataStatus}</footer></article>)}</div></article>
+            <article className="nx-glass nx-coded-column"><header><span>7C｜股票研究排名</span><strong>{codedOpportunityRadar.stocks.length}</strong></header><div className="nx-coded-cards">{codedOpportunityRadar.stocks.map(candidate => <article className="nx-coded-card" key={candidate.code}><small>{candidate.code} · {candidate.assetType}</small><b>{candidate.name}</b><span>{candidate.theme}</span><div><Lamp tone={candidate.researchStatus === "已验证" ? "green" : "gray"} text={candidate.researchStatus} /><Lamp tone="gray" text={candidate.executionAction ?? "执行引擎未启用"} /></div><footer>研究分 {candidate.researchScore ?? "—"} · 数据日期 {candidate.dataDate ?? "待日更核验"} · {candidate.dataStatus}</footer></article>)}</div></article>
             <article className="nx-glass nx-coded-column nx-coded-relationships"><header><span>7E｜股票基金替代关系</span><strong>{codedOpportunityRadar.relationships.length}</strong></header><div>{codedOpportunityRadar.relationships.map((relation, index) => <article className="nx-relation-card" key={`${relation.etfCode}-${index}`}><small>股票候选</small><b>{relation.stockCodes.join(" · ")}</b><i>→</i><small>ETF 候选 {relation.etfCode}</small><p>{relation.relationship}</p><Lamp tone="gray" text={relation.expressionStrategy ?? relation.relationshipStatus} /></article>)}</div><footer>{codedOpportunityRadar.executionBoundary}</footer></article>
-            <article className="nx-glass nx-coded-column"><header><span>7D｜潜力基金ETF TOP10</span><strong>{codedOpportunityRadar.etfs.length}</strong></header><div className="nx-coded-cards">{codedOpportunityRadar.etfs.map(candidate => <article className="nx-coded-card" key={candidate.code}><small>{candidate.code} · {candidate.assetType}</small><b>{candidate.name}</b><span>{candidate.theme}</span><div><Lamp tone="gray" text={candidate.researchStatus} /><Lamp tone="gray" text={candidate.executionAction ?? "执行引擎未启用"} /></div><p><b>依据</b>{candidate.actionRationale}</p><p><b>下一触发</b>{candidate.nextTrigger}</p><p><b>失效条件</b>{candidate.invalidCondition}</p><footer>数据日期 {candidate.dataDate ?? "待日更核验"} · {candidate.dataStatus}</footer></article>)}</div></article>
+            <article className="nx-glass nx-coded-column"><header><span>7D｜ETF 研究排名</span><strong>{codedOpportunityRadar.etfs.length}</strong></header><div className="nx-coded-cards">{codedOpportunityRadar.etfs.map(candidate => <article className="nx-coded-card" key={candidate.code}><small>{candidate.code} · {candidate.assetType}</small><b>{candidate.name}</b><span>{candidate.theme}</span><div><Lamp tone={candidate.researchStatus === "已验证" ? "green" : "gray"} text={candidate.researchStatus} /><Lamp tone="gray" text={candidate.executionAction ?? "执行引擎未启用"} /></div><footer>研究分 {candidate.researchScore ?? "—"} · 数据日期 {candidate.dataDate ?? "待日更核验"} · {candidate.dataStatus}</footer></article>)}</div></article>
           </div>
         </section>
 

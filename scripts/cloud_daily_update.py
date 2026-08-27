@@ -31,6 +31,7 @@ from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
 
 from notion_visible_pages import sync_visible_pages
+from source_validation import business_date_for, load_trading_calendar
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -230,9 +231,10 @@ def today_hkt() -> date:
 
 
 def effective_business_date(run_date: date) -> date:
-    """Return the report date, never labeling a weekend as a trading day."""
+    """Return the most recent configured A-share open day for a report date."""
+    calendar = load_trading_calendar(ROOT / "data" / f"a-share-trading-calendar-{run_date.year}.json")
     candidate = run_date
-    while candidate.weekday() >= 5:
+    while candidate not in calendar:
         candidate -= timedelta(days=1)
     return candidate
 
@@ -300,6 +302,12 @@ def request_json(url: str, *, timeout: int = 15, headers: dict[str, str] | None 
     req = Request(url, headers=headers or {"User-Agent": "investment-center-bot/1.0"})
     with urlopen(req, timeout=timeout) as response:
         return json.loads(response.read().decode("utf-8"))
+
+
+def request_json_gbk(url: str, *, timeout: int = 15) -> Any:
+    req = Request(url, headers={"User-Agent": "Mozilla/5.0 investment-center-bot/1.0"})
+    with urlopen(req, timeout=timeout) as response:
+        return json.loads(response.read().decode("gb18030"))
 
 
 def request_text(url: str, *, timeout: int = 15) -> str:
@@ -954,6 +962,86 @@ def stock_return(rows: list[dict[str, Any]], sessions: int) -> float:
     base_index = max(0, len(rows) - 1 - sessions)
     base = float(rows[base_index]["close"])
     return (latest / base - 1) * 100 if base else 0.0
+
+
+def parse_tencent_quote(text: str, code: str) -> dict[str, Any]:
+    match = re.search(r'="([^"]*)"', text)
+    fields = match.group(1).split("~") if match else []
+    if len(fields) < 31:
+        raise ValueError(f"Tencent quote missing fields for {code}")
+    previous = float(fields[4])
+    close = float(fields[3])
+    timestamp = fields[30]
+    if previous <= 0 or close <= 0 or not re.fullmatch(r"\d{14}", timestamp):
+        raise ValueError(f"Tencent quote invalid close or timestamp for {code}")
+    return {
+        "source": "腾讯财经",
+        "date": f"{timestamp[:4]}-{timestamp[4:6]}-{timestamp[6:8]}",
+        "close": close,
+        "day": (close / previous - 1) * 100,
+    }
+
+
+def fetch_tencent_quote(code: str) -> dict[str, Any]:
+    """Fetch one public quote used only as an independent daily-price check."""
+    symbol = ("sh" if str(code).startswith(("5", "6", "9")) else "sz") + str(code)
+    return parse_tencent_quote(request_text(f"https://qt.gtimg.cn/q={symbol}"), code)
+
+
+def fetch_tencent_history(code: str, limit: int = 35) -> list[dict[str, Any]]:
+    symbol = ("sh" if str(code).startswith(("5", "6", "9")) else "sz") + str(code)
+    payload = request_json(
+        f"https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param={symbol},day,,,{limit},qfq"
+    )
+    rows = ((payload.get("data") or {}).get(symbol) or {}).get("qfqday") or []
+    result = [{"date": row[0], "close": float(row[2])} for row in rows if len(row) >= 3]
+    if len(result) < 21:
+        raise ValueError(f"Tencent history insufficient for {code}: {len(result)} rows")
+    return result
+
+
+def fetch_sohu_history(code: str, start: date, end: date) -> list[dict[str, Any]]:
+    market_code = "cn_" + str(code)
+    url = (
+        f"https://q.stock.sohu.com/hisHq?code={market_code}&start={start:%Y%m%d}"
+        f"&end={end:%Y%m%d}&stat=1&order=D&period=d"
+    )
+    payload = request_json_gbk(url)
+    rows = (payload[0] if isinstance(payload, list) and payload else {}).get("hq") or []
+    result = [{"date": row[0], "close": float(row[2])} for row in rows if len(row) >= 3]
+    if not result:
+        raise ValueError(f"Sohu history unavailable for {code}")
+    return result
+
+
+def update_coded_market_snapshot(data: dict[str, Any], as_of: date) -> dict[str, dict[str, Any]]:
+    """Refresh the code pool, retaining an explicit failure state per candidate."""
+    expected = latest_completed_market_date(as_of).isoformat()
+    snapshots: dict[str, dict[str, Any]] = {}
+    for code, _name, _theme in STOCK_CANDIDATES + ETF_CANDIDATES:
+        try:
+            history = fetch_tencent_history(code)
+            latest = history[-1]
+            secondary_rows = fetch_sohu_history(code, as_of - timedelta(days=45), as_of)
+            secondary = secondary_rows[0]
+            close = float(latest["close"])
+            source_count = 2 if (
+                latest["date"] == expected
+                and secondary["date"] == expected
+                and abs(close - float(secondary["close"])) <= max(0.01, close * 0.0015)
+            ) else 1
+            snapshots[code] = {
+                "dataDate": latest["date"],
+                "day": round(stock_return(history, 1), 2),
+                "week": round(stock_return(history, 5), 2),
+                "month": round(stock_return(history, 20), 2),
+                "sourceCount": source_count,
+                "sourceStatus": "双源已验证" if source_count == 2 else "双源日期或收盘价不一致",
+            }
+        except (HTTPError, URLError, TimeoutError, RemoteDisconnected, ValueError) as exc:
+            snapshots[code] = {"sourceCount": 0, "sourceStatus": f"源失败：{exc}"}
+    data["codedMarketSnapshot"] = snapshots
+    return snapshots
 
 
 def update_stocks(data: dict[str, Any], as_of: date) -> tuple[list[dict[str, Any]], list[str]]:
@@ -1721,16 +1809,14 @@ def update_industry(data: dict[str, Any], as_of: date) -> None:
         ]
         latest_source = max(source_dates) if source_dates else "待核验"
         completed_date = latest_completed_market_date(as_of)
-        if re.fullmatch(r"20\d{2}-\d{2}-\d{2}", latest_source) and parse_date(latest_source) > completed_date:
-            latest_source = completed_date.isoformat()
+        latest_source = normalize_industry_fallback_date(latest_source, completed_date)
         for item in previous:
-            market_date = safe_text(item.get("marketDate"), latest_source)
-            if re.fullmatch(r"20\d{2}-\d{2}-\d{2}", market_date) and parse_date(market_date) > completed_date:
-                market_date = completed_date.isoformat()
+            original_market_date = safe_text(item.get("marketDate"), latest_source)
+            market_date = normalize_industry_fallback_date(original_market_date, completed_date)
             item["marketDate"] = market_date
             item["refreshStatus"] = (
                 f"{fmt_cn(as_of)}休市或板块接口异常，沿用最近可得交易日排名；"
-                f"原行情日期{market_date}。"
+                f"原行情日期{original_market_date}。"
             )
             item["reason"] = (
                 f"今日全市场扫描待核验；{safe_text(item.get('reason'), '保留最近有效评分。')}"
@@ -2156,6 +2242,38 @@ def cn_blocking_modules(modules: list[str]) -> str:
     return "、".join(names.get(item, item) for item in modules) or "无"
 
 
+def normalize_industry_fallback_date(value: str, completed_date: date) -> str:
+    """Keep only completed weekday dates when an industry snapshot is carried forward."""
+    value = safe_text(value, "待核验")
+    if not re.fullmatch(r"20\d{2}-\d{2}-\d{2}", value):
+        return "待核验"
+    source_date = parse_date(value)
+    if source_date > completed_date or source_date.weekday() >= 5:
+        return "待核验"
+    return value
+
+
+def decision_data_quality(source_status: dict[str, Any], field_completeness: float = 0.0) -> dict[str, Any]:
+    blocking = sorted(set(source_status.get("blockingModules", [])))
+    degraded = sorted(set(source_status.get("degradedModules", [])) - set(blocking))
+    if blocking:
+        status = "不可用"
+        reason = f"{cn_blocking_modules(blocking)}数据待核验"
+    elif degraded:
+        status = "受限"
+        reason = f"{cn_blocking_modules(degraded)}存在回退或滞后数据"
+    else:
+        status = "可用"
+        reason = "核心数据已完成本批次核验"
+    return {
+        "fieldCompleteness": field_completeness,
+        "blockingModules": blocking,
+        "degradedModules": degraded,
+        "decisionStatus": status,
+        "decisionReason": reason,
+    }
+
+
 def top_fund_moves(funds: list[dict[str, Any]]) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
     if not funds:
         return None, None
@@ -2207,6 +2325,21 @@ def update_daily(data: dict[str, Any], as_of: date) -> None:
     signal = "红灯" if red else ("黄灯" if yellow else "绿灯")
     action = "防守" if red else ("等待" if yellow else "进攻")
     source_status = data.get("sourceStatus", {})
+    data_quality = decision_data_quality(source_status)
+    if data_quality["decisionStatus"] != "可用":
+        reason = data_quality["decisionReason"]
+        data["daily"] = {
+            "asOf": f"{fmt_slash(as_of)} 06:15 HKT",
+            "signal": "灰灯",
+            "action": "数据核验",
+            "marketJudgement": f"今日结论：决策数据{data_quality['decisionStatus']}，{reason}。",
+            "positionAdvice": "数据未完成核验，暂不输出仓位结论。",
+            "needAction": "今日任务：核验阻断模块的最新有效日期与来源状态。",
+            "actionReason": f"限制原因：{reason}。",
+            "riskPoint": "主要风险：将回退或待核验数据误作当日有效信息。",
+            "nextReview": "下次复盘：待阻断模块恢复有效数据后再生成研究结论。",
+        }
+        return
     quality = source_status.get("overall", "数据状态待核验")
     stale_modules = cn_blocking_modules(source_status.get("blockingModules", []))
     risks = important_risk_items(risk_items)
@@ -2837,7 +2970,8 @@ def notion_v2_contract(data: dict[str, Any], as_of: date) -> dict[str, Any]:
     risks = data.get("riskDashboard", [])
     risk_lights = [normalize_light(item.get("signal")) for item in risks]
     light_counts = {light: risk_lights.count(light) for light in ("绿灯", "黄灯", "红灯", "灰灯")}
-    blocking = set(data.get("sourceStatus", {}).get("blockingModules", []))
+    source_status = data.get("sourceStatus", {})
+    blocking = set(source_status.get("blockingModules", []))
     if {"risk", "industry"} & blocking:
         market_gate = "数据不足"
     elif light_counts["红灯"] >= 3:
@@ -2847,7 +2981,6 @@ def notion_v2_contract(data: dict[str, Any], as_of: date) -> dict[str, Any]:
     else:
         market_gate = "风险允许"
 
-    source_status = data.get("sourceStatus", {})
     risk_status = source_status.get("risk", {})
     risk_known = int(risk_status.get("fresh", 0)) + int(risk_status.get("stale", 0))
     risk_coverage = pct_coverage(risk_known, len(risks))
@@ -2859,7 +2992,8 @@ def notion_v2_contract(data: dict[str, Any], as_of: date) -> dict[str, Any]:
     holding_coverage = pct_coverage(sum(bool(i.get("navDate") or extract_nav_date(str(i.get("reason", "")))) for i in funds), len(FUND_ORDER))
     overall_coverage = round((risk_coverage + industry_coverage + event_coverage + holding_coverage) / 4, 4)
     opportunity_coverage = overall_coverage
-    health = "灰灯" if market_gate == "数据不足" else ("黄灯" if overall_coverage < 0.9 else "绿灯")
+    data_quality = decision_data_quality(source_status, overall_coverage)
+    health = "灰灯" if data_quality["decisionStatus"] == "不可用" else ("黄灯" if data_quality["decisionStatus"] == "受限" or overall_coverage < 0.9 else "绿灯")
 
     return {
         "contractVersion": "dashboard-v2.0",
@@ -2870,6 +3004,8 @@ def notion_v2_contract(data: dict[str, Any], as_of: date) -> dict[str, Any]:
         "marketGate": market_gate,
         "dataHealth": health,
         "coverage": overall_coverage,
+        "fieldCompleteness": overall_coverage,
+        "dataQuality": data_quality,
         "riskLightCounts": light_counts,
         "blockingModules": sorted(blocking),
         "moduleCoverage": {
@@ -2891,14 +3027,20 @@ def build_opportunity_radar(data: dict[str, Any], as_of: date) -> dict[str, Any]
     preserves a grey execution status until a validated execution model exists.
     """
     contract = data.get("v2", {})
+    data_quality = contract.get("dataQuality") or decision_data_quality(
+        data.get("sourceStatus", {}),
+        float(contract.get("moduleCoverage", {}).get("7", 0)),
+    )
+    research_only = data_quality.get("decisionStatus") != "可用"
     industries = [
         {
             "name": item.get("name", "待核验"),
             "score": item.get("score", "待核验"),
             "tier": item.get("tier", "待核验"),
-            "operation": item.get("operation", "继续观察"),
+            "operation": "仅研究快照，待核验" if research_only else item.get("operation", "继续观察"),
             "marketDate": item.get("marketDate", "待核验"),
             "nextSignal": item.get("nextSignal", "待核验"),
+            "sourceStatus": safe_text(item.get("refreshStatus"), item.get("reason"), default="待核验"),
         }
         for item in data.get("industryWatch", [])[:10]
     ]
@@ -2921,6 +3063,8 @@ def build_opportunity_radar(data: dict[str, Any], as_of: date) -> dict[str, Any]
         "marketGate": contract.get("marketGate", "数据不足"),
         "dataHealth": contract.get("dataHealth", "灰灯"),
         "coverage": contract.get("moduleCoverage", {}).get("7", 0),
+        "fieldCompleteness": contract.get("fieldCompleteness", contract.get("moduleCoverage", {}).get("7", 0)),
+        "dataQuality": data_quality,
         "executionStatus": "灰灯",
         "executionBoundary": "仅作研究排序与跟踪；未接入验证完备的执行模型，不形成买卖指令。",
         "industries": industries,
@@ -2931,22 +3075,48 @@ def build_opportunity_radar(data: dict[str, Any], as_of: date) -> dict[str, Any]
 def build_coded_opportunity_radar(data: dict[str, Any], as_of: date) -> dict[str, Any]:
     """Build Module 7's code-backed research universe without trading calls."""
     contract = data.get("v2", {})
+    snapshots = data.get("codedMarketSnapshot", {})
 
     def candidate(code: str, name: str, theme: str, asset_type: str) -> dict[str, Any]:
+        snapshot = snapshots.get(code, {})
+        is_verified = (
+            snapshot.get("dataDate") == as_of.isoformat()
+            and int(snapshot.get("sourceCount", 0)) >= 2
+        )
+        score = round(
+            float(snapshot.get("day", 0)) * 0.2
+            + float(snapshot.get("week", 0)) * 0.35
+            + float(snapshot.get("month", 0)) * 0.45,
+            2,
+        ) if is_verified else None
+        data_status = (
+            "双源已验证"
+            if is_verified
+            else "日期不匹配"
+            if snapshot.get("dataDate")
+            else "待获取双源行情"
+        )
         return {
             "code": code,
             "name": name,
             "assetType": asset_type,
             "theme": theme,
-            "researchStatus": "数据不足",
+            "researchStatus": "已验证" if is_verified else "待重试",
+            "researchScore": score,
             "executionEligible": False,
             "executionAction": None,
             "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
             "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
             "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
-            "dataDate": None,
-            "dataStatus": "候选代码待日更核验",
+            "dataDate": snapshot.get("dataDate"),
+            "dataStatus": data_status,
         }
+
+    stocks = [candidate(code, name, theme, "股票") for code, name, theme in STOCK_CANDIDATES]
+    etfs = [candidate(code, name, theme, "ETF") for code, name, theme in ETF_CANDIDATES]
+    for rows in (stocks, etfs):
+        rows.sort(key=lambda item: (item["researchScore"] is not None, item["researchScore"] or 0), reverse=True)
+    verified_count = sum(item["researchStatus"] == "已验证" for item in stocks + etfs)
 
     return {
         "businessDate": as_of.isoformat(),
@@ -2954,8 +3124,9 @@ def build_coded_opportunity_radar(data: dict[str, Any], as_of: date) -> dict[str
         "dataHealth": contract.get("dataHealth", "灰灯"),
         "executionEngineStatus": "未启用",
         "executionBoundary": "执行引擎未启用；候选池仅作研究跟踪，不形成交易动作。",
-        "stocks": [candidate(code, name, theme, "股票") for code, name, theme in STOCK_CANDIDATES],
-        "etfs": [candidate(code, name, theme, "ETF") for code, name, theme in ETF_CANDIDATES],
+        "catalogLabel": f"研究排名｜{verified_count}/20 已验证",
+        "stocks": stocks,
+        "etfs": etfs,
         "relationships": [
             {
                 "stockCodes": stock_codes,
@@ -3246,10 +3417,13 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true", help="validate without writing files or Notion")
     args = parser.parse_args()
 
-    as_of = effective_business_date(today_hkt())
+    run_at = datetime.now(HKT)
+    open_days = load_trading_calendar(ROOT / "data" / f"a-share-trading-calendar-{run_at.year}.json")
+    as_of = business_date_for(run_at, open_days)
     data, checks = build_dashboard()
     data["v2"] = notion_v2_contract(data, as_of)
     data["opportunityRadar"] = build_opportunity_radar(data, as_of)
+    update_coded_market_snapshot(data, as_of)
     data["codedOpportunityRadar"] = build_coded_opportunity_radar(data, as_of)
     log("fund/stock sample checks:")
     for line in checks[:6] + checks[-2:]:
