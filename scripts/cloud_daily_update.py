@@ -304,6 +304,12 @@ def request_json(url: str, *, timeout: int = 15, headers: dict[str, str] | None 
         return json.loads(response.read().decode("utf-8"))
 
 
+def request_json_gbk(url: str, *, timeout: int = 15) -> Any:
+    req = Request(url, headers={"User-Agent": "Mozilla/5.0 investment-center-bot/1.0"})
+    with urlopen(req, timeout=timeout) as response:
+        return json.loads(response.read().decode("gb18030"))
+
+
 def request_text(url: str, *, timeout: int = 15) -> str:
     req = Request(
         url,
@@ -956,6 +962,86 @@ def stock_return(rows: list[dict[str, Any]], sessions: int) -> float:
     base_index = max(0, len(rows) - 1 - sessions)
     base = float(rows[base_index]["close"])
     return (latest / base - 1) * 100 if base else 0.0
+
+
+def parse_tencent_quote(text: str, code: str) -> dict[str, Any]:
+    match = re.search(r'="([^"]*)"', text)
+    fields = match.group(1).split("~") if match else []
+    if len(fields) < 31:
+        raise ValueError(f"Tencent quote missing fields for {code}")
+    previous = float(fields[4])
+    close = float(fields[3])
+    timestamp = fields[30]
+    if previous <= 0 or close <= 0 or not re.fullmatch(r"\d{14}", timestamp):
+        raise ValueError(f"Tencent quote invalid close or timestamp for {code}")
+    return {
+        "source": "腾讯财经",
+        "date": f"{timestamp[:4]}-{timestamp[4:6]}-{timestamp[6:8]}",
+        "close": close,
+        "day": (close / previous - 1) * 100,
+    }
+
+
+def fetch_tencent_quote(code: str) -> dict[str, Any]:
+    """Fetch one public quote used only as an independent daily-price check."""
+    symbol = ("sh" if str(code).startswith(("5", "6", "9")) else "sz") + str(code)
+    return parse_tencent_quote(request_text(f"https://qt.gtimg.cn/q={symbol}"), code)
+
+
+def fetch_tencent_history(code: str, limit: int = 35) -> list[dict[str, Any]]:
+    symbol = ("sh" if str(code).startswith(("5", "6", "9")) else "sz") + str(code)
+    payload = request_json(
+        f"https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param={symbol},day,,,{limit},qfq"
+    )
+    rows = ((payload.get("data") or {}).get(symbol) or {}).get("qfqday") or []
+    result = [{"date": row[0], "close": float(row[2])} for row in rows if len(row) >= 3]
+    if len(result) < 21:
+        raise ValueError(f"Tencent history insufficient for {code}: {len(result)} rows")
+    return result
+
+
+def fetch_sohu_history(code: str, start: date, end: date) -> list[dict[str, Any]]:
+    market_code = "cn_" + str(code)
+    url = (
+        f"https://q.stock.sohu.com/hisHq?code={market_code}&start={start:%Y%m%d}"
+        f"&end={end:%Y%m%d}&stat=1&order=D&period=d"
+    )
+    payload = request_json_gbk(url)
+    rows = (payload[0] if isinstance(payload, list) and payload else {}).get("hq") or []
+    result = [{"date": row[0], "close": float(row[2])} for row in rows if len(row) >= 3]
+    if not result:
+        raise ValueError(f"Sohu history unavailable for {code}")
+    return result
+
+
+def update_coded_market_snapshot(data: dict[str, Any], as_of: date) -> dict[str, dict[str, Any]]:
+    """Refresh the code pool, retaining an explicit failure state per candidate."""
+    expected = latest_completed_market_date(as_of).isoformat()
+    snapshots: dict[str, dict[str, Any]] = {}
+    for code, _name, _theme in STOCK_CANDIDATES + ETF_CANDIDATES:
+        try:
+            history = fetch_tencent_history(code)
+            latest = history[-1]
+            secondary_rows = fetch_sohu_history(code, as_of - timedelta(days=45), as_of)
+            secondary = secondary_rows[0]
+            close = float(latest["close"])
+            source_count = 2 if (
+                latest["date"] == expected
+                and secondary["date"] == expected
+                and abs(close - float(secondary["close"])) <= max(0.01, close * 0.0015)
+            ) else 1
+            snapshots[code] = {
+                "dataDate": latest["date"],
+                "day": round(stock_return(history, 1), 2),
+                "week": round(stock_return(history, 5), 2),
+                "month": round(stock_return(history, 20), 2),
+                "sourceCount": source_count,
+                "sourceStatus": "双源已验证" if source_count == 2 else "双源日期或收盘价不一致",
+            }
+        except (HTTPError, URLError, TimeoutError, RemoteDisconnected, ValueError) as exc:
+            snapshots[code] = {"sourceCount": 0, "sourceStatus": f"源失败：{exc}"}
+    data["codedMarketSnapshot"] = snapshots
+    return snapshots
 
 
 def update_stocks(data: dict[str, Any], as_of: date) -> tuple[list[dict[str, Any]], list[str]]:
@@ -2989,22 +3075,48 @@ def build_opportunity_radar(data: dict[str, Any], as_of: date) -> dict[str, Any]
 def build_coded_opportunity_radar(data: dict[str, Any], as_of: date) -> dict[str, Any]:
     """Build Module 7's code-backed research universe without trading calls."""
     contract = data.get("v2", {})
+    snapshots = data.get("codedMarketSnapshot", {})
 
     def candidate(code: str, name: str, theme: str, asset_type: str) -> dict[str, Any]:
+        snapshot = snapshots.get(code, {})
+        is_verified = (
+            snapshot.get("dataDate") == as_of.isoformat()
+            and int(snapshot.get("sourceCount", 0)) >= 2
+        )
+        score = round(
+            float(snapshot.get("day", 0)) * 0.2
+            + float(snapshot.get("week", 0)) * 0.35
+            + float(snapshot.get("month", 0)) * 0.45,
+            2,
+        ) if is_verified else None
+        data_status = (
+            "双源已验证"
+            if is_verified
+            else "日期不匹配"
+            if snapshot.get("dataDate")
+            else "待获取双源行情"
+        )
         return {
             "code": code,
             "name": name,
             "assetType": asset_type,
             "theme": theme,
-            "researchStatus": "数据不足",
+            "researchStatus": "已验证" if is_verified else "待重试",
+            "researchScore": score,
             "executionEligible": False,
             "executionAction": None,
             "actionRationale": "尚未接入经验证的执行模型与当日有效行情。",
             "nextTrigger": "补齐候选代码的当日行情、研究覆盖与执行模型核验。",
             "invalidCondition": "数据缺失、数据日期失效或执行模型未通过核验。",
-            "dataDate": None,
-            "dataStatus": "候选代码待日更核验",
+            "dataDate": snapshot.get("dataDate"),
+            "dataStatus": data_status,
         }
+
+    stocks = [candidate(code, name, theme, "股票") for code, name, theme in STOCK_CANDIDATES]
+    etfs = [candidate(code, name, theme, "ETF") for code, name, theme in ETF_CANDIDATES]
+    for rows in (stocks, etfs):
+        rows.sort(key=lambda item: (item["researchScore"] is not None, item["researchScore"] or 0), reverse=True)
+    verified_count = sum(item["researchStatus"] == "已验证" for item in stocks + etfs)
 
     return {
         "businessDate": as_of.isoformat(),
@@ -3012,8 +3124,9 @@ def build_coded_opportunity_radar(data: dict[str, Any], as_of: date) -> dict[str
         "dataHealth": contract.get("dataHealth", "灰灯"),
         "executionEngineStatus": "未启用",
         "executionBoundary": "执行引擎未启用；候选池仅作研究跟踪，不形成交易动作。",
-        "stocks": [candidate(code, name, theme, "股票") for code, name, theme in STOCK_CANDIDATES],
-        "etfs": [candidate(code, name, theme, "ETF") for code, name, theme in ETF_CANDIDATES],
+        "catalogLabel": f"研究排名｜{verified_count}/20 已验证",
+        "stocks": stocks,
+        "etfs": etfs,
         "relationships": [
             {
                 "stockCodes": stock_codes,
@@ -3304,10 +3417,13 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true", help="validate without writing files or Notion")
     args = parser.parse_args()
 
-    as_of = effective_business_date(today_hkt())
+    run_at = datetime.now(HKT)
+    open_days = load_trading_calendar(ROOT / "data" / f"a-share-trading-calendar-{run_at.year}.json")
+    as_of = business_date_for(run_at, open_days)
     data, checks = build_dashboard()
     data["v2"] = notion_v2_contract(data, as_of)
     data["opportunityRadar"] = build_opportunity_radar(data, as_of)
+    update_coded_market_snapshot(data, as_of)
     data["codedOpportunityRadar"] = build_coded_opportunity_radar(data, as_of)
     log("fund/stock sample checks:")
     for line in checks[:6] + checks[-2:]:

@@ -57,20 +57,19 @@ def dashboard_coded_opportunity_radar(data: dict) -> dict:
     radar = data.get("codedOpportunityRadar", {})
     fields = (
         "code", "name", "assetType", "theme", "researchStatus", "executionEligible",
-        "executionAction", "dataDate", "dataStatus",
+        "executionAction", "dataDate", "dataStatus", "researchScore",
     )
     relationship_fields = (
         "stockCodes", "etfCode", "relationship", "expressionStrategy", "relationshipStatus",
     )
     candidates = radar.get("stocks", []) + radar.get("etfs", [])
-    pending_count = sum(item.get("dataStatus") == "候选代码待日更核验" for item in candidates)
     return {
         "businessDate": radar.get("businessDate", data.get("v2", {}).get("businessDate", "待核验")),
         "marketGate": radar.get("marketGate", data.get("v2", {}).get("marketGate", "数据不足")),
         "dataHealth": radar.get("dataHealth", data.get("v2", {}).get("dataHealth", "灰灯")),
         "executionEngineStatus": radar.get("executionEngineStatus", "未启用"),
         "executionBoundary": radar.get("executionBoundary", "执行引擎未启用；不形成交易动作。"),
-        "catalogLabel": f"候选名册｜{pending_count}/{len(candidates)} 未接入日更数据",
+        "catalogLabel": radar.get("catalogLabel", f"研究排名｜0/{len(candidates)} 已验证"),
         "stocks": [{key: item.get(key) for key in fields} for item in radar.get("stocks", [])],
         "etfs": [{key: item.get(key) for key in fields} for item in radar.get("etfs", [])],
         "relationships": [
@@ -241,7 +240,7 @@ def main() -> None:
         output += f"export const {name} = {dump(value)} as const;\n\n"
     output += "export const opportunityRadar: { businessDate: string; marketGate: string; dataHealth: string; coverage: number; fieldCompleteness: number; decisionStatus: string; decisionReason: string; executionStatus: string; executionBoundary: string; industries: Array<{ name: string; score: number | string; tier: string; operation: string; marketDate: string; nextSignal: string; sourceStatus?: string }>; funds: Array<{ code: string; name: string; theme: string; latestNav: number | string; day: number | string; navDate: string; decision: string }> } = "
     output += f"{dump(opportunity_radar)};\n\n"
-    output += "export const codedOpportunityRadar: { businessDate: string; marketGate: string; dataHealth: string; executionEngineStatus: string; executionBoundary: string; catalogLabel: string; stocks: Array<{ code: string; name: string; assetType: string; theme: string; researchStatus: string; executionEligible: boolean; executionAction: string | null; dataDate: string | null; dataStatus: string }>; etfs: Array<{ code: string; name: string; assetType: string; theme: string; researchStatus: string; executionEligible: boolean; executionAction: string | null; dataDate: string | null; dataStatus: string }>; relationships: Array<{ stockCodes: string[]; etfCode: string; relationship: string; expressionStrategy: string | null; relationshipStatus: string }> } = "
+    output += "export const codedOpportunityRadar: { businessDate: string; marketGate: string; dataHealth: string; executionEngineStatus: string; executionBoundary: string; catalogLabel: string; stocks: Array<{ code: string; name: string; assetType: string; theme: string; researchStatus: string; researchScore: number | null; executionEligible: boolean; executionAction: string | null; dataDate: string | null; dataStatus: string }>; etfs: Array<{ code: string; name: string; assetType: string; theme: string; researchStatus: string; researchScore: number | null; executionEligible: boolean; executionAction: string | null; dataDate: string | null; dataStatus: string }>; relationships: Array<{ stockCodes: string[]; etfCode: string; relationship: string; expressionStrategy: string | null; relationshipStatus: string }> } = "
     output += f"{dump(coded_opportunity_radar)};\n\n"
     TARGET.write_text(output, encoding="utf-8")
     print(f"Generated {TARGET.relative_to(ROOT)} from {SOURCE.relative_to(ROOT)}")

@@ -240,6 +240,7 @@ def _opportunity_radar(data: dict[str, Any]) -> list[dict[str, Any]]:
     stock_rows = [
         [
             item.get("code"), item.get("name"), item.get("theme"), item.get("researchStatus"),
+            item.get("researchScore") if item.get("researchScore") is not None else "—",
             item.get("executionAction") or "执行引擎未启用", item.get("dataDate") or "待日更核验",
             item.get("dataStatus"),
         ]
@@ -255,14 +256,13 @@ def _opportunity_radar(data: dict[str, Any]) -> list[dict[str, Any]]:
     etf_rows = [
         [
             item.get("code"), item.get("name"), item.get("theme"), item.get("researchStatus"),
+            item.get("researchScore") if item.get("researchScore") is not None else "—",
             item.get("executionAction") or "执行引擎未启用", item.get("dataDate") or "待日更核验",
             item.get("dataStatus"),
         ]
         for item in coded.get("etfs", [])
     ]
-    coded_candidates = coded.get("stocks", []) + coded.get("etfs", [])
-    pending_count = sum(item.get("dataStatus") == "候选代码待日更核验" for item in coded_candidates)
-    catalog_label = f"候选名册｜{pending_count}/{len(coded_candidates)} 未接入日更数据"
+    catalog_label = coded.get("catalogLabel", "研究排名｜0/20 已验证")
     blocks = [
         heading("06｜新机会雷达"),
         callout(
@@ -280,12 +280,12 @@ def _opportunity_radar(data: dict[str, Any]) -> list[dict[str, Any]]:
     if coded:
         blocks += [
             callout(catalog_label, "📋", "gray_background"),
-            heading("7C｜候选股票代码名册", 3),
-            table(["代码", "名称", "主题", "研究状态", "执行动作", "数据日期", "数据状态"], stock_rows),
+            heading("7C｜股票研究排名", 3),
+            table(["代码", "名称", "主题", "研究状态", "研究分", "执行动作", "数据日期", "数据状态"], stock_rows),
             heading("7E｜股票基金替代关系", 3),
             table(["股票代码", "ETF代码", "替代表达", "关系状态"], relationship_rows),
-            heading("7D｜候选基金ETF代码名册", 3),
-            table(["代码", "名称", "主题", "研究状态", "执行动作", "数据日期", "数据状态"], etf_rows),
+            heading("7D｜ETF研究排名", 3),
+            table(["代码", "名称", "主题", "研究状态", "研究分", "执行动作", "数据日期", "数据状态"], etf_rows),
             callout(coded.get("executionBoundary", "执行引擎未启用；不形成交易动作。"), "⚪", "gray_background"),
         ]
     return blocks

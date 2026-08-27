@@ -182,7 +182,7 @@ class OpportunityRadarTests(unittest.TestCase):
 
         radar = generator.dashboard_coded_opportunity_radar(data)
 
-        self.assertEqual(radar.get("catalogLabel"), "候选名册｜20/20 未接入日更数据")
+        self.assertEqual(radar.get("catalogLabel"), "研究排名｜0/20 已验证")
         self.assertNotIn("actionRationale", radar["stocks"][0])
         self.assertNotIn("nextTrigger", radar["etfs"][0])
 
