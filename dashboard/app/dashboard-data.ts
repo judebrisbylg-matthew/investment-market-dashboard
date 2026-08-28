@@ -1,7 +1,7 @@
 // Generated from data/market-data.json. Do not edit by hand.
 export const snapshot = {
   "businessDate": "2026-08-27",
-  "generatedAt": "2026-08-28T10:10:43+08:00",
+  "generatedAt": "2026-08-28T14:08:35+08:00",
   "asOf": "2026/8/28 06:15 HKT",
   "marketGate": "风险偏高",
   "dataHealth": "绿灯",
@@ -11,8 +11,8 @@ export const snapshot = {
   "decisionStatus": "可用",
   "decisionReason": "核心数据已完成本批次核验",
   "lightCounts": {
-    "green": 6,
-    "yellow": 6,
+    "green": 7,
+    "yellow": 5,
     "red": 0,
     "gray": 0
   },
@@ -20,12 +20,12 @@ export const snapshot = {
     "asOf": "2026/8/28 06:15 HKT",
     "signal": "黄灯",
     "action": "等待",
-    "marketJudgement": "今天结论：黄灯等待，地缘看中东局势待确认，先看AI芯片/半导体、AI服务器/液冷能否放量。",
+    "marketJudgement": "今天结论：黄灯等待，央行看美联储官员讲话待确认，先看AI芯片/半导体、AI服务器/液冷能否放量。",
     "positionAdvice": "仓位建议：维持中性偏谨慎，不追高，等主线确认。",
     "needAction": "今日动作：盯AI芯片/半导体、AI服务器/液冷成交/订单；基金看强项007818(通信/设备)日涨4.23%，弱项011103(光伏产业)日跌0.36%。",
-    "actionReason": "不操作原因：估值分位、北向资金（月度）未转绿，地缘看中东局势仍待确认。",
+    "actionReason": "不操作原因：估值分位、北向资金（月度）未转绿，央行看美联储官员讲话仍待确认。",
     "riskPoint": "主要风险：估值分位、北向资金（月度）；若成交不足或消息反复，成长资产易回撤。",
-    "nextReview": "下次复盘：看AI芯片/半导体、AI服务器/液冷是否放量，消费电子/AI终端、低空经济/军工是否升温，新闻是否新增冲击。"
+    "nextReview": "下次复盘：看AI芯片/半导体、AI服务器/液冷是否放量，种子、种植业是否升温，新闻是否新增冲击。"
   },
   "freshness": [
     {
@@ -60,7 +60,7 @@ export const snapshot = {
       "name": "市场风控",
       "state": "风险偏高",
       "tone": "yellow",
-      "desc": "6项预警"
+      "desc": "5项预警"
     },
     {
       "code": "02",
@@ -127,7 +127,7 @@ export const risks = [
   ],
   [
     "美元指数",
-    "DXY约99.15（东方财富美元指数口径，2026年8月27日）",
+    "DXY约99.19（东方财富美元指数口径，2026年8月27日）",
     "green",
     "DXY < 103",
     "指标日期 2026-08-27，沿用最近可得数据（滞后1天）",
@@ -167,15 +167,15 @@ export const risks = [
   ],
   [
     "A股成交额",
-    "沪深两市成交约0.80万亿元（东方财富指数口径，2026年8月27日）",
-    "yellow",
+    "沪深两市成交约1.74万亿元（东方财富指数口径，2026年8月27日）",
+    "green",
     ">1.0万亿",
     "指标日期 2026-08-27，沿用最近可得数据（滞后1天）",
     "2026-08-27"
   ],
   [
     "港股成交额",
-    "恒生指数成分成交约571亿港元（非港股全市场口径，2026年8月27日）",
+    "恒生指数成分成交约1540亿港元（非港股全市场口径，2026年8月27日）",
     "yellow",
     ">1500亿港元",
     "指标日期 2026-08-27，沿用最近可得数据（滞后1天）",
@@ -271,6 +271,48 @@ export const sectors = [
     "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
   },
   {
+    "name": "种子",
+    "score": 61,
+    "trend": 19,
+    "flow": 19,
+    "fundamental": 19,
+    "hf": 0,
+    "value": 4,
+    "research": "yellow",
+    "execute": "yellow",
+    "risk": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
+    "operation": "继续观察",
+    "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
+  },
+  {
+    "name": "种植业",
+    "score": 61,
+    "trend": 19,
+    "flow": 19,
+    "fundamental": 19,
+    "hf": 0,
+    "value": 4,
+    "research": "yellow",
+    "execute": "yellow",
+    "risk": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
+    "operation": "继续观察",
+    "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
+  },
+  {
+    "name": "运动服装",
+    "score": 61,
+    "trend": 19,
+    "flow": 19,
+    "fundamental": 19,
+    "hf": 0,
+    "value": 4,
+    "research": "yellow",
+    "execute": "yellow",
+    "risk": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
+    "operation": "继续观察",
+    "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
+  },
+  {
     "name": "消费电子/AI终端",
     "score": 75,
     "trend": 19,
@@ -285,53 +327,11 @@ export const sectors = [
     "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
   },
   {
-    "name": "低空经济/军工",
-    "score": 72,
-    "trend": 18,
-    "flow": 20,
-    "fundamental": 20,
-    "hf": 10,
-    "value": 4,
-    "research": "green",
-    "execute": "green",
-    "risk": "适航审批、军工订单、低空商业化、无人机交付",
-    "operation": "继续观察",
-    "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
-  },
-  {
-    "name": "VPN",
-    "score": 55,
-    "trend": 17,
-    "flow": 17,
-    "fundamental": 17,
-    "hf": 0,
-    "value": 4,
-    "research": "yellow",
-    "execute": "yellow",
-    "risk": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
-    "operation": "继续观察",
-    "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
-  },
-  {
-    "name": "华为欧拉",
-    "score": 55,
-    "trend": 17,
-    "flow": 17,
-    "fundamental": 17,
-    "hf": 0,
-    "value": 4,
-    "research": "yellow",
-    "execute": "yellow",
-    "risk": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
-    "operation": "继续观察",
-    "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
-  },
-  {
-    "name": "历史新高",
-    "score": 55,
-    "trend": 17,
-    "flow": 17,
-    "fundamental": 17,
+    "name": "房产租赁经纪",
+    "score": 61,
+    "trend": 19,
+    "flow": 19,
+    "fundamental": 19,
     "hf": 0,
     "value": 4,
     "research": "yellow",
@@ -344,6 +344,15 @@ export const sectors = [
 
 export const events = [
   {
+    "title": "美联储政策与利率预期再受关注，市场等待官员表态和收益率确认",
+    "priority": 12,
+    "direction": 0,
+    "confidence": "中高",
+    "source": "美国财经电视台",
+    "date": "2026/8/28",
+    "watch": "美联储官员讲话、10年期美债收益率、实际利率、美元指数、黄金和纳指表现"
+  },
+  {
     "title": "中东与地缘风险仍在扰动市场，原油、黄金和风险偏好需要重点跟踪",
     "priority": 9,
     "direction": 0,
@@ -351,15 +360,6 @@ export const events = [
     "source": "公开新闻聚合源",
     "date": "2026/8/27",
     "watch": "中东局势、原油运输、布伦特油价、黄金价格、美元指数和军工板块表现"
-  },
-  {
-    "title": "美联储政策与利率预期再受关注，市场等待官员表态和收益率确认",
-    "priority": 7,
-    "direction": 0,
-    "confidence": "中高",
-    "source": "美国财经电视台",
-    "date": "2026/8/28",
-    "watch": "美联储官员讲话、10年期美债收益率、实际利率、美元指数、黄金和纳指表现"
   },
   {
     "title": "中国资产仍受政策、盈利和资金流共同影响，科技制造方向更值得跟踪",
@@ -641,27 +641,27 @@ export const stocks = [
     "code": "002837",
     "name": "英维克",
     "sector": "电力/数据中心能源",
-    "signal": "yellow",
-    "direction": "中性观察",
+    "signal": "gray",
+    "direction": "数据不足",
     "watch": "能否放量站回20日线并连续2日强于沪深300",
-    "latestPrice": 65.97,
-    "day": 6.28,
-    "fiveDay": 24.64,
-    "marketDate": "2026-08-27",
-    "risk": "中"
+    "latestPrice": "待核验",
+    "day": "待核验",
+    "fiveDay": "待核验",
+    "marketDate": "待核验",
+    "risk": "待核验"
   },
   {
     "code": "002555",
     "name": "三七互娱",
     "sector": "游戏传媒/AI应用",
-    "signal": "red",
-    "direction": "转弱",
+    "signal": "gray",
+    "direction": "数据不足",
     "watch": "游戏ETF与个股是否同步放量、连续强于沪深300",
-    "latestPrice": 18.17,
-    "day": -0.11,
-    "fiveDay": -2.0,
-    "marketDate": "2026-08-27",
-    "risk": "高"
+    "latestPrice": "待核验",
+    "day": "待核验",
+    "fiveDay": "待核验",
+    "marketDate": "待核验",
+    "risk": "待核验"
   }
 ] as const;
 
@@ -857,6 +857,33 @@ export const opportunityRadar: { businessDate: string; marketGate: string; dataH
       "sourceStatus": "2026年8月28日A股全市场动态重排：东方财富板块行情+新闻催化+资金广度+风险扣分"
     },
     {
+      "name": "种子",
+      "score": 77,
+      "tier": "候补轮动",
+      "operation": "继续观察",
+      "marketDate": "2026-08-27",
+      "nextSignal": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
+      "sourceStatus": "2026年8月28日A股全市场动态重排：东方财富板块行情+新闻催化+资金广度+风险扣分"
+    },
+    {
+      "name": "种植业",
+      "score": 77,
+      "tier": "候补轮动",
+      "operation": "继续观察",
+      "marketDate": "2026-08-27",
+      "nextSignal": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
+      "sourceStatus": "2026年8月28日A股全市场动态重排：东方财富板块行情+新闻催化+资金广度+风险扣分"
+    },
+    {
+      "name": "运动服装",
+      "score": 77,
+      "tier": "候补轮动",
+      "operation": "继续观察",
+      "marketDate": "2026-08-27",
+      "nextSignal": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
+      "sourceStatus": "2026年8月28日A股全市场动态重排：东方财富板块行情+新闻催化+资金广度+风险扣分"
+    },
+    {
       "name": "消费电子/AI终端",
       "score": 76,
       "tier": "候补轮动",
@@ -866,35 +893,8 @@ export const opportunityRadar: { businessDate: string; marketGate: string; dataH
       "sourceStatus": "2026年8月28日A股全市场动态重排：东方财富板块行情+新闻催化+资金广度+风险扣分"
     },
     {
-      "name": "低空经济/军工",
-      "score": 70,
-      "tier": "候补轮动",
-      "operation": "继续观察",
-      "marketDate": "2026-08-28",
-      "nextSignal": "适航审批、军工订单、低空商业化、无人机交付",
-      "sourceStatus": "2026年8月28日A股全市场动态重排：东方财富板块行情+新闻催化+资金广度+风险扣分"
-    },
-    {
-      "name": "VPN",
-      "score": 67,
-      "tier": "候补轮动",
-      "operation": "继续观察",
-      "marketDate": "2026-08-27",
-      "nextSignal": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
-      "sourceStatus": "2026年8月28日A股全市场动态重排：东方财富板块行情+新闻催化+资金广度+风险扣分"
-    },
-    {
-      "name": "华为欧拉",
-      "score": 67,
-      "tier": "候补轮动",
-      "operation": "继续观察",
-      "marketDate": "2026-08-27",
-      "nextSignal": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
-      "sourceStatus": "2026年8月28日A股全市场动态重排：东方财富板块行情+新闻催化+资金广度+风险扣分"
-    },
-    {
-      "name": "历史新高",
-      "score": 67,
+      "name": "房产租赁经纪",
+      "score": 76,
       "tier": "候补轮动",
       "operation": "继续观察",
       "marketDate": "2026-08-27",
