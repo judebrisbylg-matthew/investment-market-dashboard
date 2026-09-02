@@ -1,31 +1,31 @@
 // Generated from data/market-data.json. Do not edit by hand.
 export const snapshot = {
-  "businessDate": "2026-08-31",
-  "generatedAt": "2026-09-01T09:19:13+08:00",
-  "asOf": "2026/9/1 06:15 HKT",
-  "marketGate": "风险偏高",
-  "dataHealth": "绿灯",
+  "businessDate": "2026-09-01",
+  "generatedAt": "2026-09-02T08:14:39+08:00",
+  "asOf": "2026/9/2 06:15 HKT",
+  "marketGate": "数据不足",
+  "dataHealth": "灰灯",
   "coverage": 96,
   "riskScore": 71,
   "fieldCompleteness": 96,
-  "decisionStatus": "可用",
-  "decisionReason": "核心数据已完成本批次核验",
+  "decisionStatus": "不可用",
+  "decisionReason": "行业观察数据待核验",
   "lightCounts": {
-    "green": 5,
-    "yellow": 7,
+    "green": 6,
+    "yellow": 6,
     "red": 0,
     "gray": 0
   },
   "daily": {
-    "asOf": "2026/9/1 06:15 HKT",
-    "signal": "黄灯",
-    "action": "等待",
-    "marketJudgement": "今天结论：黄灯偏防守，5/12只基金走弱，不是普通震荡；先控回撤，暂停加仓。",
-    "positionAdvice": "仓位建议：高波动仓位先降速，AI/半导体、PCB、有色等只等放量修复，不补跌。",
-    "needAction": "今日动作：1）停止追高和补跌；2）盯AI芯片/半导体、AI服务器/液冷、光模块/CPO能否放量收复；3）核对强弱分化：强项012733(AI/半导体)日涨2.63%，弱项100055(全球科技互联网)日跌2.10%。",
-    "actionReason": "不操作原因：基金端普跌，估值分位、10年期美债收益...仍偏敏感，主线需成交和订单重新确认。",
-    "riskPoint": "主要风险：科技链和高波动资产同步补跌；若成交不足，东方财富热股、低空经济/军工可能继续拖累组合。",
-    "nextReview": "下次复盘：看AI芯片/半导体、AI服务器/液冷、光模块/CPO是否放量止跌，东方财富热股、低空经济/军工是否继续转弱。"
+    "asOf": "2026/9/2 06:15 HKT",
+    "signal": "灰灯",
+    "action": "数据核验",
+    "marketJudgement": "今日结论：决策数据不可用，行业观察数据待核验。",
+    "positionAdvice": "数据未完成核验，暂不输出仓位结论。",
+    "needAction": "今日任务：核验阻断模块的最新有效日期与来源状态。",
+    "actionReason": "限制原因：行业观察数据待核验。",
+    "riskPoint": "主要风险：将回退或待核验数据误作当日有效信息。",
+    "nextReview": "下次复盘：待阻断模块恢复有效数据后再生成研究结论。"
   },
   "freshness": [
     {
@@ -40,17 +40,17 @@ export const snapshot = {
     },
     {
       "name": "跨市场",
-      "date": "08.31",
-      "width": 100
-    },
-    {
-      "name": "事件",
       "date": "09.01",
       "width": 100
     },
     {
+      "name": "事件",
+      "date": "09.02",
+      "width": 100
+    },
+    {
       "name": "持仓",
-      "date": "08.31",
+      "date": "09.01",
       "width": 100
     }
   ],
@@ -58,16 +58,16 @@ export const snapshot = {
     {
       "code": "01",
       "name": "市场风控",
-      "state": "风险偏高",
-      "tone": "yellow",
-      "desc": "7项预警"
+      "state": "数据不足",
+      "tone": "gray",
+      "desc": "6项预警"
     },
     {
       "code": "02",
       "name": "行业赛道",
-      "state": "已刷新",
-      "tone": "green",
-      "desc": "全市场扫描完成"
+      "state": "数据待核验",
+      "tone": "gray",
+      "desc": "休市/接口异常，沿用最近交易日"
     },
     {
       "code": "03",
@@ -103,11 +103,11 @@ export const snapshot = {
 export const risks = [
   [
     "10年期美债收益率",
-    "4.73%（FRED，2026-08-28）",
+    "4.75%（FRED，2026-08-31）",
     "yellow",
     "4.3% ~ 4.7%",
-    "指标日期 2026-08-28，沿用最近可得数据（滞后4天）",
-    "2026-08-28"
+    "指标日期 2026-08-31，沿用最近可得数据（滞后2天）",
+    "2026-08-31"
   ],
   [
     "北向资金（月度）",
@@ -119,74 +119,74 @@ export const risks = [
   ],
   [
     "美联储动向",
-    "联邦基金有效利率3.63%（FRED，2026-08-28）",
+    "联邦基金有效利率3.63%（FRED，2026-08-31）",
     "green",
     "维持利率不变，释放降息预期",
-    "指标日期 2026-08-28，沿用最近可得数据（滞后4天）",
-    "2026-08-28"
-  ],
-  [
-    "美元指数",
-    "DXY约99.44（东方财富美元指数口径，2026年8月31日）",
-    "green",
-    "DXY < 103",
-    "指标日期 2026-08-31，沿用最近可得数据（滞后1天）",
+    "指标日期 2026-08-31，沿用最近可得数据（滞后2天）",
     "2026-08-31"
   ],
   [
+    "美元指数",
+    "DXY约99.70（东方财富美元指数口径，2026年9月1日）",
+    "green",
+    "DXY < 103",
+    "指标日期 2026-09-01，沿用最近可得数据（滞后1天）",
+    "2026-09-01"
+  ],
+  [
     "实际利率",
-    "10年期TIPS实际利率2.42%（FRED，2026-08-28）",
+    "10年期TIPS实际利率2.44%（FRED，2026-08-31）",
     "yellow",
     "10Y TIPS < 2.2%",
-    "指标日期 2026-08-28，沿用最近可得数据（滞后4天）",
-    "2026-08-28"
+    "指标日期 2026-08-31，沿用最近可得数据（滞后2天）",
+    "2026-08-31"
   ],
   [
     "信用利差",
-    "美国高收益债OAS 2.60%（FRED，2026-08-28）",
+    "美国高收益债OAS 2.63%（FRED，2026-08-31）",
     "green",
     "高收益OAS < 3.5%",
-    "指标日期 2026-08-28，沿用最近可得数据（滞后4天）",
-    "2026-08-28"
+    "指标日期 2026-08-31，沿用最近可得数据（滞后2天）",
+    "2026-08-31"
   ],
   [
     "VIX",
-    "VIX 14.43（FRED，2026-08-28）",
+    "VIX 14.92（FRED，2026-08-31）",
     "green",
     "< 18",
-    "指标日期 2026-08-28，沿用最近可得数据（滞后4天）",
-    "2026-08-28"
+    "指标日期 2026-08-31，沿用最近可得数据（滞后2天）",
+    "2026-08-31"
   ],
   [
     "全球流动性",
     "美联储总资产6.731万亿美元，周变动-14.8亿美元（FRED，2026-08-26）",
     "yellow",
     "主要央行流动性企稳/扩张",
-    "指标日期 2026-08-26，沿用最近可得数据（滞后6天）",
+    "指标日期 2026-08-26，沿用最近可得数据（滞后7天）",
     "2026-08-26"
   ],
   [
     "A股成交额",
-    "沪深两市成交约0.80万亿元（东方财富指数口径，2026年8月28日）",
-    "yellow",
+    "沪深两市成交约2.03万亿元（东方财富指数口径，2026年9月1日）",
+    "green",
     ">1.0万亿",
-    "指标日期 2026-08-28，沿用最近可得数据（滞后4天）",
-    "2026-08-28"
+    "指标日期 2026-09-01，沿用最近可得数据（滞后1天）",
+    "2026-09-01"
   ],
   [
     "港股成交额",
-    "恒生指数成分成交约73亿港元（非港股全市场口径，2026年8月31日）",
+    "恒生指数成分成交约2387亿港元（非港股全市场口径，2026年9月1日）",
     "yellow",
     ">1500亿港元",
-    "指标日期 2026-08-31，沿用最近可得数据（滞后1天）",
-    "2026-08-31"
+    "指标日期 2026-09-01，沿用最近可得数据（滞后1天）",
+    "2026-09-01"
   ],
   [
     "行业轮动强弱",
     "A股前3赛道：AI芯片/半导体、AI服务器/液冷、光模块/CPO；平均研究分82.3",
     "green",
     "主线清晰且扩散",
-    "指标日期 2026-09-01，今日可用",
+    "指标日期 2026-09-01，沿用最近可得数据（滞后1天）",
     "2026-09-01"
   ],
   [
@@ -209,7 +209,7 @@ export const sectors = [
     "hf": 10,
     "value": 2,
     "research": "green",
-    "execute": "green",
+    "execute": "gray",
     "risk": "美股芯片、费半、AI链成交额、云厂Capex、先进封装和HBM订单",
     "operation": "暂不追高",
     "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
@@ -223,7 +223,7 @@ export const sectors = [
     "hf": 1,
     "value": 4,
     "research": "yellow",
-    "execute": "yellow",
+    "execute": "gray",
     "risk": "服务器订单、液冷招标、云厂Capex、电力配套",
     "operation": "建议加仓",
     "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
@@ -237,7 +237,7 @@ export const sectors = [
     "hf": 1,
     "value": 4,
     "research": "yellow",
-    "execute": "yellow",
+    "execute": "gray",
     "risk": "800G/1.6T订单、云厂资本开支、光模块毛利率",
     "operation": "暂不追高",
     "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
@@ -251,7 +251,7 @@ export const sectors = [
     "hf": 0,
     "value": 3,
     "research": "yellow",
-    "execute": "yellow",
+    "execute": "gray",
     "risk": "美光指引、DRAM/NAND价格、HBM供需、国产存储成交额",
     "operation": "暂不追高",
     "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
@@ -265,7 +265,7 @@ export const sectors = [
     "hf": 0,
     "value": 3,
     "research": "yellow",
-    "execute": "yellow",
+    "execute": "gray",
     "risk": "交换机订单、PCB毛利率、高速铜连接订单、服务器出货",
     "operation": "继续观察",
     "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
@@ -279,7 +279,7 @@ export const sectors = [
     "hf": 0,
     "value": 4,
     "research": "yellow",
-    "execute": "yellow",
+    "execute": "gray",
     "risk": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
     "operation": "继续观察",
     "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
@@ -293,7 +293,7 @@ export const sectors = [
     "hf": 10,
     "value": 4,
     "research": "green",
-    "execute": "green",
+    "execute": "gray",
     "risk": "适航审批、军工订单、低空商业化、无人机交付",
     "operation": "继续观察",
     "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
@@ -307,7 +307,7 @@ export const sectors = [
     "hf": 8,
     "value": 5,
     "research": "yellow",
-    "execute": "yellow",
+    "execute": "gray",
     "risk": "AI手机/眼镜销量、苹果链订单、端侧AI渗透率",
     "operation": "继续观察",
     "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
@@ -321,7 +321,7 @@ export const sectors = [
     "hf": 0,
     "value": 4,
     "research": "red",
-    "execute": "red",
+    "execute": "gray",
     "risk": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
     "operation": "观察等待",
     "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
@@ -335,7 +335,7 @@ export const sectors = [
     "hf": 7,
     "value": 6,
     "research": "yellow",
-    "execute": "yellow",
+    "execute": "gray",
     "risk": "A股成交额、两融余额、券商政策、指数放量",
     "operation": "观察等待",
     "proxy": "五因子为公开字段透明代理，并非真实资金流或PE。"
@@ -344,22 +344,49 @@ export const sectors = [
 
 export const events = [
   {
-    "title": "中东与地缘风险仍在扰动市场，原油、黄金和风险偏好需要重点跟踪",
-    "priority": 8,
-    "direction": 0,
+    "title": "人工智能和半导体仍是市场主线，但高估值与拥挤交易需要财报验证",
+    "priority": 7,
+    "direction": 1,
     "confidence": "中高",
     "source": "公开新闻聚合源",
     "date": "2026/9/1",
-    "watch": "中东局势、原油运输、布伦特油价、黄金价格、美元指数和军工板块表现"
+    "watch": "费半指数、英伟达链条、云厂资本开支、芯片订单、毛利率和成交额"
   },
   {
     "title": "美联储政策与利率预期再受关注，市场等待官员表态和收益率确认",
-    "priority": 8,
+    "priority": 7,
+    "direction": 0,
+    "confidence": "中高",
+    "source": "美国财经电视台",
+    "date": "2026/9/2",
+    "watch": "美联储官员讲话、10年期美债收益率、实际利率、美元指数、黄金和纳指表现"
+  },
+  {
+    "title": "中东与地缘风险仍在扰动市场，原油、黄金和风险偏好需要重点跟踪",
+    "priority": 6,
     "direction": 0,
     "confidence": "中高",
     "source": "公开新闻聚合源",
+    "date": "2026/9/2",
+    "watch": "中东局势、原油运输、布伦特油价、黄金价格、美元指数和军工板块表现"
+  },
+  {
+    "title": "油价与能源供给变量继续影响通胀预期，资源品和风险偏好需同步观察",
+    "priority": 6,
+    "direction": 1,
+    "confidence": "中高",
+    "source": "公开新闻聚合源",
+    "date": "2026/9/2",
+    "watch": "布伦特油价、美国原油库存、产油国政策、通胀预期、航空和化工板块"
+  },
+  {
+    "title": "人工智能终端和消费电子催化升温，真实销量和供应链订单是关键",
+    "priority": 4,
+    "direction": 1,
+    "confidence": "中高",
+    "source": "美国财经电视台",
     "date": "2026/9/1",
-    "watch": "美联储官员讲话、10年期美债收益率、实际利率、美元指数、黄金和纳指表现"
+    "watch": "智能眼镜销量、消费电子供应链订单、光学器件、芯片和终端厂商指引"
   },
   {
     "title": "中国资产仍受政策、盈利和资金流共同影响，科技制造方向更值得跟踪",
@@ -371,24 +398,6 @@ export const events = [
     "watch": "A股成交额、港股成交额、南向资金、人民币汇率、政策表态和科技制造板块"
   },
   {
-    "title": "油价与能源供给变量继续影响通胀预期，资源品和风险偏好需同步观察",
-    "priority": 5,
-    "direction": 1,
-    "confidence": "中高",
-    "source": "美国财经电视台",
-    "date": "2026/9/1",
-    "watch": "布伦特油价、美国原油库存、产油国政策、通胀预期、航空和化工板块"
-  },
-  {
-    "title": "人工智能和半导体仍是市场主线，但高估值与拥挤交易需要财报验证",
-    "priority": 4,
-    "direction": 1,
-    "confidence": "中高",
-    "source": "美国财经电视台",
-    "date": "2026/9/1",
-    "watch": "费半指数、英伟达链条、云厂资本开支、芯片订单、毛利率和成交额"
-  },
-  {
     "title": "央行重要消息待复核，需观察是否改变市场风险偏好",
     "priority": 5,
     "direction": 0,
@@ -396,15 +405,6 @@ export const events = [
     "source": "公开新闻聚合源",
     "date": "2026/8/26",
     "watch": "官方公告、相关指数、成交额、利率、美元、商品价格和行业龙头表现"
-  },
-  {
-    "title": "人工智能终端和消费电子催化升温，真实销量和供应链订单是关键",
-    "priority": 4,
-    "direction": 1,
-    "confidence": "中高",
-    "source": "美国财经电视台",
-    "date": "2026/8/27",
-    "watch": "智能眼镜销量、消费电子供应链订单、光学器件、芯片和终端厂商指引"
   },
   {
     "title": "地缘重要消息待复核，需观察是否改变市场风险偏好",
@@ -455,7 +455,7 @@ export const evidence = {
       "style": "价值投资/保险现金流/长期配置",
       "focus": "现金和短债、Apple、American Express、Bank of America、Coca-Cola、Chevron、Alphabet、Delta",
       "meaning": "偏防守；高估值阶段不要追涨。",
-      "detail": "复核至2026/9/1：未发现巴菲特发布改变框架的新公开观点；继续把高现金、少数确定性资产和安全边际作为估值纪律校验，不把它当作短线交易信号。",
+      "detail": "复核至2026/9/2：未发现巴菲特发布改变框架的新公开观点；继续把高现金、少数确定性资产和安全边际作为估值纪律校验，不把它当作短线交易信号。",
       "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
     },
     {
@@ -465,7 +465,7 @@ export const evidence = {
       "style": "中国/亚洲成长价值/产业研究",
       "focus": "中国资产、创新药、消费、互联网平台、先进制造",
       "meaning": "作为中国成长价值和产业研究坐标，重点看盈利兑现。",
-      "detail": "复核至2026/9/1：未发现张磊或高瓴新增可验证公开框架；继续作为中国成长价值和产业研究坐标，重点看创新药、先进制造和互联网平台盈利兑现。",
+      "detail": "复核至2026/9/2：未发现张磊或高瓴新增可验证公开框架；继续作为中国成长价值和产业研究坐标，重点看创新药、先进制造和互联网平台盈利兑现。",
       "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
     },
     {
@@ -475,7 +475,7 @@ export const evidence = {
       "style": "信用周期/风险控制/逆向投资",
       "focus": "Oaktree 信用资产、困境/高收益债",
       "meaning": "偏谨慎；检查AI与成长资产是否过热。",
-      "detail": "复核至2026/9/1：Oaktree官网近期有内容更新迹象，但未确认出现改变投资框架的新Marks观点；继续用风险补偿、信用周期和过热资产纪律校验AI与成长交易。",
+      "detail": "复核至2026/9/2：Oaktree官网近期有内容更新迹象，但未确认出现改变投资框架的新Marks观点；继续用风险补偿、信用周期和过热资产纪律校验AI与成长交易。",
       "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
     },
     {
@@ -485,7 +485,7 @@ export const evidence = {
       "style": "全球宏观/债务周期/风险平价",
       "focus": "黄金、全球分散配置、部分中国资产",
       "meaning": "偏防守与分散，关注债务和货币周期。",
-      "detail": "复核至2026/9/1：未发现Dalio新增高可信公开观点改变配置框架；继续用债务周期、黄金、非美元资产和分散化原则校验宏观风险。",
+      "detail": "复核至2026/9/2：未发现Dalio新增高可信公开观点改变配置框架；继续用债务周期、黄金、非美元资产和分散化原则校验宏观风险。",
       "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
     },
     {
@@ -495,7 +495,7 @@ export const evidence = {
       "style": "集中持仓/主动投资/优质公司",
       "focus": "Microsoft、平台科技、消费服务龙头",
       "meaning": "选择性偏多，但估值必须合理。",
-      "detail": "复核至2026/9/1：未确认Ackman新增改变框架的公开观点；继续偏向少数高质量现金流龙头和可解释的资本配置，回避无法由现金流支撑的高估资产。",
+      "detail": "复核至2026/9/2：未确认Ackman新增改变框架的公开观点；继续偏向少数高质量现金流龙头和可解释的资本配置，回避无法由现金流支撑的高估资产。",
       "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
     },
     {
@@ -505,7 +505,7 @@ export const evidence = {
       "style": "宏观交易/机会主义/风险资产节奏",
       "focus": "Amazon、Uber、Micron、TSMC、Sandisk",
       "meaning": "偏进攻，但只适合观察高弹性资产的交易节奏。",
-      "detail": "复核至2026/9/1：未发现Tepper新增可靠公开观点；继续把他作为高弹性风险资产节奏参考，重点看AI硬件、平台消费和宏观风险偏好。",
+      "detail": "复核至2026/9/2：未发现Tepper新增可靠公开观点；继续把他作为高弹性风险资产节奏参考，重点看AI硬件、平台消费和宏观风险偏好。",
       "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
     },
     {
@@ -515,7 +515,7 @@ export const evidence = {
       "style": "多策略/市场结构/流动性",
       "focus": "多策略、股票/信用/利率/商品/量化交易",
       "meaning": "用于观察流动性、波动率和市场结构，不作方向性跟单。",
-      "detail": "复核至2026/9/1：未发现Griffin新增高确信公开观点改变框架；继续把Citadel作为流动性、波动率和市场结构观察样本。",
+      "detail": "复核至2026/9/2：未发现Griffin新增高确信公开观点改变框架；继续把Citadel作为流动性、波动率和市场结构观察样本。",
       "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
     },
     {
@@ -525,7 +525,7 @@ export const evidence = {
       "style": "长期集中持股/高壁垒公司/激进治理",
       "focus": "Alphabet、Visa、S&P Global、Moody's、GE Aerospace、Airbus、Safran",
       "meaning": "长期偏多高壁垒企业，不支持无差别追涨。",
-      "detail": "复核至2026/9/1：未发现Hohn新增公开框架变化；继续沿用高壁垒平台、支付网络、评级和航空航天资产也必须服从估值纪律的结论。",
+      "detail": "复核至2026/9/2：未发现Hohn新增公开框架变化；继续沿用高壁垒平台、支付网络、评级和航空航天资产也必须服从估值纪律的结论。",
       "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
     },
     {
@@ -535,7 +535,7 @@ export const evidence = {
       "style": "颠覆式创新/高波动成长",
       "focus": "SpaceX、Tesla、ARKK/ARKQ/ARKX、私募创新敞口",
       "meaning": "作为高波动成长和创新资产情绪指标，不作组合模板。",
-      "detail": "复核至2026/9/1：ARK属于高频交易动作源，6/16之后仍需持续跟踪其每日交易披露；当前不能写成“无更新”，应把ARK作为高波动成长和创新资产情绪指标，而不是组合模板。",
+      "detail": "复核至2026/9/2：ARK属于高频交易动作源，6/16之后仍需持续跟踪其每日交易披露；当前不能写成“无更新”，应把ARK作为高波动成长和创新资产情绪指标，而不是组合模板。",
       "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
     },
     {
@@ -545,7 +545,7 @@ export const evidence = {
       "style": "顶级宏观交易/集中押注/风险控制",
       "focus": "Nuvation Bio、Caris Life Sciences、Olema Pharmaceuticals 等",
       "meaning": "长期认可AI，短期反对拥挤追高。",
-      "detail": "复核至2026/9/1：未发现Druckenmiller新增高可信公开观点；继续沿用承认AI长期逻辑但不在短线拥挤时硬追、重视非共识机会和风险控制的框架。",
+      "detail": "复核至2026/9/2：未发现Druckenmiller新增高可信公开观点；继续沿用承认AI长期逻辑但不在短线拥挤时硬追、重视非共识机会和风险控制的框架。",
       "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
     }
   ],
@@ -557,7 +557,7 @@ export const evidence = {
       "style": "价值投资/保险现金流/长期配置",
       "focus": "现金和短债、Apple、American Express、Bank of America、Coca-Cola、Chevron、Alphabet、Delta",
       "meaning": "偏防守；高估值阶段不要追涨。",
-      "detail": "复核至2026/9/1：未发现巴菲特发布改变框架的新公开观点；继续把高现金、少数确定性资产和安全边际作为估值纪律校验，不把它当作短线交易信号。",
+      "detail": "复核至2026/9/2：未发现巴菲特发布改变框架的新公开观点；继续把高现金、少数确定性资产和安全边际作为估值纪律校验，不把它当作短线交易信号。",
       "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
     },
     {
@@ -567,7 +567,7 @@ export const evidence = {
       "style": "信用周期/风险控制/逆向投资",
       "focus": "Oaktree 信用资产、困境/高收益债",
       "meaning": "偏谨慎；检查AI与成长资产是否过热。",
-      "detail": "复核至2026/9/1：Oaktree官网近期有内容更新迹象，但未确认出现改变投资框架的新Marks观点；继续用风险补偿、信用周期和过热资产纪律校验AI与成长交易。",
+      "detail": "复核至2026/9/2：Oaktree官网近期有内容更新迹象，但未确认出现改变投资框架的新Marks观点；继续用风险补偿、信用周期和过热资产纪律校验AI与成长交易。",
       "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
     },
     {
@@ -577,7 +577,7 @@ export const evidence = {
       "style": "全球宏观/债务周期/风险平价",
       "focus": "黄金、全球分散配置、部分中国资产",
       "meaning": "偏防守与分散，关注债务和货币周期。",
-      "detail": "复核至2026/9/1：未发现Dalio新增高可信公开观点改变配置框架；继续用债务周期、黄金、非美元资产和分散化原则校验宏观风险。",
+      "detail": "复核至2026/9/2：未发现Dalio新增高可信公开观点改变配置框架；继续用债务周期、黄金、非美元资产和分散化原则校验宏观风险。",
       "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
     },
     {
@@ -587,7 +587,7 @@ export const evidence = {
       "style": "集中持仓/主动投资/优质公司",
       "focus": "Microsoft、平台科技、消费服务龙头",
       "meaning": "选择性偏多，但估值必须合理。",
-      "detail": "复核至2026/9/1：未确认Ackman新增改变框架的公开观点；继续偏向少数高质量现金流龙头和可解释的资本配置，回避无法由现金流支撑的高估资产。",
+      "detail": "复核至2026/9/2：未确认Ackman新增改变框架的公开观点；继续偏向少数高质量现金流龙头和可解释的资本配置，回避无法由现金流支撑的高估资产。",
       "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
     },
     {
@@ -597,7 +597,7 @@ export const evidence = {
       "style": "宏观交易/机会主义/风险资产节奏",
       "focus": "Amazon、Uber、Micron、TSMC、Sandisk",
       "meaning": "偏进攻，但只适合观察高弹性资产的交易节奏。",
-      "detail": "复核至2026/9/1：未发现Tepper新增可靠公开观点；继续把他作为高弹性风险资产节奏参考，重点看AI硬件、平台消费和宏观风险偏好。",
+      "detail": "复核至2026/9/2：未发现Tepper新增可靠公开观点；继续把他作为高弹性风险资产节奏参考，重点看AI硬件、平台消费和宏观风险偏好。",
       "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
     },
     {
@@ -607,7 +607,7 @@ export const evidence = {
       "style": "长期集中持股/高壁垒公司/激进治理",
       "focus": "Alphabet、Visa、S&P Global、Moody's、GE Aerospace、Airbus、Safran",
       "meaning": "长期偏多高壁垒企业，不支持无差别追涨。",
-      "detail": "复核至2026/9/1：未发现Hohn新增公开框架变化；继续沿用高壁垒平台、支付网络、评级和航空航天资产也必须服从估值纪律的结论。",
+      "detail": "复核至2026/9/2：未发现Hohn新增公开框架变化；继续沿用高壁垒平台、支付网络、评级和航空航天资产也必须服从估值纪律的结论。",
       "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
     },
     {
@@ -617,7 +617,7 @@ export const evidence = {
       "style": "顶级宏观交易/集中押注/风险控制",
       "focus": "Nuvation Bio、Caris Life Sciences、Olema Pharmaceuticals 等",
       "meaning": "长期认可AI，短期反对拥挤追高。",
-      "detail": "复核至2026/9/1：未发现Druckenmiller新增高可信公开观点；继续沿用承认AI长期逻辑但不在短线拥挤时硬追、重视非共识机会和风险控制的框架。",
+      "detail": "复核至2026/9/2：未发现Druckenmiller新增高可信公开观点；继续沿用承认AI长期逻辑但不在短线拥挤时硬追、重视非共识机会和风险控制的框架。",
       "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
     }
   ],
@@ -629,7 +629,7 @@ export const evidence = {
       "style": "颠覆式创新/高波动成长",
       "focus": "SpaceX、Tesla、ARKK/ARKQ/ARKX、私募创新敞口",
       "meaning": "作为高波动成长和创新资产情绪指标，不作组合模板。",
-      "detail": "复核至2026/9/1：ARK属于高频交易动作源，6/16之后仍需持续跟踪其每日交易披露；当前不能写成“无更新”，应把ARK作为高波动成长和创新资产情绪指标，而不是组合模板。",
+      "detail": "复核至2026/9/2：ARK属于高频交易动作源，6/16之后仍需持续跟踪其每日交易披露；当前不能写成“无更新”，应把ARK作为高波动成长和创新资产情绪指标，而不是组合模板。",
       "sourceStatus": "公开资料复核；若无新公开信/访谈/13F，则不强行编写新观点"
     }
   ],
@@ -641,27 +641,27 @@ export const stocks = [
     "code": "002837",
     "name": "英维克",
     "sector": "电力/数据中心能源",
-    "signal": "yellow",
-    "direction": "中性观察",
+    "signal": "gray",
+    "direction": "数据不足",
     "watch": "能否放量站回20日线并连续2日强于沪深300",
-    "latestPrice": 68.21,
-    "day": 5.78,
-    "fiveDay": 24.58,
-    "marketDate": "2026-08-31",
-    "risk": "中"
+    "latestPrice": "待核验",
+    "day": "待核验",
+    "fiveDay": "待核验",
+    "marketDate": "待核验",
+    "risk": "待核验"
   },
   {
     "code": "002555",
     "name": "三七互娱",
     "sector": "游戏传媒/AI应用",
-    "signal": "yellow",
-    "direction": "中性观察",
+    "signal": "gray",
+    "direction": "数据不足",
     "watch": "游戏ETF与个股是否同步放量、连续强于沪深300",
-    "latestPrice": 18.46,
-    "day": 1.04,
-    "fiveDay": 0.33,
-    "marketDate": "2026-08-31",
-    "risk": "中"
+    "latestPrice": "待核验",
+    "day": "待核验",
+    "fiveDay": "待核验",
+    "marketDate": "待核验",
+    "risk": "待核验"
   }
 ] as const;
 
@@ -670,144 +670,144 @@ export const funds = [
     "code": "012733",
     "name": "易方达中证人工智能主题ETF联接A",
     "sector": "AI/半导体",
-    "day": 2.63,
-    "week": 6.06,
+    "day": -0.53,
+    "week": 4.92,
     "risk": "高",
-    "decision": "继续观察",
-    "direction": "AI/半导体短线修复，但仍需要验证趋势延续。 净值日期 2026-08-31，沿用最近可得数据（滞后1天）；数据源：东方财富基金历史净值API。",
-    "date": "2026-08-31"
+    "decision": "观察等待",
+    "direction": "AI/半导体信号不够强，维持观察。 净值日期 2026-09-01，沿用最近可得数据（滞后1天）；数据源：东方财富基金历史净值API。",
+    "date": "2026-09-01"
   },
   {
     "code": "100055",
     "name": "富国全球科技互联网股票(QDII)A",
     "sector": "全球科技互联网",
-    "day": -2.1,
-    "week": -2.74,
+    "day": 0.22,
+    "week": 2.41,
     "risk": "中高",
-    "decision": "观察等待",
-    "direction": "全球科技互联网信号不够强，维持观察。 净值日期 2026-08-28，沿用最近可得数据（滞后4天）；数据源：东方财富基金历史净值API。",
-    "date": "2026-08-28"
+    "decision": "继续观察",
+    "direction": "全球科技互联网短线修复，但仍需要验证趋势延续。 净值日期 2026-08-31，沿用最近可得数据（滞后2天）；数据源：东方财富基金历史净值API。",
+    "date": "2026-08-31"
   },
   {
     "code": "006751",
     "name": "富国互联科技股票A",
     "sector": "AI/互联网",
-    "day": 0.96,
-    "week": 3.77,
+    "day": -2.21,
+    "week": 1.85,
     "risk": "中高",
-    "decision": "继续观察",
-    "direction": "AI/互联网短线修复，但仍需要验证趋势延续。 净值日期 2026-08-31，沿用最近可得数据（滞后1天）；数据源：东方财富基金历史净值API。",
-    "date": "2026-08-31"
+    "decision": "观察等待",
+    "direction": "AI/互联网信号不够强，维持观察。 净值日期 2026-09-01，沿用最近可得数据（滞后1天）；数据源：东方财富基金历史净值API。",
+    "date": "2026-09-01"
   },
   {
     "code": "014344",
     "name": "鹏华中证500指数增强A",
     "sector": "A股宽基",
-    "day": 1.19,
-    "week": 3.22,
+    "day": -1.19,
+    "week": 2.39,
     "risk": "中",
-    "decision": "继续观察",
-    "direction": "A股宽基短线修复，但仍需要验证趋势延续。 净值日期 2026-08-31，沿用最近可得数据（滞后1天）；数据源：东方财富基金历史净值API。",
-    "date": "2026-08-31"
+    "decision": "观察等待",
+    "direction": "A股宽基信号不够强，维持观察。 净值日期 2026-09-01，沿用最近可得数据（滞后1天）；数据源：东方财富基金历史净值API。",
+    "date": "2026-09-01"
   },
   {
     "code": "007818",
     "name": "国泰中证全指通信设备ETF联接C",
     "sector": "通信/设备",
-    "day": 0.66,
-    "week": 3.64,
+    "day": -1.43,
+    "week": 2.03,
     "risk": "高",
-    "decision": "继续观察",
-    "direction": "通信/设备短线修复，但仍需要验证趋势延续。 净值日期 2026-08-31，沿用最近可得数据（滞后1天）；数据源：东方财富基金历史净值API。",
-    "date": "2026-08-31"
+    "decision": "观察等待",
+    "direction": "通信/设备信号不够强，维持观察。 净值日期 2026-09-01，沿用最近可得数据（滞后1天）；数据源：东方财富基金历史净值API。",
+    "date": "2026-09-01"
   },
   {
     "code": "013180",
     "name": "广发国证新能源车电池ETF联接C",
     "sector": "新能源车/电池",
-    "day": -1.44,
-    "week": -1.9,
+    "day": -1.53,
+    "week": -1.84,
     "risk": "中",
     "decision": "观察等待",
-    "direction": "新能源车/电池信号不够强，维持观察。 净值日期 2026-08-31，沿用最近可得数据（滞后1天）；数据源：东方财富基金历史净值API。",
-    "date": "2026-08-31"
+    "direction": "新能源车/电池信号不够强，维持观察。 净值日期 2026-09-01，沿用最近可得数据（滞后1天）；数据源：东方财富基金历史净值API。",
+    "date": "2026-09-01"
   },
   {
     "code": "004432",
     "name": "南方有色金属ETF联接A",
     "sector": "有色金属",
-    "day": -1.31,
-    "week": -4.43,
+    "day": -1.0,
+    "week": 1.87,
     "risk": "中高",
     "decision": "观察等待",
-    "direction": "有色金属信号不够强，维持观察。 净值日期 2026-08-31，沿用最近可得数据（滞后1天）；数据源：东方财富基金历史净值API。",
-    "date": "2026-08-31"
+    "direction": "有色金属信号不够强，维持观察。 净值日期 2026-09-01，沿用最近可得数据（滞后1天）；数据源：东方财富基金历史净值API。",
+    "date": "2026-09-01"
   },
   {
     "code": "519704",
     "name": "交银先进制造混合A",
     "sector": "先进制造",
-    "day": 1.0,
-    "week": 2.22,
+    "day": -0.8,
+    "week": 1.55,
     "risk": "中",
-    "decision": "继续观察",
-    "direction": "先进制造短线修复，但仍需要验证趋势延续。 净值日期 2026-08-31，沿用最近可得数据（滞后1天）；数据源：东方财富基金历史净值API。",
-    "date": "2026-08-31"
+    "decision": "观察等待",
+    "direction": "先进制造信号不够强，维持观察。 净值日期 2026-09-01，沿用最近可得数据（滞后1天）；数据源：东方财富基金历史净值API。",
+    "date": "2026-09-01"
   },
   {
     "code": "018125",
     "name": "永赢先进制造智选混合发起C",
     "sector": "先进制造",
-    "day": 2.23,
-    "week": 3.38,
+    "day": -2.04,
+    "week": 0.43,
     "risk": "高",
-    "decision": "继续观察",
-    "direction": "先进制造短线修复，但仍需要验证趋势延续。 净值日期 2026-08-31，沿用最近可得数据（滞后1天）；数据源：东方财富基金历史净值API。",
-    "date": "2026-08-31"
+    "decision": "观察等待",
+    "direction": "先进制造信号不够强，维持观察。 净值日期 2026-09-01，沿用最近可得数据（滞后1天）；数据源：东方财富基金历史净值API。",
+    "date": "2026-09-01"
   },
   {
     "code": "011103",
     "name": "天弘中证光伏产业指数C",
     "sector": "光伏产业",
-    "day": -1.17,
-    "week": -0.85,
+    "day": -1.1,
+    "week": -1.54,
     "risk": "高",
     "decision": "观察等待",
-    "direction": "光伏产业信号不够强，维持观察。 净值日期 2026-08-31，沿用最近可得数据（滞后1天）；数据源：东方财富基金历史净值API。",
-    "date": "2026-08-31"
+    "direction": "光伏产业信号不够强，维持观察。 净值日期 2026-09-01，沿用最近可得数据（滞后1天）；数据源：东方财富基金历史净值API。",
+    "date": "2026-09-01"
   },
   {
     "code": "025856",
     "name": "华夏中证电网设备主题ETF发起式联接A",
     "sector": "电网设备",
-    "day": -0.33,
-    "week": 0.95,
+    "day": -0.95,
+    "week": -0.99,
     "risk": "中高",
     "decision": "观察等待",
-    "direction": "电网设备信号不够强，维持观察。 净值日期 2026-08-31，沿用最近可得数据（滞后1天）；数据源：东方财富基金历史净值API。",
-    "date": "2026-08-31"
+    "direction": "电网设备信号不够强，维持观察。 净值日期 2026-09-01，沿用最近可得数据（滞后1天）；数据源：东方财富基金历史净值API。",
+    "date": "2026-09-01"
   },
   {
     "code": "018896",
     "name": "易方达消费电子ETF联接A",
     "sector": "消费电子",
-    "day": 1.94,
-    "week": 6.08,
+    "day": -2.59,
+    "week": 2.51,
     "risk": "中高",
-    "decision": "继续观察",
-    "direction": "消费电子短线修复，但仍需要验证趋势延续。 净值日期 2026-08-31，沿用最近可得数据（滞后1天）；数据源：东方财富基金历史净值API。",
-    "date": "2026-08-31"
+    "decision": "观察等待",
+    "direction": "消费电子信号不够强，维持观察。 净值日期 2026-09-01，沿用最近可得数据（滞后1天）；数据源：东方财富基金历史净值API。",
+    "date": "2026-09-01"
   }
 ] as const;
 
 export const opportunityRadar: { businessDate: string; marketGate: string; dataHealth: string; coverage: number; fieldCompleteness: number; decisionStatus: string; decisionReason: string; executionStatus: string; executionBoundary: string; industries: Array<{ name: string; score: number | string; tier: string; operation: string; marketDate: string; nextSignal: string; sourceStatus?: string }>; funds: Array<{ code: string; name: string; theme: string; latestNav: number | string; day: number | string; navDate: string; decision: string }> } = {
-  "businessDate": "2026-08-31",
-  "marketGate": "风险偏高",
-  "dataHealth": "绿灯",
+  "businessDate": "2026-09-01",
+  "marketGate": "数据不足",
+  "dataHealth": "灰灯",
   "coverage": 0.9643,
   "fieldCompleteness": 0.9643,
-  "decisionStatus": "可用",
-  "decisionReason": "核心数据已完成本批次核验",
+  "decisionStatus": "不可用",
+  "decisionReason": "行业观察数据待核验",
   "executionStatus": "灰灯",
   "executionBoundary": "仅作研究排序与跟踪；未接入验证完备的执行模型，不形成买卖指令。",
   "industries": [
@@ -815,91 +815,91 @@ export const opportunityRadar: { businessDate: string; marketGate: string; dataH
       "name": "AI芯片/半导体",
       "score": 95,
       "tier": "核心主线",
-      "operation": "暂不追高",
+      "operation": "仅研究快照，待核验",
       "marketDate": "2026-09-01",
       "nextSignal": "美股芯片、费半、AI链成交额、云厂Capex、先进封装和HBM订单",
-      "sourceStatus": "2026年9月1日A股全市场动态重排：东方财富板块行情+新闻催化+资金广度+风险扣分"
+      "sourceStatus": "2026年9月2日休市或板块接口异常，沿用最近可得交易日排名；原行情日期2026-09-01。"
     },
     {
       "name": "AI服务器/液冷",
       "score": 76,
       "tier": "核心主线",
-      "operation": "建议加仓",
+      "operation": "仅研究快照，待核验",
       "marketDate": "2026-09-01",
       "nextSignal": "服务器订单、液冷招标、云厂Capex、电力配套",
-      "sourceStatus": "2026年9月1日A股全市场动态重排：东方财富板块行情+新闻催化+资金广度+风险扣分"
+      "sourceStatus": "2026年9月2日休市或板块接口异常，沿用最近可得交易日排名；原行情日期2026-09-01。"
     },
     {
       "name": "光模块/CPO",
       "score": 76,
       "tier": "核心主线",
-      "operation": "暂不追高",
+      "operation": "仅研究快照，待核验",
       "marketDate": "2026-09-01",
       "nextSignal": "800G/1.6T订单、云厂资本开支、光模块毛利率",
-      "sourceStatus": "2026年9月1日A股全市场动态重排：东方财富板块行情+新闻催化+资金广度+风险扣分"
+      "sourceStatus": "2026年9月2日休市或板块接口异常，沿用最近可得交易日排名；原行情日期2026-09-01。"
     },
     {
       "name": "存储/HBM",
       "score": 76,
       "tier": "核心主线",
-      "operation": "暂不追高",
+      "operation": "仅研究快照，待核验",
       "marketDate": "2026-09-01",
       "nextSignal": "美光指引、DRAM/NAND价格、HBM供需、国产存储成交额",
-      "sourceStatus": "2026年9月1日A股全市场动态重排：东方财富板块行情+新闻催化+资金广度+风险扣分"
+      "sourceStatus": "2026年9月2日休市或板块接口异常，沿用最近可得交易日排名；原行情日期2026-09-01。"
     },
     {
       "name": "PCB/高速铜连接",
       "score": 74,
       "tier": "核心主线",
-      "operation": "继续观察",
+      "operation": "仅研究快照，待核验",
       "marketDate": "2026-09-01",
       "nextSignal": "交换机订单、PCB毛利率、高速铜连接订单、服务器出货",
-      "sourceStatus": "2026年9月1日A股全市场动态重排：东方财富板块行情+新闻催化+资金广度+风险扣分"
+      "sourceStatus": "2026年9月2日休市或板块接口异常，沿用最近可得交易日排名；原行情日期2026-09-01。"
     },
     {
       "name": "东方财富热股",
       "score": 70,
       "tier": "候补轮动",
-      "operation": "继续观察",
+      "operation": "仅研究快照，待核验",
       "marketDate": "2026-08-31",
       "nextSignal": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
-      "sourceStatus": "2026年9月1日A股全市场动态重排：东方财富板块行情+新闻催化+资金广度+风险扣分"
+      "sourceStatus": "2026年9月2日休市或板块接口异常，沿用最近可得交易日排名；原行情日期2026-08-31。"
     },
     {
       "name": "低空经济/军工",
       "score": 70,
       "tier": "候补轮动",
-      "operation": "继续观察",
+      "operation": "仅研究快照，待核验",
       "marketDate": "2026-09-01",
       "nextSignal": "适航审批、军工订单、低空商业化、无人机交付",
-      "sourceStatus": "2026年9月1日A股全市场动态重排：东方财富板块行情+新闻催化+资金广度+风险扣分"
+      "sourceStatus": "2026年9月2日休市或板块接口异常，沿用最近可得交易日排名；原行情日期2026-09-01。"
     },
     {
       "name": "消费电子/AI终端",
       "score": 68,
       "tier": "候补轮动",
-      "operation": "继续观察",
+      "operation": "仅研究快照，待核验",
       "marketDate": "2026-09-01",
       "nextSignal": "AI手机/眼镜销量、苹果链订单、端侧AI渗透率",
-      "sourceStatus": "2026年9月1日A股全市场动态重排：东方财富板块行情+新闻催化+资金广度+风险扣分"
+      "sourceStatus": "2026年9月2日休市或板块接口异常，沿用最近可得交易日排名；原行情日期2026-09-01。"
     },
     {
       "name": "题材股",
       "score": 64,
       "tier": "候补轮动",
-      "operation": "观察等待",
+      "operation": "仅研究快照，待核验",
       "marketDate": "2026-08-31",
       "nextSignal": "板块涨跌、上涨家数占比、主力净流入、成交活跃度、新闻催化",
-      "sourceStatus": "2026年9月1日A股全市场动态重排：东方财富板块行情+新闻催化+资金广度+风险扣分"
+      "sourceStatus": "2026年9月2日休市或板块接口异常，沿用最近可得交易日排名；原行情日期2026-08-31。"
     },
     {
       "name": "券商/金融科技",
       "score": 63,
       "tier": "候补轮动",
-      "operation": "观察等待",
+      "operation": "仅研究快照，待核验",
       "marketDate": "2026-09-01",
       "nextSignal": "A股成交额、两融余额、券商政策、指数放量",
-      "sourceStatus": "2026年9月1日A股全市场动态重排：东方财富板块行情+新闻催化+资金广度+风险扣分"
+      "sourceStatus": "2026年9月2日休市或板块接口异常，沿用最近可得交易日排名；原行情日期2026-09-01。"
     }
   ],
   "funds": [
@@ -907,117 +907,117 @@ export const opportunityRadar: { businessDate: string; marketGate: string; dataH
       "code": "012733",
       "name": "易方达中证人工智能主题ETF联接A",
       "theme": "AI/半导体",
-      "latestNav": 2.0525,
-      "day": 2.63,
-      "navDate": "2026-08-31",
-      "decision": "继续观察"
+      "latestNav": 2.0416,
+      "day": -0.53,
+      "navDate": "2026-09-01",
+      "decision": "观察等待"
     },
     {
       "code": "100055",
       "name": "富国全球科技互联网股票(QDII)A",
       "theme": "全球科技互联网",
-      "latestNav": 5.136,
-      "day": -2.1,
-      "navDate": "2026-08-28",
-      "decision": "观察等待"
+      "latestNav": 5.1473,
+      "day": 0.22,
+      "navDate": "2026-08-31",
+      "decision": "继续观察"
     },
     {
       "code": "006751",
       "name": "富国互联科技股票A",
       "theme": "AI/互联网",
-      "latestNav": 6.1769,
-      "day": 0.96,
-      "navDate": "2026-08-31",
-      "decision": "继续观察"
+      "latestNav": 6.0404,
+      "day": -2.21,
+      "navDate": "2026-09-01",
+      "decision": "观察等待"
     },
     {
       "code": "014344",
       "name": "鹏华中证500指数增强A",
       "theme": "A股宽基",
-      "latestNav": 1.609,
-      "day": 1.19,
-      "navDate": "2026-08-31",
-      "decision": "继续观察"
+      "latestNav": 1.5898,
+      "day": -1.19,
+      "navDate": "2026-09-01",
+      "decision": "观察等待"
     },
     {
       "code": "007818",
       "name": "国泰中证全指通信设备ETF联接C",
       "theme": "通信/设备",
-      "latestNav": 3.7386,
-      "day": 0.66,
-      "navDate": "2026-08-31",
-      "decision": "继续观察"
+      "latestNav": 3.6853,
+      "day": -1.43,
+      "navDate": "2026-09-01",
+      "decision": "观察等待"
     },
     {
       "code": "013180",
       "name": "广发国证新能源车电池ETF联接C",
       "theme": "新能源车/电池",
-      "latestNav": 0.7473,
-      "day": -1.44,
-      "navDate": "2026-08-31",
+      "latestNav": 0.7359,
+      "day": -1.53,
+      "navDate": "2026-09-01",
       "decision": "观察等待"
     },
     {
       "code": "004432",
       "name": "南方有色金属ETF联接A",
       "theme": "有色金属",
-      "latestNav": 1.8423,
-      "day": -1.31,
-      "navDate": "2026-08-31",
+      "latestNav": 1.8239,
+      "day": -1.0,
+      "navDate": "2026-09-01",
       "decision": "观察等待"
     },
     {
       "code": "519704",
       "name": "交银先进制造混合A",
       "theme": "先进制造",
-      "latestNav": 6.583,
-      "day": 1.0,
-      "navDate": "2026-08-31",
-      "decision": "继续观察"
+      "latestNav": 6.5301,
+      "day": -0.8,
+      "navDate": "2026-09-01",
+      "decision": "观察等待"
     },
     {
       "code": "018125",
       "name": "永赢先进制造智选混合发起C",
       "theme": "先进制造",
-      "latestNav": 1.8876,
-      "day": 2.23,
-      "navDate": "2026-08-31",
-      "decision": "继续观察"
+      "latestNav": 1.8491,
+      "day": -2.04,
+      "navDate": "2026-09-01",
+      "decision": "观察等待"
     },
     {
       "code": "011103",
       "name": "天弘中证光伏产业指数C",
       "theme": "光伏产业",
-      "latestNav": 0.7098,
-      "day": -1.17,
-      "navDate": "2026-08-31",
+      "latestNav": 0.702,
+      "day": -1.1,
+      "navDate": "2026-09-01",
       "decision": "观察等待"
     },
     {
       "code": "025856",
       "name": "华夏中证电网设备主题ETF发起式联接A",
       "theme": "电网设备",
-      "latestNav": 1.1638,
-      "day": -0.33,
-      "navDate": "2026-08-31",
+      "latestNav": 1.1527,
+      "day": -0.95,
+      "navDate": "2026-09-01",
       "decision": "观察等待"
     },
     {
       "code": "018896",
       "name": "易方达消费电子ETF联接A",
       "theme": "消费电子",
-      "latestNav": 2.3486,
-      "day": 1.94,
-      "navDate": "2026-08-31",
-      "decision": "继续观察"
+      "latestNav": 2.2878,
+      "day": -2.59,
+      "navDate": "2026-09-01",
+      "decision": "观察等待"
     }
   ]
 };
 
 export const codedOpportunityRadar: { businessDate: string; marketGate: string; dataHealth: string; executionEngineStatus: string; executionBoundary: string; catalogLabel: string; stocks: Array<{ code: string; name: string; assetType: string; theme: string; researchStatus: string; researchScore: number | null; executionEligible: boolean; executionAction: string | null; dataDate: string | null; dataStatus: string }>; etfs: Array<{ code: string; name: string; assetType: string; theme: string; researchStatus: string; researchScore: number | null; executionEligible: boolean; executionAction: string | null; dataDate: string | null; dataStatus: string }>; relationships: Array<{ stockCodes: string[]; etfCode: string; relationship: string; expressionStrategy: string | null; relationshipStatus: string }> } = {
-  "businessDate": "2026-08-31",
-  "marketGate": "风险偏高",
-  "dataHealth": "绿灯",
+  "businessDate": "2026-09-01",
+  "marketGate": "数据不足",
+  "dataHealth": "灰灯",
   "executionEngineStatus": "未启用",
   "executionBoundary": "执行引擎未启用；候选池仅作研究跟踪，不形成交易动作。",
   "catalogLabel": "研究排名｜15/20 已验证",
@@ -1030,9 +1030,9 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "已验证",
       "executionEligible": false,
       "executionAction": null,
-      "dataDate": "2026-08-31",
+      "dataDate": "2026-09-01",
       "dataStatus": "双源已验证",
-      "researchScore": 16.2
+      "researchScore": 12.48
     },
     {
       "code": "002463",
@@ -1042,9 +1042,9 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "已验证",
       "executionEligible": false,
       "executionAction": null,
-      "dataDate": "2026-08-31",
+      "dataDate": "2026-09-01",
       "dataStatus": "双源已验证",
-      "researchScore": 13.67
+      "researchScore": 4.9
     },
     {
       "code": "600584",
@@ -1054,9 +1054,9 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "已验证",
       "executionEligible": false,
       "executionAction": null,
-      "dataDate": "2026-08-31",
+      "dataDate": "2026-09-01",
       "dataStatus": "双源已验证",
-      "researchScore": 12.02
+      "researchScore": 4.41
     },
     {
       "code": "603986",
@@ -1066,9 +1066,9 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "已验证",
       "executionEligible": false,
       "executionAction": null,
-      "dataDate": "2026-08-31",
+      "dataDate": "2026-09-01",
       "dataStatus": "双源已验证",
-      "researchScore": 11.31
+      "researchScore": 3.82
     },
     {
       "code": "601138",
@@ -1078,9 +1078,9 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "已验证",
       "executionEligible": false,
       "executionAction": null,
-      "dataDate": "2026-08-31",
+      "dataDate": "2026-09-01",
       "dataStatus": "双源已验证",
-      "researchScore": 10.02
+      "researchScore": 3.3
     },
     {
       "code": "002475",
@@ -1090,9 +1090,9 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "已验证",
       "executionEligible": false,
       "executionAction": null,
-      "dataDate": "2026-08-31",
+      "dataDate": "2026-09-01",
       "dataStatus": "双源已验证",
-      "researchScore": 6.18
+      "researchScore": 2.24
     },
     {
       "code": "688041",
@@ -1102,21 +1102,9 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "已验证",
       "executionEligible": false,
       "executionAction": null,
-      "dataDate": "2026-08-31",
+      "dataDate": "2026-09-01",
       "dataStatus": "双源已验证",
-      "researchScore": 2.96
-    },
-    {
-      "code": "300502",
-      "name": "新易盛",
-      "assetType": "股票",
-      "theme": "光模块/CPO",
-      "researchStatus": "已验证",
-      "executionEligible": false,
-      "executionAction": null,
-      "dataDate": "2026-08-31",
-      "dataStatus": "双源已验证",
-      "researchScore": 0.17
+      "researchScore": -1.57
     },
     {
       "code": "002230",
@@ -1126,9 +1114,21 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "已验证",
       "executionEligible": false,
       "executionAction": null,
-      "dataDate": "2026-08-31",
+      "dataDate": "2026-09-01",
       "dataStatus": "双源已验证",
-      "researchScore": -1.29
+      "researchScore": -2.65
+    },
+    {
+      "code": "300502",
+      "name": "新易盛",
+      "assetType": "股票",
+      "theme": "光模块/CPO",
+      "researchStatus": "已验证",
+      "executionEligible": false,
+      "executionAction": null,
+      "dataDate": "2026-09-01",
+      "dataStatus": "双源已验证",
+      "researchScore": -4.33
     },
     {
       "code": "300308",
@@ -1138,9 +1138,9 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "已验证",
       "executionEligible": false,
       "executionAction": null,
-      "dataDate": "2026-08-31",
+      "dataDate": "2026-09-01",
       "dataStatus": "双源已验证",
-      "researchScore": -3.41
+      "researchScore": -6.44
     }
   ],
   "etfs": [
@@ -1152,21 +1152,9 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "已验证",
       "executionEligible": false,
       "executionAction": null,
-      "dataDate": "2026-08-31",
+      "dataDate": "2026-09-01",
       "dataStatus": "双源已验证",
-      "researchScore": 10.02
-    },
-    {
-      "code": "515880",
-      "name": "通信ETF",
-      "assetType": "ETF",
-      "theme": "通信/设备",
-      "researchStatus": "已验证",
-      "executionEligible": false,
-      "executionAction": null,
-      "dataDate": "2026-08-31",
-      "dataStatus": "双源已验证",
-      "researchScore": 8.37
+      "researchScore": 7.05
     },
     {
       "code": "512760",
@@ -1176,9 +1164,21 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "已验证",
       "executionEligible": false,
       "executionAction": null,
-      "dataDate": "2026-08-31",
+      "dataDate": "2026-09-01",
       "dataStatus": "双源已验证",
-      "researchScore": 7.62
+      "researchScore": 2.26
+    },
+    {
+      "code": "515880",
+      "name": "通信ETF",
+      "assetType": "ETF",
+      "theme": "通信/设备",
+      "researchStatus": "已验证",
+      "executionEligible": false,
+      "executionAction": null,
+      "dataDate": "2026-09-01",
+      "dataStatus": "双源已验证",
+      "researchScore": 2.22
     },
     {
       "code": "588000",
@@ -1188,9 +1188,9 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "已验证",
       "executionEligible": false,
       "executionAction": null,
-      "dataDate": "2026-08-31",
+      "dataDate": "2026-09-01",
       "dataStatus": "双源已验证",
-      "researchScore": 5.9
+      "researchScore": 1.45
     },
     {
       "code": "512720",
@@ -1200,9 +1200,9 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchStatus": "已验证",
       "executionEligible": false,
       "executionAction": null,
-      "dataDate": "2026-08-31",
+      "dataDate": "2026-09-01",
       "dataStatus": "双源已验证",
-      "researchScore": 4.13
+      "researchScore": 1.3
     },
     {
       "code": "516010",
