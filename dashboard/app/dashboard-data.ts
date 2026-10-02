@@ -1,7 +1,7 @@
 // Generated from data/market-data.json. Do not edit by hand.
 export const snapshot = {
   "businessDate": "2026-09-30",
-  "generatedAt": "2026-10-02T09:42:47+08:00",
+  "generatedAt": "2026-10-02T10:06:50+08:00",
   "asOf": "2026/10/2 06:15 HKT",
   "marketGate": "风险偏高",
   "dataHealth": "绿灯",
@@ -127,7 +127,7 @@ export const risks = [
   ],
   [
     "美元指数",
-    "DXY约102.11（东方财富美元指数口径，2026年10月1日）",
+    "DXY约102.04（东方财富美元指数口径，2026年10月1日）",
     "green",
     "DXY < 103",
     "指标日期 2026-10-01，沿用最近可得数据（滞后1天）",
@@ -175,7 +175,7 @@ export const risks = [
   ],
   [
     "港股成交额",
-    "恒生指数成分成交约242亿港元（非港股全市场口径，2026年10月1日）",
+    "恒生指数成分成交约451亿港元（非港股全市场口径，2026年10月1日）",
     "yellow",
     ">1500亿港元",
     "指标日期 2026-10-01，沿用最近可得数据（滞后1天）",
@@ -345,10 +345,10 @@ export const sectors = [
 export const events = [
   {
     "title": "中东与地缘风险仍在扰动市场，原油、黄金和风险偏好需要重点跟踪",
-    "priority": 7,
-    "direction": 0,
+    "priority": 8,
+    "direction": 1,
     "confidence": "中高",
-    "source": "美国财经电视台",
+    "source": "公开新闻聚合源",
     "date": "2026/10/2",
     "watch": "中东局势、原油运输、布伦特油价、黄金价格、美元指数和军工板块表现"
   },

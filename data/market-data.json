@@ -68,7 +68,7 @@
     },
     {
       "name": "美元指数",
-      "value": "DXY约102.11（东方财富美元指数口径，2026年10月1日）",
+      "value": "DXY约102.04（东方财富美元指数口径，2026年10月1日）",
       "score": 35,
       "signal": "正常绿灯",
       "normal": "DXY < 103",
@@ -134,7 +134,7 @@
     },
     {
       "name": "港股成交额",
-      "value": "恒生指数成分成交约242亿港元（非港股全市场口径，2026年10月1日）",
+      "value": "恒生指数成分成交约451亿港元（非港股全市场口径，2026年10月1日）",
       "score": 55,
       "signal": "预警黄灯",
       "normal": ">1500亿港元",
@@ -645,21 +645,21 @@
   "financeNews": [
     {
       "date": "2026/10/2",
-      "category": "地缘",
+      "category": "能源",
       "title": "中东与地缘风险仍在扰动市场，原油、黄金和风险偏好需要重点跟踪",
       "content": "地缘局势相关消息显示，停火、制裁、能源运输和政策表态仍可能影响原油供应预期与避险交易。",
-      "assets": "原油、黄金、美元、军工、全球风险资产",
-      "direction": "待观察",
+      "assets": "原油、通胀交易、航空、化工、有色金属、全球股市",
+      "direction": "利多",
       "impact": "高",
       "horizon": "短期：1天-2周",
       "meaning": "地缘风险若反复，油价和黄金波动会放大，并可能压制全球权益市场风险偏好。",
-      "action": "等待",
+      "action": "观察等待",
       "watch": "中东局势、原油运输、布伦特油价、黄金价格、美元指数和军工板块表现",
-      "source": "美国财经电视台",
+      "source": "公开新闻聚合源",
       "confidence": "中高",
       "included": "是",
-      "score": 7,
-      "refreshStatus": "公开新闻源刷新：美国财经电视台，发布时间 2026-10-02T09:38+08:00"
+      "score": 8,
+      "refreshStatus": "公开新闻源刷新：公开新闻聚合源，发布时间 2026-10-02T09:17+08:00"
     },
     {
       "date": "2026/10/2",
@@ -824,7 +824,7 @@
       "refreshStatus": "当天RSS有效新闻不足10条，沿用最近可靠新闻；原始来源日期 2026/8/27。"
     }
   ],
-  "generatedAt": "2026-10-02T09:42:22+08:00",
+  "generatedAt": "2026-10-02T10:06:28+08:00",
   "automation": {
     "source": "GitHub Actions",
     "timezone": "Asia/Hong_Kong",
@@ -855,7 +855,7 @@
       "count": 10,
       "note": "仅排行A股可交易赛道；候选池不固定，每日从A股全市场发现强势主题。港股、美股仅作为外部变量影响A股风险与催化判断。",
       "sourceDate": "2026-10-02",
-      "boardCount": 383
+      "boardCount": 284
     },
     "experts": {
       "status": "公开资料复核",
@@ -889,7 +889,7 @@
     "status": "全市场扫描完成",
     "source": "东方财富A股概念板块+行业板块",
     "sourceDate": "2026-10-02",
-    "boardCount": 383,
+    "boardCount": 284,
     "dynamicCandidateCount": 12,
     "selectedCount": 10,
     "note": "仅排行A股可交易赛道；候选池不固定，每日从A股全市场发现强势主题。港股、美股仅作为外部变量影响A股风险与催化判断。"
@@ -897,9 +897,9 @@
   "v2": {
     "contractVersion": "dashboard-v2.0",
     "ruleVersion": "quant-gate-v2.0",
-    "batchId": "HKT-20261002T094247-dashboard-v2",
+    "batchId": "HKT-20261002T100650-dashboard-v2",
     "businessDate": "2026-09-30",
-    "generatedAt": "2026-10-02T09:42:47+08:00",
+    "generatedAt": "2026-10-02T10:06:50+08:00",
     "marketGate": "风险偏高",
     "dataHealth": "绿灯",
     "coverage": 0.9643,
