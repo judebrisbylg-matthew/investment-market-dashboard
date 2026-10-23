@@ -1,7 +1,7 @@
 // Generated from data/market-data.json. Do not edit by hand.
 export const snapshot = {
   "businessDate": "2026-10-22",
-  "generatedAt": "2026-10-23T08:40:37+08:00",
+  "generatedAt": "2026-10-23T10:08:12+08:00",
   "asOf": "2026/10/23 06:15 HKT",
   "marketGate": "数据不足",
   "dataHealth": "灰灯",
@@ -11,9 +11,9 @@ export const snapshot = {
   "decisionStatus": "不可用",
   "decisionReason": "行业观察数据待核验",
   "lightCounts": {
-    "green": 6,
+    "green": 5,
     "yellow": 4,
-    "red": 2,
+    "red": 3,
     "gray": 0
   },
   "daily": {
@@ -30,7 +30,7 @@ export const snapshot = {
   "freshness": [
     {
       "name": "风控",
-      "date": "10.21",
+      "date": "10.22",
       "width": 86
     },
     {
@@ -127,11 +127,11 @@ export const risks = [
   ],
   [
     "美元指数",
-    "DXY约101.78（东方财富美元指数口径，2026年10月20日）",
+    "DXY约101.68（东方财富美元指数口径，2026年10月22日）",
     "green",
     "DXY < 103",
-    "指标日期 2026-10-20，沿用最近可得数据（滞后3天）",
-    "2026-10-20"
+    "指标日期 2026-10-22，沿用最近可得数据（滞后1天）",
+    "2026-10-22"
   ],
   [
     "实际利率",
@@ -167,19 +167,19 @@ export const risks = [
   ],
   [
     "A股成交额",
-    "沪深两市成交约1.46万亿元（东方财富指数口径，2026年10月20日）",
-    "green",
+    "沪深两市成交约0.58万亿元（东方财富指数口径，2026年10月22日）",
+    "red",
     ">1.0万亿",
-    "指标日期 2026-10-20，沿用最近可得数据（滞后3天）",
-    "2026-10-20"
+    "指标日期 2026-10-22，沿用最近可得数据（滞后1天）",
+    "2026-10-22"
   ],
   [
     "港股成交额",
-    "恒生指数成分成交约1905亿港元（非港股全市场口径，2026年10月20日）",
+    "恒生指数成分成交约629亿港元（非港股全市场口径，2026年10月22日）",
     "yellow",
     ">1500亿港元",
-    "指标日期 2026-10-20，沿用最近可得数据（滞后3天）",
-    "2026-10-20"
+    "指标日期 2026-10-22，沿用最近可得数据（滞后1天）",
+    "2026-10-22"
   ],
   [
     "行业轮动强弱",
@@ -344,15 +344,6 @@ export const sectors = [
 
 export const events = [
   {
-    "title": "人工智能和半导体仍是市场主线，但高估值与拥挤交易需要财报验证",
-    "priority": 8,
-    "direction": 1,
-    "confidence": "中高",
-    "source": "公开新闻聚合源",
-    "date": "2026/10/23",
-    "watch": "费半指数、英伟达链条、云厂资本开支、芯片订单、毛利率和成交额"
-  },
-  {
     "title": "中东与地缘风险仍在扰动市场，原油、黄金和风险偏好需要重点跟踪",
     "priority": 7,
     "direction": 0,
@@ -360,6 +351,15 @@ export const events = [
     "source": "美国财经电视台",
     "date": "2026/10/23",
     "watch": "中东局势、原油运输、布伦特油价、黄金价格、美元指数和军工板块表现"
+  },
+  {
+    "title": "人工智能和半导体仍是市场主线，但高估值与拥挤交易需要财报验证",
+    "priority": 7,
+    "direction": 1,
+    "confidence": "中高",
+    "source": "公开新闻聚合源",
+    "date": "2026/10/22",
+    "watch": "费半指数、英伟达链条、云厂资本开支、芯片订单、毛利率和成交额"
   },
   {
     "title": "央行重要消息待复核，需观察是否改变市场风险偏好",
@@ -376,7 +376,7 @@ export const events = [
     "direction": 1,
     "confidence": "中高",
     "source": "公开新闻聚合源",
-    "date": "2026/10/22",
+    "date": "2026/10/23",
     "watch": "布伦特油价、美国原油库存、产油国政策、通胀预期、航空和化工板块"
   },
   {
@@ -654,14 +654,14 @@ export const stocks = [
     "code": "002555",
     "name": "三七互娱",
     "sector": "游戏传媒/AI应用",
-    "signal": "red",
-    "direction": "转弱",
+    "signal": "gray",
+    "direction": "数据不足",
     "watch": "游戏ETF与个股是否同步放量、连续强于沪深300",
-    "latestPrice": 15.96,
-    "day": -4.09,
-    "fiveDay": -7.59,
-    "marketDate": "2026-10-22",
-    "risk": "高"
+    "latestPrice": "待核验",
+    "day": "待核验",
+    "fiveDay": "待核验",
+    "marketDate": "待核验",
+    "risk": "待核验"
   }
 ] as const;
 
@@ -1020,127 +1020,127 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
   "dataHealth": "灰灯",
   "executionEngineStatus": "未启用",
   "executionBoundary": "执行引擎未启用；候选池仅作研究跟踪，不形成交易动作。",
-  "catalogLabel": "研究排名｜15/20 已验证",
+  "catalogLabel": "研究排名｜0/20 已验证",
   "stocks": [
     {
       "code": "002230",
       "name": "科大讯飞",
       "assetType": "股票",
       "theme": "AI应用/软件",
-      "researchStatus": "已验证",
+      "researchStatus": "待重试",
       "executionEligible": false,
       "executionAction": null,
-      "dataDate": "2026-10-22",
-      "dataStatus": "双源已验证",
-      "researchScore": -2.38
-    },
-    {
-      "code": "002475",
-      "name": "立讯精密",
-      "assetType": "股票",
-      "theme": "消费电子/连接器",
-      "researchStatus": "已验证",
-      "executionEligible": false,
-      "executionAction": null,
-      "dataDate": "2026-10-22",
-      "dataStatus": "双源已验证",
-      "researchScore": -3.38
-    },
-    {
-      "code": "600584",
-      "name": "长电科技",
-      "assetType": "股票",
-      "theme": "先进封装",
-      "researchStatus": "已验证",
-      "executionEligible": false,
-      "executionAction": null,
-      "dataDate": "2026-10-22",
-      "dataStatus": "双源已验证",
-      "researchScore": -5.27
-    },
-    {
-      "code": "688041",
-      "name": "海光信息",
-      "assetType": "股票",
-      "theme": "AI芯片/国产算力",
-      "researchStatus": "已验证",
-      "executionEligible": false,
-      "executionAction": null,
-      "dataDate": "2026-10-22",
-      "dataStatus": "双源已验证",
-      "researchScore": -9.18
-    },
-    {
-      "code": "000977",
-      "name": "浪潮信息",
-      "assetType": "股票",
-      "theme": "AI服务器/液冷",
-      "researchStatus": "已验证",
-      "executionEligible": false,
-      "executionAction": null,
-      "dataDate": "2026-10-22",
-      "dataStatus": "双源已验证",
-      "researchScore": -10.1
+      "dataDate": "2026-10-23",
+      "dataStatus": "日期不匹配",
+      "researchScore": null
     },
     {
       "code": "601138",
       "name": "工业富联",
       "assetType": "股票",
       "theme": "AI服务器/制造",
-      "researchStatus": "已验证",
+      "researchStatus": "待重试",
       "executionEligible": false,
       "executionAction": null,
-      "dataDate": "2026-10-22",
-      "dataStatus": "双源已验证",
-      "researchScore": -10.38
-    },
-    {
-      "code": "002463",
-      "name": "沪电股份",
-      "assetType": "股票",
-      "theme": "PCB/高速铜连接",
-      "researchStatus": "已验证",
-      "executionEligible": false,
-      "executionAction": null,
-      "dataDate": "2026-10-22",
-      "dataStatus": "双源已验证",
-      "researchScore": -11.51
-    },
-    {
-      "code": "603986",
-      "name": "兆易创新",
-      "assetType": "股票",
-      "theme": "存储/半导体",
-      "researchStatus": "已验证",
-      "executionEligible": false,
-      "executionAction": null,
-      "dataDate": "2026-10-22",
-      "dataStatus": "双源已验证",
-      "researchScore": -12.59
+      "dataDate": "2026-10-23",
+      "dataStatus": "日期不匹配",
+      "researchScore": null
     },
     {
       "code": "300308",
       "name": "中际旭创",
       "assetType": "股票",
       "theme": "光模块/CPO",
-      "researchStatus": "已验证",
+      "researchStatus": "待重试",
       "executionEligible": false,
       "executionAction": null,
-      "dataDate": "2026-10-22",
-      "dataStatus": "双源已验证",
-      "researchScore": -21.02
+      "dataDate": "2026-10-23",
+      "dataStatus": "日期不匹配",
+      "researchScore": null
     },
     {
       "code": "300502",
       "name": "新易盛",
       "assetType": "股票",
       "theme": "光模块/CPO",
-      "researchStatus": "已验证",
+      "researchStatus": "待重试",
       "executionEligible": false,
       "executionAction": null,
-      "dataDate": "2026-10-22",
-      "dataStatus": "双源已验证",
-      "researchScore": -25.54
+      "dataDate": "2026-10-23",
+      "dataStatus": "日期不匹配",
+      "researchScore": null
+    },
+    {
+      "code": "600584",
+      "name": "长电科技",
+      "assetType": "股票",
+      "theme": "先进封装",
+      "researchStatus": "待重试",
+      "executionEligible": false,
+      "executionAction": null,
+      "dataDate": "2026-10-23",
+      "dataStatus": "日期不匹配",
+      "researchScore": null
+    },
+    {
+      "code": "000977",
+      "name": "浪潮信息",
+      "assetType": "股票",
+      "theme": "AI服务器/液冷",
+      "researchStatus": "待重试",
+      "executionEligible": false,
+      "executionAction": null,
+      "dataDate": "2026-10-23",
+      "dataStatus": "日期不匹配",
+      "researchScore": null
+    },
+    {
+      "code": "002463",
+      "name": "沪电股份",
+      "assetType": "股票",
+      "theme": "PCB/高速铜连接",
+      "researchStatus": "待重试",
+      "executionEligible": false,
+      "executionAction": null,
+      "dataDate": "2026-10-23",
+      "dataStatus": "日期不匹配",
+      "researchScore": null
+    },
+    {
+      "code": "002475",
+      "name": "立讯精密",
+      "assetType": "股票",
+      "theme": "消费电子/连接器",
+      "researchStatus": "待重试",
+      "executionEligible": false,
+      "executionAction": null,
+      "dataDate": "2026-10-23",
+      "dataStatus": "日期不匹配",
+      "researchScore": null
+    },
+    {
+      "code": "603986",
+      "name": "兆易创新",
+      "assetType": "股票",
+      "theme": "存储/半导体",
+      "researchStatus": "待重试",
+      "executionEligible": false,
+      "executionAction": null,
+      "dataDate": "2026-10-23",
+      "dataStatus": "日期不匹配",
+      "researchScore": null
+    },
+    {
+      "code": "688041",
+      "name": "海光信息",
+      "assetType": "股票",
+      "theme": "AI芯片/国产算力",
+      "researchStatus": "待重试",
+      "executionEligible": false,
+      "executionAction": null,
+      "dataDate": "2026-10-23",
+      "dataStatus": "日期不匹配",
+      "researchScore": null
     }
   ],
   "etfs": [
@@ -1149,60 +1149,12 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "name": "计算机ETF",
       "assetType": "ETF",
       "theme": "计算机/软件",
-      "researchStatus": "已验证",
+      "researchStatus": "待重试",
       "executionEligible": false,
       "executionAction": null,
-      "dataDate": "2026-10-22",
-      "dataStatus": "双源已验证",
-      "researchScore": -4.2
-    },
-    {
-      "code": "515220",
-      "name": "煤炭ETF",
-      "assetType": "ETF",
-      "theme": "煤炭",
-      "researchStatus": "已验证",
-      "executionEligible": false,
-      "executionAction": null,
-      "dataDate": "2026-10-22",
-      "dataStatus": "双源已验证",
-      "researchScore": -4.38
-    },
-    {
-      "code": "512760",
-      "name": "芯片ETF",
-      "assetType": "ETF",
-      "theme": "半导体",
-      "researchStatus": "已验证",
-      "executionEligible": false,
-      "executionAction": null,
-      "dataDate": "2026-10-22",
-      "dataStatus": "双源已验证",
-      "researchScore": -10.44
-    },
-    {
-      "code": "588000",
-      "name": "科创50ETF",
-      "assetType": "ETF",
-      "theme": "AI/半导体",
-      "researchStatus": "已验证",
-      "executionEligible": false,
-      "executionAction": null,
-      "dataDate": "2026-10-22",
-      "dataStatus": "双源已验证",
-      "researchScore": -10.78
-    },
-    {
-      "code": "515880",
-      "name": "通信ETF",
-      "assetType": "ETF",
-      "theme": "通信/设备",
-      "researchStatus": "已验证",
-      "executionEligible": false,
-      "executionAction": null,
-      "dataDate": "2026-10-22",
-      "dataStatus": "双源已验证",
-      "researchScore": -14.36
+      "dataDate": "2026-10-23",
+      "dataStatus": "日期不匹配",
+      "researchScore": null
     },
     {
       "code": "516010",
@@ -1229,6 +1181,30 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchScore": null
     },
     {
+      "code": "515220",
+      "name": "煤炭ETF",
+      "assetType": "ETF",
+      "theme": "煤炭",
+      "researchStatus": "待重试",
+      "executionEligible": false,
+      "executionAction": null,
+      "dataDate": "2026-10-23",
+      "dataStatus": "日期不匹配",
+      "researchScore": null
+    },
+    {
+      "code": "515880",
+      "name": "通信ETF",
+      "assetType": "ETF",
+      "theme": "通信/设备",
+      "researchStatus": "待重试",
+      "executionEligible": false,
+      "executionAction": null,
+      "dataDate": "2026-10-23",
+      "dataStatus": "日期不匹配",
+      "researchScore": null
+    },
+    {
       "code": "562500",
       "name": "机器人ETF",
       "assetType": "ETF",
@@ -1241,6 +1217,18 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "researchScore": null
     },
     {
+      "code": "588000",
+      "name": "科创50ETF",
+      "assetType": "ETF",
+      "theme": "AI/半导体",
+      "researchStatus": "待重试",
+      "executionEligible": false,
+      "executionAction": null,
+      "dataDate": "2026-10-23",
+      "dataStatus": "日期不匹配",
+      "researchScore": null
+    },
+    {
       "code": "516960",
       "name": "机械ETF",
       "assetType": "ETF",
@@ -1250,6 +1238,18 @@ export const codedOpportunityRadar: { businessDate: string; marketGate: string; 
       "executionAction": null,
       "dataDate": null,
       "dataStatus": "待获取双源行情",
+      "researchScore": null
+    },
+    {
+      "code": "512760",
+      "name": "芯片ETF",
+      "assetType": "ETF",
+      "theme": "半导体",
+      "researchStatus": "待重试",
+      "executionEligible": false,
+      "executionAction": null,
+      "dataDate": "2026-10-23",
+      "dataStatus": "日期不匹配",
       "researchScore": null
     },
     {
